@@ -20,7 +20,9 @@ export function formatBed(bedType: string, bedCount: number): string {
   return `${bedCount} ${BED_LABEL[bedType]} ${bedCount > 1 ? "beds" : "bed"}`;
 }
 
-export function getInitials(name: string): string {
+export function getInitials(name?: string): string {
+  if (!name) return "";
+
   return name
     .split(" ")
     .filter(Boolean)

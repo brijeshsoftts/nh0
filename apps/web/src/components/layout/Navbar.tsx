@@ -16,7 +16,7 @@ import {
 
 import { goldButton, goldHairline } from "@/lib/ui";
 import { cn } from "@/lib/utils";
-import { NAV_ITEMS } from "@/constant/navigation";
+import { NAV_ITEMS } from "@/constants/navigation";
 
 export function Navbar() {
   const { pathname } = useLocation();
