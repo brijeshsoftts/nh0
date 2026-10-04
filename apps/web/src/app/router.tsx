@@ -10,7 +10,7 @@ import RoomsPage from "@/pages/public/Rooms";
 
 import DashboardPage from "@/pages/protect/Dashboard";
 import BookingsPage from "@/pages/protect/Bookings";
-import CustomersPage from "@/pages/protect/Custoemrs";
+import CustomersPage from "@/pages/protect/Customers";
 import IssuesPage from "@/pages/protect/Issues";
 import NewBookingPage from "@/pages/protect/NewBooking";
 import PaymentsPage from "@/pages/protect/Payments";
