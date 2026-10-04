@@ -11,6 +11,7 @@ import { AppService } from './app.service';
 import { env } from './config';
 import { PublicModule } from './modules/public/public.module';
 import { RoomsModule } from './modules/rooms/rooms.module';
+import { BookingsModule } from './modules/bookings/bookings.module';
 
 @Module({
   imports: [
@@ -26,6 +27,7 @@ import { RoomsModule } from './modules/rooms/rooms.module';
     RoomTypesModule,
     PublicModule,
     RoomsModule,
+    BookingsModule,
   ],
   controllers: [AppController],
   providers: [AppService],
