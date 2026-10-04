@@ -1,0 +1,8 @@
+method: get
+url: "{{base_url}}/rooms?page=6&limit=9"
+parameters:
+  query:
+    - name: page
+      value: "6"
+    - name: limit
+      value: "9"

@@ -1,0 +1,15 @@
+method: post
+url: "{{base_url}}/rooms"
+requestBody:
+  type: application/json
+  data: |-
+    {
+        "name": "Executive King Room",
+        "roomTypeId": "cmutdp4gu0004abcpy13hypx7",
+        "roomNumber": 937,
+        "floor": 9,
+        "description": "Executive king room designed for business travelers.",
+        "occupancyStatus": "VACANT",
+        "housekeepingStatus": "CLEAN",
+        "isActive": true
+      }

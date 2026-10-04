@@ -1,0 +1,4 @@
+method: get
+url: "{{base_url}}/room-types"
+requestBody:
+  type: application/json

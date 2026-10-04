@@ -10,6 +10,7 @@ import { AppController } from './app.controller';
 import { AppService } from './app.service';
 import { env } from './config';
 import { PublicModule } from './modules/public/public.module';
+import { RoomsModule } from './modules/rooms/rooms.module';
 
 @Module({
   imports: [
@@ -24,6 +25,7 @@ import { PublicModule } from './modules/public/public.module';
     AmenitiesModule,
     RoomTypesModule,
     PublicModule,
+    RoomsModule,
   ],
   controllers: [AppController],
   providers: [AppService],
