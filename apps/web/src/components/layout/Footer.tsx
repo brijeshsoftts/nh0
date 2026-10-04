@@ -25,7 +25,7 @@ export function Footer() {
           <Link
             to="/"
             aria-label="Nivara Hotels, home"
-            className="inline-block"
+            className="flex items-center"
           >
             <Logo />
           </Link>

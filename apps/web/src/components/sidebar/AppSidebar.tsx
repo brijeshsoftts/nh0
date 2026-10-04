@@ -51,7 +51,7 @@ export function AppSidebar() {
         <SidebarHeader className="border-b p-3">
           <SidebarMenu>
             <SidebarMenuItem className="pl-4">
-              <Link to="/dashboard" className="h-full w-full">
+              <Link to="/dashboard" className="flex h-full w-full items-center">
                 <Logo />
               </Link>
             </SidebarMenuItem>

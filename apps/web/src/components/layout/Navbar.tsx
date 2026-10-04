@@ -45,7 +45,7 @@ export function Navbar() {
         <Link
           to="/"
           aria-label="Nivara Hotels, home"
-          className="rounded-lg focus-visible:ring-2 focus-visible:ring-amber-500/60 focus-visible:outline-none"
+          className="flex items-center rounded-lg focus-visible:ring-2 focus-visible:ring-amber-500/60 focus-visible:outline-none"
         >
           <Logo />
         </Link>
