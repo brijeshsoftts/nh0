@@ -1,0 +1,528 @@
+generator client {
+  provider     = "prisma-client"
+  output       = "../src/generated/prisma"
+  moduleFormat = "cjs"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+// ==========================================
+// ENUMS
+// ==========================================
+
+enum UserRole {
+  ADMIN
+  MANAGER
+  STAFF
+  CUSTOMER
+}
+
+enum Category {
+  RECEPTIONIST
+  HOUSEKEEPER
+  SECURITY_GUARD
+  WAITER
+}
+
+enum AmenityCategory {
+  ROOM
+  BATHROOM
+  FOOD
+  ENTERTAINMENT
+  CONNECTIVITY
+  COMFORT
+  SAFETY
+  OTHER
+}
+
+enum BedType {
+  SINGLE
+  TWIN
+  DOUBLE
+  QUEEN
+  KING
+  BUNK
+  SOFA_BED
+}
+
+enum OccupancyStatus {
+  VACANT
+  RESERVED
+  OCCUPIED
+  OUT_OF_ORDER
+}
+
+enum HousekeepingStatus {
+  CLEAN
+  DIRTY
+  CLEANING
+}
+
+enum BookingStatus {
+  PENDING
+  CONFIRMED
+  CHECKED_IN
+  CHECKED_OUT
+  CANCELLED
+  NO_SHOW
+}
+
+enum TaskType {
+  CLEANING
+  DEEP_CLEAN
+  TURNDOWN
+}
+
+enum TaskStatus {
+  PENDING
+  IN_PROGRESS
+  COMPLETED
+}
+
+enum InvoiceStatus {
+  UNPAID
+  PARTIALLY_PAID
+  PAID
+  REFUNDED
+}
+
+enum PaymentMethod {
+  CASH
+  ONLINE
+}
+
+enum PaymentStatus {
+  PENDING
+  COMPLETED
+  FAILED
+  REFUNDED
+}
+
+enum IssueCategory {
+  PLUMBING
+  ELECTRICAL
+  HVAC
+  FURNITURE
+  APPLIANCE
+  INTERNET
+  BATHROOM
+  DOOR_LOCK
+  LIGHTING
+  OTHER
+}
+
+enum IssuePriority {
+  LOW
+  MEDIUM
+  HIGH
+  URGENT
+}
+
+enum IssueStatus {
+  OPEN
+  IN_PROGRESS
+  COMPLETED
+  RESOLVED
+  CANCELLED
+}
+
+enum NotificationType {
+  BOOKING_CONFIRMED
+  CHECK_IN_REMINDER
+  PAYMENT_RECEIVED
+  ISSUE_CREATED
+  ISSUE_ASSIGNED
+  ISSUE_UPDATED
+  HOUSEKEEPING_ASSIGNED
+  BOOKING_CANCELLED
+}
+
+// ==========================================
+// MODELS
+// ==========================================
+
+model User {
+  id             String    @id @default(cuid())
+  fullName       String
+  email          String    @unique
+  phone          String
+  passwordHash   String
+  profileImageId String?
+  profileImage   Image?    @relation(fields: [profileImageId], references: [id])
+  role           UserRole
+  isActive       Boolean   @default(true)
+  lastLoginAt    DateTime?
+  createdAt      DateTime  @default(now())
+  updatedAt      DateTime  @updatedAt
+  softDeletedAt  DateTime?
+
+  staff                  Staff?
+  customerProfile        Customer?
+  customerBookings       Booking[]                   @relation("BookingCustomer")
+  createdBookings        Booking[]                   @relation("BookingCreatedBy")
+  housekeepingTasks      HousekeepingTask[]          @relation("HousekeeperTasks")
+  housekeeperAssignments HousekeeperRoomAssignment[] @relation("Housekeeper")
+  assignedAssignments    HousekeeperRoomAssignment[] @relation("AssignedByHousekeeper")
+  invoices               Invoice[]
+  paymentsAsCustomer     Payment[]                   @relation("PaymentCustomer")
+  paymentsRecorded       Payment[]                   @relation("PaymentRecordedBy")
+  reportedIssues         Issue[]                     @relation("IssueReportedBy")
+  assignedIssues         Issue[]                     @relation("IssueAssignedTo")
+  reviews                Review[]
+  notifications          Notification[]
+  passwordResetTokens    PasswordResetToken[]
+  refreshTokens          RefreshToken[]
+  auditLogs              AuditLog[]
+}
+
+model Staff {
+  id               String   @id @default(cuid())
+  userId           String   @unique
+  fatherName       String
+  motherName       String
+  idProofImageId   String?
+  idProofNumber    String
+  qualification    String
+  experience       String
+  category         Category
+  emergencyContact String
+  address          String
+  signatureImageId String?
+  createdAt        DateTime @default(now())
+  updatedAt        DateTime @updatedAt
+
+  signatureImage Image? @relation("StaffSignature", fields: [signatureImageId], references: [id])
+  idProofImage   Image? @relation("StaffIdProof", fields: [idProofImageId], references: [id])
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model Customer {
+  id               String   @id @default(cuid())
+  userId           String   @unique
+  idProofNumber    String
+  idProofImageId   String?
+  signatureImageId String?
+  address          String
+  createdAt        DateTime @default(now())
+  updatedAt        DateTime @updatedAt
+
+  signatureImage Image? @relation("CustomerSignature", fields: [signatureImageId], references: [id])
+  idProofImage   Image? @relation("CustomerIdProof", fields: [idProofImageId], references: [id])
+  user           User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model RoomType {
+  id          String  @id @default(cuid())
+  name        String
+  slug        String  @unique
+  description String?
+
+  sizeSqFt  Int?
+  maxGuests Int
+  adults    Int  @default(2)
+  children  Int  @default(0)
+
+  basePrice Int
+  currency  String @default("INR")
+
+  bedType  BedType
+  bedCount Int     @default(1)
+
+  smokingAllowed Boolean @default(false)
+  petsAllowed    Boolean @default(false)
+
+  isActive Boolean @default(true)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  rooms        Room[]
+  images       Image[]
+  amenities    Amenity[]
+  bookingRooms BookingRoom[]
+
+  @@index([isActive])
+  @@index([basePrice])
+}
+
+model Room {
+  id                 String             @id @default(cuid())
+  name               String?
+  roomTypeId         String
+  roomNumber         String             @unique
+  floor              Int
+  description        String?
+  occupancyStatus    OccupancyStatus
+  housekeepingStatus HousekeepingStatus
+  isActive           Boolean            @default(true)
+  createdAt          DateTime           @default(now()) @db.Timestamp
+  updatedAt          DateTime           @updatedAt @db.Timestamp
+
+  roomType           RoomType                    @relation(fields: [roomTypeId], references: [id])
+  bookingRooms       BookingRoom[]
+  housekeepingTasks  HousekeepingTask[]
+  housekeeperAssigns HousekeeperRoomAssignment[]
+  issues             Issue[]
+}
+
+model Amenity {
+  id          String  @id @default(cuid())
+  name        String  @unique
+  description String?
+  icon        String?
+
+  category AmenityCategory @default(OTHER)
+
+  isActive Boolean @default(true)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  roomTypes RoomType[]
+}
+
+model Booking {
+  id               String        @id @default(cuid())
+  bookingReference String        @unique
+  customerId       String
+  checkInDate      DateTime
+  checkOutDate     DateTime
+  totalGuests      Int
+  totalAmount      Int
+  specialRequest   String?
+  status           BookingStatus @default(PENDING)
+  bookedAt         DateTime
+  checkedInAt      DateTime?
+  checkedOutAt     DateTime?
+  cancelledAt      DateTime?
+  createdBy        String
+  createdAt        DateTime      @default(now()) @db.Timestamp
+  updatedAt        DateTime      @updatedAt @db.Timestamp
+
+  customer      User           @relation("BookingCustomer", fields: [customerId], references: [id])
+  creator       User           @relation("BookingCreatedBy", fields: [createdBy], references: [id])
+  bookingRooms  BookingRoom[]
+  bookingGuests BookingGuest[]
+  invoices      Invoice[]
+  payments      Payment[]
+  review        Review?
+}
+
+model BookingRoom {
+  id             String  @id @default(cuid())
+  bookingId      String
+  roomTypeId     String
+  assignedRoomId String?
+  pricePerNight  Int
+
+  booking      Booking  @relation(fields: [bookingId], references: [id], onDelete: Cascade)
+  roomType     RoomType @relation(fields: [roomTypeId], references: [id])
+  assignedRoom Room?    @relation(fields: [assignedRoomId], references: [id])
+}
+
+model BookingGuest {
+  id            String  @id @default(cuid())
+  bookingId     String
+  fullName      String
+  age           Int
+  gender        String
+  idProofNumber String?
+
+  booking Booking @relation(fields: [bookingId], references: [id], onDelete: Cascade)
+}
+
+model HousekeepingTask {
+  id            String     @id @default(cuid())
+  roomId        String
+  assignedTo    String
+  taskType      TaskType
+  status        TaskStatus @default(PENDING)
+  scheduledDate DateTime
+  startedAt     DateTime?
+  completedAt   DateTime?
+  createdAt     DateTime   @default(now())
+  updatedAt     DateTime   @updatedAt
+
+  room     Room @relation(fields: [roomId], references: [id])
+  assignee User @relation("HousekeeperTasks", fields: [assignedTo], references: [id])
+}
+
+model HousekeeperRoomAssignment {
+  id            String   @id @default(cuid())
+  housekeeperId String
+  roomId        String
+  assignedBy    String
+  isActive      Boolean  @default(true)
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  housekeeper User @relation("Housekeeper", fields: [housekeeperId], references: [id])
+  room        Room @relation(fields: [roomId], references: [id])
+  assigner    User @relation("AssignedByHousekeeper", fields: [assignedBy], references: [id])
+
+  @@unique([housekeeperId, roomId])
+}
+
+model Invoice {
+  id             String        @id @default(cuid())
+  invoiceNumber  String        @unique
+  bookingId      String
+  customerId     String
+  subtotal       Int
+  taxAmount      Int
+  discountAmount Int
+  totalAmount    Int
+  status         InvoiceStatus @default(UNPAID)
+  issuedAt       DateTime
+  createdAt      DateTime      @default(now())
+
+  booking  Booking   @relation(fields: [bookingId], references: [id])
+  customer User      @relation(fields: [customerId], references: [id])
+  payments Payment[]
+}
+
+model Payment {
+  id               String        @id @default(cuid())
+  paymentReference String        @unique
+  transactionId    String?
+  invoiceId        String
+  bookingId        String
+  customerId       String
+  amount           Int
+  paymentMethod    PaymentMethod
+  paymentStatus    PaymentStatus @default(PENDING)
+  paidAt           DateTime?
+  recordedBy       String?
+  createdAt        DateTime      @default(now()) @db.Timestamp
+
+  invoice  Invoice @relation(fields: [invoiceId], references: [id])
+  booking  Booking @relation(fields: [bookingId], references: [id])
+  customer User    @relation("PaymentCustomer", fields: [customerId], references: [id])
+  recorder User?   @relation("PaymentRecordedBy", fields: [recordedBy], references: [id])
+}
+
+model Issue {
+  id        String @id @default(cuid())
+  reference String @unique
+
+  roomId       String
+  reportedById String
+  assignedToId String?
+
+  category IssueCategory
+  priority IssuePriority
+  status   IssueStatus   @default(OPEN)
+
+  title       String
+  description String
+  imageId     String?
+
+  reportedAt  DateTime  @default(now()) @db.Timestamp
+  startedAt   DateTime? @db.Timestamp
+  completedAt DateTime? @db.Timestamp
+  resolvedAt  DateTime? @db.Timestamp
+
+  createdAt DateTime @default(now()) @db.Timestamp
+  updatedAt DateTime @updatedAt @db.Timestamp
+
+  room     Room   @relation(fields: [roomId], references: [id])
+  reporter User   @relation("IssueReportedBy", fields: [reportedById], references: [id])
+  assignee User?  @relation("IssueAssignedTo", fields: [assignedToId], references: [id])
+  image    Image? @relation("IssueImage", fields: [imageId], references: [id])
+
+  @@index([roomId])
+  @@index([status])
+  @@index([priority])
+  @@index([assignedToId])
+  @@index([reportedAt])
+}
+
+model Review {
+  id         String   @id @default(cuid())
+  bookingId  String   @unique
+  customerId String
+  rating     Int
+  comment    String?
+  createdAt  DateTime @default(now())
+
+  booking  Booking @relation(fields: [bookingId], references: [id], onDelete: Cascade)
+  customer User    @relation(fields: [customerId], references: [id])
+}
+
+model Notification {
+  id            String           @id @default(cuid())
+  userId        String
+  type          NotificationType
+  title         String
+  message       String
+  referenceType String?
+  referenceId   String?
+  isRead        Boolean          @default(false)
+  createdAt     DateTime         @default(now()) @db.Timestamp
+  readAt        DateTime?
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model Image {
+  id        String   @id @default(uuid())
+  url       String
+  altText   String?
+  isPrimary Boolean  @default(false)
+  sortOrder Int      @default(0)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  roomTypeId   String?
+  roomType     RoomType? @relation(fields: [roomTypeId], references: [id], onDelete: Cascade)
+  profileUsers User[]
+  issues       Issue[]   @relation("IssueImage")
+
+  staffIdProofs   Staff[] @relation("StaffIdProof")
+  staffSignatures Staff[] @relation("StaffSignature")
+
+  customerIdProofs   Customer[] @relation("CustomerIdProof")
+  customerSignatures Customer[] @relation("CustomerSignature")
+
+  @@index([url])
+  @@index([roomTypeId])
+}
+
+model RefreshToken {
+  id        String    @id @default(cuid())
+  tokenHash String    @unique
+  userId    String
+  expiresAt DateTime
+  usedAt    DateTime?
+  revokedAt DateTime?
+  createdAt DateTime  @default(now()) @db.Timestamp
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model PasswordResetToken {
+  id        String    @id @default(cuid())
+  userId    String
+  tokenHash String    @unique
+  expiresAt DateTime
+  usedAt    DateTime?
+  createdAt DateTime  @default(now()) @db.Timestamp
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model AuditLog {
+  id         String   @id @default(cuid())
+  userId     String?
+  action     String
+  entityType String
+  entityId   String?
+  oldValues  Json?
+  newValues  Json?
+  createdAt  DateTime @default(now()) @db.Timestamp
+
+  user User? @relation(fields: [userId], references: [id])
+}

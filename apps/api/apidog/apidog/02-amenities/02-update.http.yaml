@@ -1,0 +1,8 @@
+method: patch
+url: "{{base_url}}/amenities/cmusoglo20003kcwl9rswynsm"
+requestBody:
+  type: application/json
+  data: |-
+    {
+        "icon": "tv"
+    }
