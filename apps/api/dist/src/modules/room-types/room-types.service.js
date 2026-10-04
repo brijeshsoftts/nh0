@@ -89,65 +89,6 @@ let RoomTypesService = class RoomTypesService {
             return roomType;
         });
     }
-    async findAll(query) {
-        const { page, limit } = query;
-        const skip = (page - 1) * limit;
-        await this.prismaService.$transaction([
-            this.prismaService.roomType.findMany({
-                where: {
-                    ...(query.isActive !== undefined && { isActive: query.isActive }),
-                    ...(query.maxGuests !== undefined && { maxGuests: query.maxGuests }),
-                    ...(query.search && {
-                        OR: [
-                            { name: { contains: query.search, mode: 'insensitive' } },
-                            { description: { contains: query.search, mode: 'insensitive' } },
-                        ],
-                    }),
-                },
-                orderBy: { name: 'asc' },
-                select: {
-                    id: true,
-                    name: true,
-                    maxGuests: true,
-                    basePrice: true,
-                    slug: true,
-                    isActive: true,
-                    description: true,
-                    sizeSqFt: true,
-                    adults: true,
-                    children: true,
-                    currency: true,
-                    bedType: true,
-                    bedCount: true,
-                    smokingAllowed: true,
-                    petsAllowed: true,
-                    images: {
-                        orderBy: [{ isPrimary: 'desc' }, { sortOrder: 'asc' }],
-                        take: 1,
-                        select: {
-                            id: true,
-                            url: true,
-                            altText: true,
-                        },
-                    },
-                },
-            }),
-            this.prismaService.user.count({
-                where,
-            }),
-        ]);
-        return roomTypes.map(({ images, ...roomType }) => ({
-            ...roomType,
-            image: images[0]
-                ? {
-                    id: images[0].id,
-                    url: images[0].url,
-                    alt: images[0].altText,
-                }
-                : null,
-            images: undefined,
-        }));
-    }
 };
 exports.RoomTypesService = RoomTypesService;
 exports.RoomTypesService = RoomTypesService = __decorate([
