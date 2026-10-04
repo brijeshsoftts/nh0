@@ -8,7 +8,7 @@ export interface ApiListResponse<T> {
     };
 }
 export interface ListResponse<T> {
-    data: T;
+    data: T[];
     meta: {
         page: number;
         limit: number;

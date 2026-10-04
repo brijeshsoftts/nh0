@@ -17,6 +17,7 @@ const prisma_module_1 = require("./prisma/prisma.module");
 const app_controller_1 = require("./app.controller");
 const app_service_1 = require("./app.service");
 const config_1 = require("./config");
+const public_module_1 = require("./modules/public/public.module");
 let AppModule = class AppModule {
 };
 exports.AppModule = AppModule;
@@ -33,6 +34,7 @@ exports.AppModule = AppModule = __decorate([
             users_module_1.UsersModule,
             amenities_module_1.AmenitiesModule,
             room_types_module_1.RoomTypesModule,
+            public_module_1.PublicModule,
         ],
         controllers: [app_controller_1.AppController],
         providers: [app_service_1.AppService],

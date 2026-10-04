@@ -1,0 +1,2 @@
+method: get
+url: "{{base_url}}/public/rooms"

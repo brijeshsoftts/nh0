@@ -9,6 +9,7 @@ import { PrismaModule } from './prisma/prisma.module';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
 import { env } from './config';
+import { PublicModule } from './modules/public/public.module';
 
 @Module({
   imports: [
@@ -22,6 +23,7 @@ import { env } from './config';
     UsersModule,
     AmenitiesModule,
     RoomTypesModule,
+    PublicModule,
   ],
   controllers: [AppController],
   providers: [AppService],

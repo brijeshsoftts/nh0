@@ -1,0 +1,6 @@
+method: get
+url: "{{base_url}}/public/amenities?limit=20"
+parameters:
+  query:
+    - name: limit
+      value: "20"
