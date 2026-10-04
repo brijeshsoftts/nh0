@@ -28,20 +28,39 @@ export type CreateRoomTypeResponse = RoomTypeBase & {
 };
 
 export type RoomTypeListItemResponse = RoomTypeBase & {
+  sizeSqFt: number | null;
+  bedType: BedType;
+  basePrice: number;
+  totalRooms: number;
+  image: {
+    id: string;
+    url: string;
+    altText: string | null;
+  } | null;
+};
+
+export type RoomTypeDetailsResponse = RoomTypeBase & {
   description: string | null;
   sizeSqFt: number | null;
-  maxGuests: number;
   adults: number;
   children: number;
-  basePrice: number;
   currency: string;
   bedType: BedType;
   bedCount: number;
   smokingAllowed: boolean;
   petsAllowed: boolean;
-  image: {
+  createdAt: Date | null;
+  updatedAt: Date | null;
+  totalRooms: number;
+  images: {
     id: string;
     url: string;
-    alt: string | null;
-  } | null;
+    altText: string | null;
+  }[];
+  amenities: {
+    id: string;
+    name: string;
+    icon: string | null;
+  }[];
+  _count: undefined;
 };

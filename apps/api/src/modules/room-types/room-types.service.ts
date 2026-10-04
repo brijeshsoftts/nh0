@@ -2,15 +2,23 @@ import {
   BadRequestException,
   ConflictException,
   Injectable,
+  NotFoundException,
 } from '@nestjs/common';
 import slugify from 'slugify';
 
 import { uploadFile } from '../../config';
+import { Prisma } from '../../generated/prisma/client';
 import { PrismaService } from '../../prisma/prisma.service';
+import { ListResponse } from '../../types/api.types';
 
 import { CreateRoomTypeDto } from './dto/create-room-type.dto';
+import { RoomTypeQueryDto } from './dto/room-type-query.dto';
 import { ROOM_TYPE_ERROR_MSG } from './room-types.constants';
-import { CreateRoomTypeResponse } from './room-types.types';
+import {
+  CreateRoomTypeResponse,
+  RoomTypeDetailsResponse,
+  RoomTypeListItemResponse,
+} from './room-types.types';
 
 @Injectable()
 export class RoomTypesService {
@@ -90,5 +98,137 @@ export class RoomTypesService {
       });
       return roomType;
     });
+  }
+
+  async findAll(
+    query: RoomTypeQueryDto,
+  ): Promise<ListResponse<RoomTypeListItemResponse>> {
+    const { search, isActive, maxGuests, page, limit } = query;
+
+    const where: Prisma.RoomTypeWhereInput = {
+      isActive: isActive,
+      ...(search && {
+        OR: [
+          { name: { contains: search, mode: 'insensitive' } },
+          { slug: { contains: search, mode: 'insensitive' } },
+          { description: { contains: search, mode: 'insensitive' } },
+        ],
+      }),
+      ...(maxGuests && {
+        maxGuests: {
+          gte: maxGuests,
+        },
+      }),
+    };
+
+    const [roomTypes, total] = await this.prismaService.$transaction([
+      this.prismaService.roomType.findMany({
+        where,
+        select: {
+          id: true,
+          name: true,
+          maxGuests: true,
+          basePrice: true,
+          slug: true,
+          isActive: true,
+          sizeSqFt: true,
+          bedType: true,
+          images: {
+            select: {
+              id: true,
+              url: true,
+              altText: true,
+            },
+            where: { isPrimary: true },
+            take: 1,
+          },
+          _count: {
+            select: {
+              rooms: true,
+            },
+          },
+        },
+      }),
+
+      this.prismaService.roomType.count({
+        where,
+      }),
+    ]);
+
+    const items = roomTypes.map((roomType) => {
+      return {
+        id: roomType.id,
+        name: roomType.name,
+        maxGuests: roomType.maxGuests,
+        basePrice: roomType.basePrice,
+        slug: roomType.slug,
+        isActive: roomType.isActive,
+        sizeSqFt: roomType.sizeSqFt || null,
+        bedType: roomType.bedType,
+        totalRooms: roomType._count.rooms,
+        image: roomType.images[0] ?? null,
+      };
+    });
+
+    return {
+      data: items,
+      meta: {
+        page,
+        limit,
+        total,
+      },
+    };
+  }
+
+  async findOne(id: string): Promise<RoomTypeDetailsResponse> {
+    const roomType = await this.prismaService.roomType.findUnique({
+      where: { id },
+      select: {
+        id: true,
+        name: true,
+        slug: true,
+        description: true,
+        sizeSqFt: true,
+        maxGuests: true,
+        basePrice: true,
+        bedType: true,
+        bedCount: true,
+        smokingAllowed: true,
+        petsAllowed: true,
+        createdAt: true,
+        updatedAt: true,
+        adults: true,
+        children: true,
+        currency: true,
+        isActive: true,
+        images: {
+          select: {
+            id: true,
+            url: true,
+            altText: true,
+          },
+        },
+        amenities: {
+          select: { id: true, name: true, icon: true },
+        },
+        _count: {
+          select: {
+            rooms: true,
+          },
+        },
+      },
+    });
+
+    if (!roomType) {
+      throw new NotFoundException(ROOM_TYPE_ERROR_MSG.ROOM_TYPE_NOT_FOUND);
+    }
+
+    return {
+      ...roomType,
+      images: roomType.images,
+      amenities: roomType.amenities,
+      totalRooms: roomType._count.rooms,
+      _count: undefined,
+    };
   }
 }
