@@ -8,7 +8,7 @@ import { UserDetails } from './users.types';
 export class UsersService {
   constructor(private readonly prismaService: PrismaService) {}
 
-  async getOne(userId: string): Promise<UserDetails> {
+  async findOne(userId: string): Promise<UserDetails> {
     const user = await this.prismaService.user.findUnique({
       where: { id: userId },
       select: {
@@ -17,7 +17,7 @@ export class UsersService {
         email: true,
         phone: true,
         role: true,
-        profileImage: {
+        profile: {
           select: {
             id: true,
             url: true,
@@ -45,7 +45,7 @@ export class UsersService {
       ...(user.staff?.category && {
         category: user.staff.category,
       }),
-      profileImage: user.profileImage,
+      profile: user.profile,
     };
   }
 }

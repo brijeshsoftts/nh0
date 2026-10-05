@@ -5,33 +5,24 @@ import {
 } from '@nestjs/common';
 
 import { PrismaService } from '../../prisma/prisma.service';
+import { ListResponse } from '../../types/api.types';
 
 import { CreateAmenityDto } from './dto/create-amenity.dto';
+import { FindAmenitiesQueryDto } from './dto/find-amenities-query.dto';
 import { UpdateAmenityDto } from './dto/update-amenity.dto';
 import { AMENITIES_ERROR_MSG } from './amenities.constants';
-import {
-  AmenityListItemResponse,
-  CreateAmenityResponse,
-  UpdateAmenityResponse,
-} from './amenities.types';
+import { Amenity } from './amenities.types';
 
 @Injectable()
 export class AmenitiesService {
   constructor(private readonly prismaService: PrismaService) {}
 
-  async create(dto: CreateAmenityDto): Promise<CreateAmenityResponse> {
+  async create(dto: CreateAmenityDto): Promise<void> {
     try {
-      return await this.prismaService.amenity.create({
+      await this.prismaService.amenity.create({
         data: dto,
         select: {
           id: true,
-          name: true,
-          description: true,
-          icon: true,
-          category: true,
-          isActive: true,
-          createdAt: true,
-          updatedAt: true,
         },
       });
     } catch (error) {
@@ -47,28 +38,46 @@ export class AmenitiesService {
     }
   }
 
-  async findAll(): Promise<AmenityListItemResponse[]> {
-    return await this.prismaService.amenity.findMany({
-      orderBy: { name: 'asc' },
-      select: {
-        id: true,
-        name: true,
-        description: true,
-        icon: true,
-        category: true,
-        isActive: true,
-        createdAt: true,
-        updatedAt: true,
-      },
-    });
+  async findAll(query: FindAmenitiesQueryDto): Promise<ListResponse<Amenity>> {
+    const { search, page, limit } = query;
+    const where = {
+      ...(search && {
+        OR: [
+          { name: { contains: search, mode: 'insensitive' as const } },
+          { description: { contains: search, mode: 'insensitive' as const } },
+        ],
+      }),
+    };
+
+    const [data, total] = await this.prismaService.$transaction([
+      this.prismaService.amenity.findMany({
+        where,
+        skip: (page - 1) * limit,
+        take: limit,
+        orderBy: { name: 'asc' },
+        select: {
+          id: true,
+          name: true,
+          description: true,
+          icon: true,
+          category: true,
+          isActive: true,
+          createdAt: true,
+          updatedAt: true,
+        },
+      }),
+      this.prismaService.amenity.count({ where }),
+    ]);
+
+    return {
+      data,
+      meta: { page, limit, total },
+    };
   }
 
-  async update(
-    id: string,
-    dto: UpdateAmenityDto,
-  ): Promise<UpdateAmenityResponse> {
+  async update(id: string, dto: UpdateAmenityDto): Promise<void> {
     try {
-      return await this.prismaService.amenity.update({
+      await this.prismaService.amenity.update({
         where: { id },
         data: dto,
         select: {

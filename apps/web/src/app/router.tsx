@@ -10,6 +10,7 @@ import IssuesPage from "@/pages/protect/Issues";
 import NewBookingPage from "@/pages/protect/NewBooking";
 import PaymentsPage from "@/pages/protect/Payments";
 import ProfilePage from "@/pages/protect/Profile";
+import PRoomsPage from "@/pages/protect/Rooms";
 import StaffPage from "@/pages/protect/Staff";
 import TasksPage from "@/pages/protect/Tasks";
 import AboutPage from "@/pages/public/About";
@@ -34,7 +35,7 @@ export const router = createBrowserRouter([
       { index: true, element: <DashboardPage /> },
       { path: "staff", element: <StaffPage /> },
       { path: "customers", element: <CustomersPage /> },
-      { path: "rooms", element: <RoomsPage /> },
+      { path: "rooms", element: <PRoomsPage /> },
       { path: "bookings", element: <BookingsPage /> },
       { path: "bookings/new", element: <NewBookingPage /> },
       { path: "issues", element: <IssuesPage /> },

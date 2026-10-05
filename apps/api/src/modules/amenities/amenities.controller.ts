@@ -8,18 +8,27 @@ import {
   Param,
   Patch,
   Post,
+  Query,
   UseGuards,
 } from '@nestjs/common';
 
 import { Roles } from '../../common/decorators';
 import { AuthGuard, RoleGuard } from '../../common/guards';
-import { apiMessageResponse, apiResponse } from '../../common/helpers';
+import {
+  apiListResponse,
+  apiMessageResponse,
+  apiResponse,
+} from '../../common/helpers';
 import { ValidationPipe } from '../../common/pipes';
 
 import {
   CreateAmenityDto,
   CreateAmenitySchema,
 } from './dto/create-amenity.dto';
+import {
+  FindAmenitiesQueryDto,
+  FindAmenitiesQuerySchema,
+} from './dto/find-amenities-query.dto';
 import {
   UpdateAmenityDto,
   UpdateAmenitySchema,
@@ -44,9 +53,12 @@ export class AmenitiesController {
 
   @Get()
   @HttpCode(HttpStatus.OK)
-  async findAll() {
-    const data = await this.amenitiesService.findAll();
-    return apiResponse({ data });
+  async findAll(
+    @Query(new ValidationPipe(FindAmenitiesQuerySchema))
+    query: FindAmenitiesQueryDto,
+  ) {
+    const { data, meta } = await this.amenitiesService.findAll(query);
+    return apiListResponse({ data, meta });
   }
 
   @UseGuards(AuthGuard, RoleGuard)

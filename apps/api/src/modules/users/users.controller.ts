@@ -19,8 +19,8 @@ export class UsersController {
 
   @Get('me')
   @HttpCode(HttpStatus.OK)
-  async getOne(@CurrentUser('id') userId: string) {
-    const data = await this.usersService.getOne(userId);
+  async findOne(@CurrentUser('id') userId: string) {
+    const data = await this.usersService.findOne(userId);
     return apiResponse({ data });
   }
 }

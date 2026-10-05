@@ -7,7 +7,7 @@ export type UserDetails = {
   phone: string;
   role: UserRole;
   category?: Category;
-  profileImage: {
+  profile: {
     id: string;
     url: string;
     altText: string | null;

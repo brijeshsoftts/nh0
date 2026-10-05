@@ -144,23 +144,23 @@ enum NotificationType {
 // ==========================================
 
 model User {
-  id             String    @id @default(cuid())
-  fullName       String
-  email          String    @unique
-  phone          String
-  passwordHash   String
-  profileImageId String?
-  profileImage   Image?    @relation(fields: [profileImageId], references: [id])
-  role           UserRole
-  isActive       Boolean   @default(true)
-  lastLoginAt    DateTime?
-  createdAt      DateTime  @default(now())
-  updatedAt      DateTime  @updatedAt
-  softDeletedAt  DateTime?
+  id            String    @id @default(cuid())
+  fullName      String
+  email         String    @unique
+  phone         String
+  passwordHash  String
+  profileId     String?
+  profile       Image?    @relation(fields: [profileId], references: [id])
+  role          UserRole
+  isActive      Boolean   @default(true)
+  lastLoginAt   DateTime?
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+  softDeletedAt DateTime?
 
   staff                  Staff?
-  customerProfile        Customer?
-  customerBookings       Booking[]                   @relation("BookingCustomer")
+  customer               Customer?
+  bookings               Booking[]                   @relation("BookingCustomer")
   createdBookings        Booking[]                   @relation("BookingCreatedBy")
   housekeepingTasks      HousekeepingTask[]          @relation("HousekeeperTasks")
   housekeeperAssignments HousekeeperRoomAssignment[] @relation("Housekeeper")
@@ -306,9 +306,9 @@ model Booking {
   creator       User           @relation("BookingCreatedBy", fields: [createdBy], references: [id])
   bookingRooms  BookingRoom[]
   bookingGuests BookingGuest[]
-  invoices      Invoice[]
-  payments      Payment[]
-  review        Review?
+
+  invoice Invoice?
+  review  Review?
 }
 
 model BookingRoom {
@@ -327,8 +327,8 @@ model BookingGuest {
   id            String  @id @default(cuid())
   bookingId     String
   fullName      String
-  age           Int
-  gender        String
+  age           Int?
+  gender        String?
   idProofNumber String?
 
   booking Booking @relation(fields: [bookingId], references: [id], onDelete: Cascade)
@@ -369,7 +369,7 @@ model HousekeeperRoomAssignment {
 model Invoice {
   id             String        @id @default(cuid())
   invoiceNumber  String        @unique
-  bookingId      String
+  bookingId      String        @unique
   customerId     String
   subtotal       Int
   taxAmount      Int
@@ -399,7 +399,6 @@ model Payment {
   createdAt        DateTime      @default(now()) @db.Timestamp
 
   invoice  Invoice @relation(fields: [invoiceId], references: [id])
-  booking  Booking @relation(fields: [bookingId], references: [id])
   customer User    @relation("PaymentCustomer", fields: [customerId], references: [id])
   recorder User?   @relation("PaymentRecordedBy", fields: [recordedBy], references: [id])
 }

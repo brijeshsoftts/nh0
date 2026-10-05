@@ -5,7 +5,7 @@ export const MOCK_USER: User = {
   fullName: "John Doe",
   email: "john@example.com",
   phone: "123-456-7890",
-  role: "STAFF",
+  role: "ADMIN",
   category: "HOUSEKEEPER",
   avatar: {
     id: "u1p",
