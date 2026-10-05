@@ -1,10 +1,10 @@
 import type {
   BookingStatus,
+  Gender,
   InvoiceStatus,
   PaymentMethod,
   PaymentStatus,
 } from "@/types/enum.types";
-import type { Gender } from "./components/BookingDetailsSheet";
 
 export interface BookingDetailsCustomer {
   id: string;

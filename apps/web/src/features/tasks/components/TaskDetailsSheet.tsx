@@ -84,7 +84,7 @@ export function TaskDetailsSheet({
     <Sheet open={open} onOpenChange={onOpenChange}>
       <SheetContent
         side="right"
-        className="flex w-full flex-col gap-0 p-0 sm:max-w-xl"
+        className="flex w-full min-w-80 flex-col gap-0 p-0 sm:min-w-120"
       >
         {/* Header */}
         <SheetHeader className="border-b px-5 py-4 sm:px-6">
@@ -323,11 +323,6 @@ export function TaskDetailsSheet({
             {/* Metadata */}
             <Section icon={Clock3} title="Details">
               <div className="rounded-lg border p-3">
-                <DetailRow
-                  label="Task ID"
-                  value={<span className="font-mono text-xs">{task.id}</span>}
-                />
-
                 <DetailRow
                   label="Created"
                   value={formatDate(task.createdAt, "dd MMM, yyyy")}

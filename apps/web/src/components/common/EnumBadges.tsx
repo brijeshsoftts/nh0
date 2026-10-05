@@ -2,6 +2,7 @@ import React from "react";
 
 import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
+import type { BookingStatus } from "@/types/enum.types";
 
 // 1. Format helper to convert 'OUT_OF_ORDER' to 'Out Of Order'
 const formatEnumText = (text: string) => {
@@ -121,17 +122,9 @@ export const HousekeepingBadge = ({
   value: "CLEAN" | "DIRTY" | "CLEANING";
 }) => <EnumBadge value={value} />;
 
-export const BookingBadge = ({
-  value,
-}: {
-  value:
-    | "PENDING"
-    | "CONFIRMED"
-    | "CHECKED_IN"
-    | "CHECKED_OUT"
-    | "CANCELLED"
-    | "NO_SHOW";
-}) => <EnumBadge value={value} />;
+export const BookingBadge = ({ value }: { value: BookingStatus }) => (
+  <EnumBadge value={value} />
+);
 
 export const TaskTypeBadge = ({
   value,
