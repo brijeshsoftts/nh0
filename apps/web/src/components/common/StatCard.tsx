@@ -1,4 +1,4 @@
-import type { ComponentType, ReactNode } from "react";
+import type { ReactNode } from "react";
 import { Link } from "react-router-dom";
 import { motion } from "framer-motion";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -139,7 +139,7 @@ export interface StatCard {
   description: string | ReactNode;
   icon: string;
   link?: string;
-  tone?: Tone | string;
+  tone?: Tone;
 }
 
 export function StatCard({
@@ -159,7 +159,7 @@ export function StatCard({
       transition={{ type: "spring", stiffness: 400, damping: 25 }}
     >
       <Link
-        to={link || "#"}
+        to={link ? `/dashboard/${link}` : "#"}
         className="block rounded-lg outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background"
       >
         <Card
