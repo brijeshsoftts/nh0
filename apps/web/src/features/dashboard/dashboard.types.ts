@@ -1,4 +1,10 @@
-import type { BookingStatus } from "@/types/enum.types";
+import type {
+  BookingStatus,
+  HousekeepingStatus,
+  OccupancyStatus,
+  TaskStatus,
+  TaskType,
+} from "@/types/enum.types";
 
 export interface TodaysArrival {
   booking: {

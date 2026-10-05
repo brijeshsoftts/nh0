@@ -3,7 +3,10 @@ import type { StatCard } from "@/components/common/StatCard";
 import type { TrendChart } from "./components/TrendChart";
 import type { StatusBarChart } from "./components/StatusBarChart";
 import type { TodaysArrival, TodaysDeparture } from "./dashboard.types";
+import type { DonutChartData } from "./components/DonutChart";
+import type { HousekeeperRoom } from "../rooms/rooms.types";
 
+// MANAGEMENT MOCK DATA
 export const MANAGEMENT_STAT: StatCard[] = [
   {
     id: "occupancy",
@@ -45,7 +48,6 @@ export const MANAGEMENT_STAT: StatCard[] = [
 
 export const TODAYS_ARRIVALS: TodaysArrival[] = [
   {
-    id: "arrival-001",
     booking: {
       id: "booking-1001",
       bookingReference: "BK-2026-1001",
@@ -59,7 +61,6 @@ export const TODAYS_ARRIVALS: TodaysArrival[] = [
     status: "CONFIRMED",
   },
   {
-    id: "arrival-002",
     booking: {
       id: "booking-1002",
       bookingReference: "BK-2026-1002",
@@ -73,7 +74,6 @@ export const TODAYS_ARRIVALS: TodaysArrival[] = [
     status: "CONFIRMED",
   },
   {
-    id: "arrival-003",
     booking: {
       id: "booking-1003",
       bookingReference: "BK-2026-1003",
@@ -87,7 +87,6 @@ export const TODAYS_ARRIVALS: TodaysArrival[] = [
     status: "PENDING",
   },
   {
-    id: "arrival-004",
     booking: {
       id: "booking-1004",
       bookingReference: "BK-2026-1004",
@@ -101,7 +100,6 @@ export const TODAYS_ARRIVALS: TodaysArrival[] = [
     status: "CONFIRMED",
   },
   {
-    id: "arrival-005",
     booking: {
       id: "booking-1005",
       bookingReference: "BK-2026-1005",
@@ -237,5 +235,178 @@ export const ROOM_STATUS = [
   {
     status: "OUT_OF_ORDER",
     count: 3,
+  },
+];
+
+// STAFF MOCK DATA
+export const STAFF_STAT: StatCard[] = [
+  {
+    id: "todays-arrivals",
+    title: "Today's Arrivals",
+    value: "12",
+    description: "8 confirmed · 4 pending",
+    icon: "LogIn",
+    link: "/bookings?checkIn=today",
+    tone: "rose",
+  },
+  {
+    id: "todays-departures",
+    title: "Today's Departures",
+    value: "9",
+    description: "7 checked-in · 2 pending",
+    icon: "LogOut",
+    link: "/bookings?checkOut=today",
+    tone: "teal",
+  },
+  {
+    id: "available-rooms",
+    title: "Available Rooms",
+    value: "18",
+    description: "Ready for new bookings",
+    icon: "BedDouble",
+    link: "/rooms?status=available",
+    tone: "sky",
+  },
+  {
+    id: "pending-bookings",
+    title: "Pending Bookings",
+    value: "7",
+    description: "Require confirmation",
+    icon: "Clock",
+    link: "/bookings?status=pending",
+    tone: "violet",
+  },
+];
+
+// HOUSEKEEPER MOCK DATA
+export const HOUSEKEEPER_STAT: StatCard[] = [
+  {
+    id: "pending-tasks",
+    title: "My Pending Tasks",
+    value: "8",
+    description: "Tasks waiting to be completed",
+    icon: "ClipboardList",
+    link: "/housekeeping/tasks?status=pending",
+    tone: "emerald",
+  },
+  {
+    id: "in-progress",
+    title: "In Progress",
+    value: "2",
+    description: "Tasks currently being handled",
+    icon: "LoaderCircle",
+    link: "/housekeeping/tasks?status=in-progress",
+    tone: "gold",
+  },
+  {
+    id: "completed-today",
+    title: "Completed Today",
+    value: "6",
+    description: "Tasks completed today",
+    icon: "CircleCheck",
+    link: "/housekeeping/tasks?status=completed&date=today",
+    tone: "rose",
+  },
+  {
+    id: "dirty-rooms",
+    title: "Dirty Rooms",
+    value: "7",
+    description: "Rooms requiring cleaning",
+    icon: "BedDouble",
+    link: "/rooms?status=dirty",
+    tone: "sky",
+  },
+];
+
+export const TASKS_STATUS: DonutChartData[] = [
+  {
+    status: "Pending",
+    count: 12,
+  },
+  {
+    status: "In Progress",
+    count: 8,
+  },
+  {
+    status: "Completed",
+    count: 25,
+  },
+];
+
+export const TASK_TYPES_STATUS: DonutChartData[] = [
+  {
+    status: "Cleaning",
+    count: 18,
+  },
+  {
+    status: "Deep Clean",
+    count: 7,
+  },
+  {
+    status: "Turndown",
+    count: 12,
+  },
+];
+
+export const HOUSEKEEPER_ROOMS: HousekeeperRoom[] = [
+  {
+    id: "room-101",
+    name: "Deluxe King Room",
+    roomNumber: "101",
+    floor: 1,
+    occupancyStatus: "OCCUPIED",
+    housekeepingStatus: "CLEAN",
+    taskId: "cmjtask1025001",
+    isActive: true,
+    taskType: "CLEANING",
+    status: "COMPLETED",
+  },
+  {
+    id: "room-204",
+    name: "Superior Twin Room",
+    roomNumber: "204",
+    floor: 2,
+    occupancyStatus: "VACANT",
+    housekeepingStatus: "DIRTY",
+    isActive: true,
+    taskId: "cmjtask1025002",
+    taskType: "DEEP_CLEAN",
+    status: "PENDING",
+  },
+  {
+    id: "room-305",
+    name: "Deluxe Suite",
+    roomNumber: "305",
+    floor: 3,
+    occupancyStatus: "OCCUPIED",
+    housekeepingStatus: "CLEANING",
+    isActive: true,
+    taskId: "cmjtask1025003",
+    taskType: "TURNDOWN",
+    status: "IN_PROGRESS",
+  },
+  {
+    id: "room-412",
+    name: "Executive King Room",
+    roomNumber: "412",
+    floor: 4,
+    occupancyStatus: "RESERVED",
+    housekeepingStatus: "DIRTY",
+    isActive: true,
+    taskId: "cmjtask1025004",
+    taskType: "CLEANING",
+    status: "PENDING",
+  },
+  {
+    id: "room-508",
+    name: "Premium Suite",
+    roomNumber: "508",
+    floor: 5,
+    occupancyStatus: "OUT_OF_ORDER",
+    housekeepingStatus: "DIRTY",
+    isActive: false,
+    taskId: "cmjtask1025005",
+    taskType: "DEEP_CLEAN",
+    status: "PENDING",
   },
 ];

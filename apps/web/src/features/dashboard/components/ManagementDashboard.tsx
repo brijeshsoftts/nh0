@@ -37,7 +37,7 @@ function TodaysArrivals() {
     {
       key: "checkin",
       header: "Check In",
-      cell: (row) => row.checkInDate,
+      cell: (row) => formatDate(row.checkInDate, "dd MMM, yyyy"),
     },
     {
       key: "status",
