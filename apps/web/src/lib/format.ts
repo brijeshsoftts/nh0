@@ -30,3 +30,11 @@ export function getInitials(name?: string): string {
     .map((part) => part[0]?.toUpperCase() ?? "")
     .join("");
 }
+
+export function formatString(str?: string) {
+  if (!str) return "";
+  return str
+    .split("_")
+    .map((word: string) => word.charAt(0) + word.slice(1).toLowerCase())
+    .join(" ");
+}
