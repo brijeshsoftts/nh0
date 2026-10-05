@@ -93,6 +93,8 @@ export function DataTable<T extends Record<string, any>>({
   filters = [],
   onFilterChange,
   refetch,
+  onRowClick,
+  renderActions,
 }: DataTable<T>) {
   const [searchQuery, setSearchQuery] = React.useState("");
   const [filterValues, setFilterValues] = React.useState<
@@ -100,6 +102,7 @@ export function DataTable<T extends Record<string, any>>({
   >({});
   const [localPage, setLocalPage] = React.useState(1);
   const [pageSize, setPageSize] = React.useState(defaultPageSize);
+  const [selectRow, setSelectRow] = React.useState<T | null>(null);
 
   const handleSearch = (val: string) => {
     setSearchQuery(val);
@@ -141,257 +144,270 @@ export function DataTable<T extends Record<string, any>>({
     totalRecords
   );
 
+  const handleRowClick = (row: T) => {
+    onRowClick?.(row);
+    setSelectRow(row);
+  };
+
   return (
-    <div className="grid w-full overflow-hidden rounded-md border border-border bg-card text-card-foreground shadow-sm">
-      {/* Header Controls */}
-      <div className="flex flex-col justify-between gap-4 border-b border-border p-4 sm:px-6 sm:py-4 lg:flex-row lg:items-center">
-        <div>
-          {title && (
-            <h2 className="text-sm font-semibold text-foreground">{title}</h2>
-          )}
-          <p className="mt-0.5 text-xs text-muted-foreground">
-            {description ? description : `${data?.length} records`}
-          </p>
-        </div>
+    <>
+      <div className="grid w-full overflow-hidden rounded-md border border-border bg-card text-card-foreground shadow-sm">
+        {/* Header Controls */}
+        <div className="flex flex-col justify-between gap-4 border-b border-border p-4 sm:px-6 sm:py-4 lg:flex-row lg:items-center">
+          <div>
+            {title && (
+              <h2 className="text-sm font-semibold text-foreground">{title}</h2>
+            )}
+            <p className="mt-0.5 text-xs text-muted-foreground">
+              {description ? description : `${data?.length} records`}
+            </p>
+          </div>
 
-        <div className="flex max-w-full min-w-0 flex-wrap items-center gap-2.5 sm:flex-nowrap">
-          {/* Search Input */}
-          {showSearch && (
-            <div className="relative min-w-45 flex-1 shrink-0 sm:w-64">
-              <Search className="pointer-events-none absolute top-1/2 left-3 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
-              <Input
-                type="text"
-                value={searchQuery}
-                onChange={(e) => handleSearch(e.target.value)}
-                placeholder={searchPlaceholder}
-                className="w-full pl-9 text-xs whitespace-nowrap text-foreground transition-colors focus:ring-1 focus:ring-ring focus:outline-none"
-              />
-            </div>
-          )}
+          <div className="flex max-w-full min-w-0 flex-wrap items-center gap-2.5 sm:flex-nowrap">
+            {/* Search Input */}
+            {showSearch && (
+              <div className="relative min-w-45 flex-1 shrink-0 sm:w-64">
+                <Search className="pointer-events-none absolute top-1/2 left-3 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+                <Input
+                  type="text"
+                  value={searchQuery}
+                  onChange={(e) => handleSearch(e.target.value)}
+                  placeholder={searchPlaceholder}
+                  className="w-full pl-9 text-xs whitespace-nowrap text-foreground transition-colors focus:ring-1 focus:ring-ring focus:outline-none"
+                />
+              </div>
+            )}
 
-          {/* Filters */}
-          {filters.length > 0 && (
-            <div className="flex w-full flex-wrap items-center gap-2 sm:w-auto">
-              {filters.map((filter) => (
-                <Select
-                  key={filter.key}
-                  value={filterValues[filter.key] || "All"}
-                  onValueChange={(value) =>
-                    handleFilterSelect(filter.key, value)
-                  }
-                >
-                  <SelectTrigger className="h-10 min-w-35 border-border/70 bg-background shadow-none transition-colors hover:bg-muted/50">
-                    <SelectValue placeholder={filter.placeholder} />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value={"All"}>All {filter.label}</SelectItem>
-                    {filter.options.map((option) => (
-                      <SelectItem
-                        key={option.value.toString()}
-                        value={option.value.toString()}
-                      >
-                        {option.label.charAt(0).toUpperCase() +
-                          option.label.slice(1).toLowerCase()}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              ))}
-            </div>
-          )}
-        </div>
-      </div>
-
-      {/* Table Section */}
-      <div className="overflow-hidden">
-        <div className="overflow-x-auto">
-          <Table className="w-full min-w-full text-left text-xs whitespace-nowrap">
-            <TableHeader>
-              <TableRow className="bg-muted/50">
-                {columns.map((col, idx) => (
-                  <TableHead
-                    key={idx}
-                    className={cn(
-                      "px-4 py-3 text-[11px] font-semibold tracking-wider whitespace-nowrap text-muted-foreground uppercase",
-                      col.align === "right"
-                        ? "text-right"
-                        : col.align === "center"
-                          ? "text-center"
-                          : "text-left",
-                      col.className
-                    )}
+            {/* Filters */}
+            {filters.length > 0 && (
+              <div className="flex w-full flex-wrap items-center gap-2 sm:w-auto">
+                {filters.map((filter) => (
+                  <Select
+                    key={filter.key}
+                    value={filterValues[filter.key] || "All"}
+                    onValueChange={(value) =>
+                      handleFilterSelect(filter.key, value)
+                    }
                   >
-                    {col.header}
-                  </TableHead>
+                    <SelectTrigger className="h-10 min-w-35 border-border/70 bg-background shadow-none transition-colors hover:bg-muted/50">
+                      <SelectValue placeholder={filter.placeholder} />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value={"All"}>All {filter.label}</SelectItem>
+                      {filter.options.map((option) => (
+                        <SelectItem
+                          key={option.value.toString()}
+                          value={option.value.toString()}
+                        >
+                          {option.label.charAt(0).toUpperCase() +
+                            option.label.slice(1).toLowerCase()}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
                 ))}
-              </TableRow>
-            </TableHeader>
+              </div>
+            )}
+          </div>
+        </div>
 
-            <TableBody className="divide-y">
-              {isLoading ? (
-                <TableRow>
-                  <TableCell colSpan={columns.length}>
-                    <div className="mx-auto flex h-40 items-center justify-center">
-                      <Spinner className="size-8" />
-                    </div>
-                  </TableCell>
+        {/* Table Section */}
+        <div className="overflow-hidden">
+          <div className="overflow-x-auto">
+            <Table className="w-full min-w-full text-left text-xs whitespace-nowrap">
+              <TableHeader>
+                <TableRow className="bg-muted/50">
+                  {columns.map((col, idx) => (
+                    <TableHead
+                      key={idx}
+                      className={cn(
+                        "px-4 py-3 text-[11px] font-semibold tracking-wider whitespace-nowrap text-muted-foreground uppercase",
+                        col.align === "right"
+                          ? "text-right"
+                          : col.align === "center"
+                            ? "text-center"
+                            : "text-left",
+                        col.className
+                      )}
+                    >
+                      {col.header}
+                    </TableHead>
+                  ))}
                 </TableRow>
-              ) : isError ? (
-                <TableRow>
-                  <TableCell
-                    colSpan={columns.length}
-                    className="h-32 text-center"
-                  >
-                    <div className="flex h-40 flex-col items-center justify-center gap-2 text-destructive">
-                      <AlertCircle className="h-6 w-6" />
-                      <p className="mt-2 text-sm font-medium">{errorMessage}</p>
-                      <Button
-                        type="button"
-                        onClick={refetch}
-                        variant="destructive"
-                      >
-                        Try Again
-                      </Button>
-                    </div>
-                  </TableCell>
-                </TableRow>
-              ) : data.length === 0 ? (
-                <TableRow>
-                  <TableCell
-                    colSpan={columns.length}
-                    className="h-32 text-center"
-                  >
-                    <div className="flex flex-col items-center justify-center gap-2 text-muted-foreground">
-                      <Inbox className="h-6 w-6" />
-                      <p className="text-sm font-medium">{emptyMessage}</p>
-                    </div>
-                  </TableCell>
-                </TableRow>
-              ) : (
-                data?.map((row, rowIndex) => (
-                  <TableRow
-                    key={rowIndex}
-                    className="border-b border-border/65 transition-colors hover:bg-muted/50"
-                  >
-                    {columns.map((col, colIndex) => (
-                      <TableCell
-                        key={colIndex}
-                        className={cn(
-                          "px-4 py-4 text-sm",
-                          col.align === "right"
-                            ? "text-right"
-                            : col.align === "center"
-                              ? "text-center"
-                              : "text-left",
-                          col.className
-                        )}
-                      >
-                        {col.cell
-                          ? col.cell(row)
-                          : String(
-                              (row as Record<string, unknown>)[col.key] ?? ""
-                            )}
-                      </TableCell>
-                    ))}
+              </TableHeader>
+
+              <TableBody className="divide-y">
+                {isLoading ? (
+                  <TableRow>
+                    <TableCell colSpan={columns.length}>
+                      <div className="mx-auto flex h-40 items-center justify-center">
+                        <Spinner className="size-8" />
+                      </div>
+                    </TableCell>
                   </TableRow>
-                ))
-              )}
-            </TableBody>
-          </Table>
-        </div>
-      </div>
-
-      {/* Pagination Footer */}
-      {showPagination && (
-        <div className="flex flex-col items-center justify-between gap-4 border-t border-border px-6 py-4 text-xs sm:flex-row">
-          <div className="text-muted-foreground">
-            Showing {startRecord}–{endRecord} of {totalRecords} records
-          </div>
-
-          <div className="flex items-center gap-2">
-            {/* Page Size Selector */}
-            <div className="relative mr-2">
-              <select
-                value={pageSize}
-                onChange={(e) => {
-                  setPageSize(Number(e.target.value));
-                  handlePage(1);
-                }}
-                className="cursor-pointer appearance-none rounded-md border border-input bg-background py-1 pr-7 pl-2.5 text-foreground focus:ring-1 focus:ring-ring focus:outline-none"
-              >
-                {pageSizeOptions.map((option) => (
-                  <option key={option} value={option}>
-                    {option} / page
-                  </option>
-                ))}
-              </select>
-              <ChevronRight className="pointer-events-none absolute top-1/2 right-2 h-3.5 w-3.5 -translate-y-1/2 rotate-90 text-muted-foreground" />
-            </div>
-
-            {/* Previous Page Button */}
-            <button
-              type="button"
-              onClick={() => handlePage(Math.max(currentPage - 1, 1))}
-              disabled={currentPage <= 1}
-              className="rounded-md border border-input bg-background px-3 py-1 text-foreground transition-colors hover:bg-accent disabled:pointer-events-none disabled:opacity-50"
-            >
-              Previous
-            </button>
-
-            {/* Page Numbers */}
-            <div className="flex items-center gap-1">
-              {Array.from({ length: totalPages }, (_, i) => i + 1)
-                .filter((page) => {
-                  return (
-                    page === 1 ||
-                    page === totalPages ||
-                    Math.abs(page - currentPage) <= 1
-                  );
-                })
-                .reduce<(number | string)[]>((acc, page, index, arr) => {
-                  if (index > 0 && page - (arr[index - 1] as number) > 1) {
-                    acc.push("...");
-                  }
-                  acc.push(page);
-                  return acc;
-                }, [])
-                .map((page, idx) =>
-                  typeof page === "number" ? (
-                    <button
-                      key={page}
-                      type="button"
-                      onClick={() => handlePage(page)}
-                      className={`flex h-7 w-7 items-center justify-center rounded-md font-medium transition-colors ${
-                        currentPage === page
-                          ? "bg-primary text-primary-foreground"
-                          : "border border-input bg-background text-foreground hover:bg-accent"
-                      }`}
+                ) : isError ? (
+                  <TableRow>
+                    <TableCell
+                      colSpan={columns.length}
+                      className="h-32 text-center"
                     >
-                      {page}
-                    </button>
-                  ) : (
-                    <span
-                      key={`ellipsis-${idx}`}
-                      className="px-1 text-muted-foreground"
+                      <div className="flex h-40 flex-col items-center justify-center gap-2 text-destructive">
+                        <AlertCircle className="h-6 w-6" />
+                        <p className="mt-2 text-sm font-medium">
+                          {errorMessage}
+                        </p>
+                        <Button
+                          type="button"
+                          onClick={refetch}
+                          variant="destructive"
+                        >
+                          Try Again
+                        </Button>
+                      </div>
+                    </TableCell>
+                  </TableRow>
+                ) : data.length === 0 ? (
+                  <TableRow>
+                    <TableCell
+                      colSpan={columns.length}
+                      className="h-32 text-center"
                     >
-                      {page}
-                    </span>
-                  )
+                      <div className="flex flex-col items-center justify-center gap-2 text-muted-foreground">
+                        <Inbox className="h-6 w-6" />
+                        <p className="text-sm font-medium">{emptyMessage}</p>
+                      </div>
+                    </TableCell>
+                  </TableRow>
+                ) : (
+                  data?.map((row, rowIndex) => (
+                    <TableRow
+                      key={rowIndex}
+                      className={`border-b border-border/65 transition-colors hover:bg-muted/50 ${onRowClick && "cursor-pointer"} `}
+                      onClick={() => handleRowClick(row)}
+                    >
+                      {columns.map((col, colIndex) => (
+                        <TableCell
+                          key={colIndex}
+                          className={cn(
+                            "px-4 py-4 text-sm",
+                            col.align === "right"
+                              ? "text-right"
+                              : col.align === "center"
+                                ? "text-center"
+                                : "text-left",
+                            col.className
+                          )}
+                        >
+                          {col.cell
+                            ? col.cell(row)
+                            : String(
+                                (row as Record<string, unknown>)[col.key] ?? ""
+                              )}
+                        </TableCell>
+                      ))}
+                    </TableRow>
+                  ))
                 )}
-            </div>
-
-            {/* Next Page Button */}
-            <button
-              type="button"
-              onClick={() => handlePage(Math.min(currentPage + 1, totalPages))}
-              disabled={currentPage >= totalPages}
-              className="rounded-md border border-input bg-background px-3 py-1 text-foreground transition-colors hover:bg-accent disabled:pointer-events-none disabled:opacity-50"
-            >
-              Next
-            </button>
+              </TableBody>
+            </Table>
           </div>
         </div>
-      )}
-    </div>
+
+        {/* Pagination Footer */}
+        {showPagination && (
+          <div className="flex flex-col items-center justify-between gap-4 border-t border-border px-6 py-4 text-xs sm:flex-row">
+            <div className="text-muted-foreground">
+              Showing {startRecord}–{endRecord} of {totalRecords} records
+            </div>
+
+            <div className="flex items-center gap-2">
+              {/* Page Size Selector */}
+              <div className="relative mr-2">
+                <select
+                  value={pageSize}
+                  onChange={(e) => {
+                    setPageSize(Number(e.target.value));
+                    handlePage(1);
+                  }}
+                  className="cursor-pointer appearance-none rounded-md border border-input bg-background py-1 pr-7 pl-2.5 text-foreground focus:ring-1 focus:ring-ring focus:outline-none"
+                >
+                  {pageSizeOptions.map((option) => (
+                    <option key={option} value={option}>
+                      {option} / page
+                    </option>
+                  ))}
+                </select>
+                <ChevronRight className="pointer-events-none absolute top-1/2 right-2 h-3.5 w-3.5 -translate-y-1/2 rotate-90 text-muted-foreground" />
+              </div>
+
+              {/* Previous Page Button */}
+              <button
+                type="button"
+                onClick={() => handlePage(Math.max(currentPage - 1, 1))}
+                disabled={currentPage <= 1}
+                className="rounded-md border border-input bg-background px-3 py-1 text-foreground transition-colors hover:bg-accent disabled:pointer-events-none disabled:opacity-50"
+              >
+                Previous
+              </button>
+
+              {/* Page Numbers */}
+              <div className="flex items-center gap-1">
+                {Array.from({ length: totalPages }, (_, i) => i + 1)
+                  .filter((page) => {
+                    return (
+                      page === 1 ||
+                      page === totalPages ||
+                      Math.abs(page - currentPage) <= 1
+                    );
+                  })
+                  .reduce<(number | string)[]>((acc, page, index, arr) => {
+                    if (index > 0 && page - (arr[index - 1] as number) > 1) {
+                      acc.push("...");
+                    }
+                    acc.push(page);
+                    return acc;
+                  }, [])
+                  .map((page, idx) =>
+                    typeof page === "number" ? (
+                      <button
+                        key={page}
+                        type="button"
+                        onClick={() => handlePage(page)}
+                        className={`flex h-7 w-7 items-center justify-center rounded-md font-medium transition-colors ${
+                          currentPage === page
+                            ? "bg-primary text-primary-foreground"
+                            : "border border-input bg-background text-foreground hover:bg-accent"
+                        }`}
+                      >
+                        {page}
+                      </button>
+                    ) : (
+                      <span
+                        key={`ellipsis-${idx}`}
+                        className="px-1 text-muted-foreground"
+                      >
+                        {page}
+                      </span>
+                    )
+                  )}
+              </div>
+
+              {/* Next Page Button */}
+              <button
+                type="button"
+                onClick={() =>
+                  handlePage(Math.min(currentPage + 1, totalPages))
+                }
+                disabled={currentPage >= totalPages}
+                className="rounded-md border border-input bg-background px-3 py-1 text-foreground transition-colors hover:bg-accent disabled:pointer-events-none disabled:opacity-50"
+              >
+                Next
+              </button>
+            </div>
+          </div>
+        )}
+      </div>
+      {renderActions && selectRow && renderActions(selectRow)}
+    </>
   );
 }

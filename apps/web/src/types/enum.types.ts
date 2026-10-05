@@ -39,6 +39,8 @@ export type PaymentMethod = "CASH" | "ONLINE";
 
 export type PaymentStatus = "PENDING" | "COMPLETED" | "FAILED" | "REFUNDED";
 
+export type Gender = "MALE" | "FEMALE" | "OTHER";
+
 export type IssueCategory =
   | "PLUMBING"
   | "ELECTRICAL"

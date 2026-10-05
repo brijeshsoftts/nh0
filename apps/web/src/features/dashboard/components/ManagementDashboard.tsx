@@ -14,6 +14,8 @@ import {
   TODAYS_ARRIVALS,
   TODAYS_DEPARTURES,
 } from "../dashboard.mock";
+import { BookingDetailsSheet } from "@/features/bookings/components/BookingDetailsSheet";
+import { useState } from "react";
 
 function TodaysArrivals() {
   const columns: ColumnDef<TodaysArrival>[] = [
@@ -44,15 +46,29 @@ function TodaysArrivals() {
     },
   ];
 
+  const [isVisible, setIsVisible] = useState(false);
+
   return (
-    <DataTable
-      title="Today's Arrivals"
-      description="Guests scheduled to check in today"
-      data={TODAYS_ARRIVALS}
-      columns={columns}
-      showSearch={false}
-      showPagination={false}
-    />
+    <>
+      <DataTable
+        title="Today's Arrivals"
+        description="Guests scheduled to check in today"
+        data={TODAYS_ARRIVALS}
+        columns={columns}
+        showSearch={false}
+        showPagination={false}
+        onRowClick={() => setIsVisible(true)}
+        renderActions={(row) =>
+          isVisible && (
+            <BookingDetailsSheet
+              onOpenChange={() => setIsVisible(false)}
+              open={isVisible}
+              bookingId={row.booking.id}
+            />
+          )
+        }
+      />
+    </>
   );
 }
 
@@ -84,6 +100,7 @@ function TodaysDepartures() {
       cell: (row) => <BookingBadge value={row.status} />,
     },
   ];
+  const [isVisible, setIsVisible] = useState(false);
 
   return (
     <DataTable
@@ -93,6 +110,16 @@ function TodaysDepartures() {
       columns={columns}
       showSearch={false}
       showPagination={false}
+      onRowClick={() => setIsVisible(true)}
+      renderActions={(row) =>
+        isVisible && (
+          <BookingDetailsSheet
+            onOpenChange={() => setIsVisible(false)}
+            open={isVisible}
+            bookingId={row.booking.id}
+          />
+        )
+      }
     />
   );
 }
