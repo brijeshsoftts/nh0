@@ -1,15 +1,6 @@
-import { StatCard } from "@/components/common/StatCard";
-import {
-  HOUSEKEEPER_ROOMS,
-  HOUSEKEEPER_STAT,
-  TASK_TYPES_STATUS,
-  TASKS_STATUS,
-} from "../dashboard.mock";
-import { DonutChart } from "./DonutChart";
-import { StatusBarChart } from "./StatusBarChart";
-import { DataTable, type ColumnDef } from "@/components/common/DataTable";
 import { useState } from "react";
-import type { HousekeeperRoom } from "@/features/rooms/rooms.types";
+
+import { type ColumnDef,DataTable } from "@/components/common/DataTable";
 import {
   HousekeepingBadge,
   OccupancyBadge,
@@ -17,7 +8,19 @@ import {
   TaskStatusBadge,
   TaskTypeBadge,
 } from "@/components/common/EnumBadges";
+import { StatCard } from "@/components/common/StatCard";
+import type { HousekeeperRoom } from "@/features/rooms/rooms.types";
 import { TaskDetailsSheet } from "@/features/tasks/components/TaskDetailsSheet";
+
+import {
+  HOUSEKEEPER_ROOMS,
+  HOUSEKEEPER_STAT,
+  TASK_TYPES_STATUS,
+  TASKS_STATUS,
+} from "../dashboard.mock";
+
+import { DonutChart } from "./DonutChart";
+import { StatusBarChart } from "./StatusBarChart";
 
 function TodaysTasks() {
   const columns: ColumnDef<HousekeeperRoom>[] = [

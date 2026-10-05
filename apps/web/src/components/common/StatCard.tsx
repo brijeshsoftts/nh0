@@ -1,10 +1,11 @@
+import { motion } from "framer-motion";
+import { Sparkles } from "lucide-react";
 import type { ReactNode } from "react";
 import { Link } from "react-router-dom";
-import { motion } from "framer-motion";
+
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { cn } from "@/lib/utils";
 import { icons } from "@/constants/icons";
-import { Sparkles } from "lucide-react";
+import { cn } from "@/lib/utils";
 
 type Shape = "rings" | "blob" | "diamonds" | "dots" | "waves";
 

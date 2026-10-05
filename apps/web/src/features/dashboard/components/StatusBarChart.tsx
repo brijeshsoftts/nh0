@@ -1,10 +1,10 @@
 import { Bar, BarChart, CartesianGrid, XAxis, YAxis } from "recharts";
 
 import {
+  type ChartConfig,
   ChartContainer,
   ChartTooltip,
   ChartTooltipContent,
-  type ChartConfig,
 } from "@/components/ui/chart";
 import { formatString } from "@/lib/format";
 

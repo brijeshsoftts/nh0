@@ -1,9 +1,9 @@
-import { useAuth } from "@/hooks/useAuth";
 import { NoAccess } from "@/components/common/NoAccess";
 import { CustomerDashboard } from "@/features/dashboard/components/CustomerDashboard";
 import { HousekeeperDashboard } from "@/features/dashboard/components/HousekeeperDashboard";
 import { ManagementDashboard } from "@/features/dashboard/components/ManagementDashboard";
 import { ReceptionistDashboard } from "@/features/dashboard/components/ReceptionistDashboard";
+import { useAuth } from "@/hooks/useAuth";
 
 export default function DashboardPage() {
   const { user } = useAuth();

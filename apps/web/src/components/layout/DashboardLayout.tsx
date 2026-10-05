@@ -4,10 +4,10 @@ import { Link, Navigate, Outlet, useLocation } from "react-router-dom";
 
 import { useAuth } from "@/hooks/useAuth";
 
-import { SidebarProvider, SidebarTrigger } from "../ui/sidebar";
+import { DropdownProfile } from "../common/DropdownProfile";
 import { FullScreenLoader } from "../common/Loader";
 import { AppSidebar } from "../sidebar/AppSidebar";
-import { DropdownProfile } from "../common/DropdownProfile";
+import { SidebarProvider, SidebarTrigger } from "../ui/sidebar";
 
 export function DashboardLayout() {
   const { isLoading, isAuthenticated } = useAuth();

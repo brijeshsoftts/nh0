@@ -1,8 +1,9 @@
+import { Plus } from "lucide-react";
+
 import { Header } from "@/components/common/Header";
 import { StatCard } from "@/components/common/StatCard";
 import { Button } from "@/components/ui/button";
 import { MOCK_STAFF_KPIS } from "@/features/staff/staff.mock";
-import { Plus } from "lucide-react";
 
 export default function StaffPage() {
   return (

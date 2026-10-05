@@ -1,5 +1,5 @@
-import { cn } from "@/lib/utils";
 import { goldHairline } from "@/lib/ui";
+import { cn } from "@/lib/utils";
 
 type SectionHeadingProps = {
   title: string;

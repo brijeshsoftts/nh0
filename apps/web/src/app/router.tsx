@@ -1,23 +1,21 @@
 import { createBrowserRouter } from "react-router-dom";
 
-import { PublicLayout } from "@/components/layout/PublicLayout";
 import { DashboardLayout } from "@/components/layout/DashboardLayout";
-
-import LandingPage from "@/pages/public/Landing";
-import AboutPage from "@/pages/public/About";
-import ContactPage from "@/pages/public/Contact";
-import RoomsPage from "@/pages/public/Rooms";
-
-import DashboardPage from "@/pages/protect/Dashboard";
+import { PublicLayout } from "@/components/layout/PublicLayout";
+import AuditLogsPage from "@/pages/protect/AuditLogs";
 import BookingsPage from "@/pages/protect/Bookings";
 import CustomersPage from "@/pages/protect/Customers";
+import DashboardPage from "@/pages/protect/Dashboard";
 import IssuesPage from "@/pages/protect/Issues";
 import NewBookingPage from "@/pages/protect/NewBooking";
 import PaymentsPage from "@/pages/protect/Payments";
 import ProfilePage from "@/pages/protect/Profile";
-import TasksPage from "@/pages/protect/Tasks";
-import AuditLogsPage from "@/pages/protect/AuditLogs";
 import StaffPage from "@/pages/protect/Staff";
+import TasksPage from "@/pages/protect/Tasks";
+import AboutPage from "@/pages/public/About";
+import ContactPage from "@/pages/public/Contact";
+import LandingPage from "@/pages/public/Landing";
+import RoomsPage from "@/pages/public/Rooms";
 
 export const router = createBrowserRouter([
   {

@@ -1,4 +1,3 @@
-import { Link } from "react-router-dom";
 import {
   Ban,
   BedDouble,
@@ -7,13 +6,14 @@ import {
   CigaretteOff,
   CircleCheck,
   CircleX,
+  type LucideIcon,
   Maximize2,
   PawPrint,
   RotateCw,
   Users,
   X,
-  type LucideIcon,
 } from "lucide-react";
+import { Link } from "react-router-dom";
 
 import { Button } from "@/components/ui/button";
 import {
@@ -24,13 +24,13 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { Skeleton } from "@/components/ui/skeleton";
-
+import { MOCK_ROOM } from "@/features/public/public.mock";
 import { getAmenityIcon } from "@/lib/amenity-icons";
 import { formatBed, formatPrice } from "@/lib/format";
 import { goldButton, goldHairline, goldIcon, goldIconBox } from "@/lib/ui";
 import { cn } from "@/lib/utils";
+
 import { RoomGallery } from "./RoomGallery";
-import { MOCK_ROOM } from "@/features/public/public.mock";
 
 /* ------------------------------ Small parts ------------------------------ */
 

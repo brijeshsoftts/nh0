@@ -3,10 +3,10 @@ import { Quote, Star } from "lucide-react";
 import { SectionHeading } from "@/components/common/SectionHeading";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Card } from "@/components/ui/card";
-
 import { getInitials } from "@/lib/format";
 import { goldIcon } from "@/lib/ui";
 import { cn } from "@/lib/utils";
+
 import { TESTIMONIALS } from "../public.mock";
 
 function Stars({ rating }: { rating: number }) {

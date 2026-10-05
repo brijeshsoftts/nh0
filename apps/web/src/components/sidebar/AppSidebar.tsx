@@ -18,9 +18,11 @@ import {
   RECEPTIONIST_PAGES,
 } from "@/constants/page";
 import { useAuth } from "@/hooks/useAuth";
-import { Logo } from "../common/Logo";
-import { NavMain } from "./NavMain";
 import { getInitials } from "@/lib/format";
+
+import { Logo } from "../common/Logo";
+
+import { NavMain } from "./NavMain";
 
 export function AppSidebar() {
   const navigate = useNavigate();

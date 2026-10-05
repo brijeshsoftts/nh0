@@ -1,5 +1,6 @@
-import type { NavItem, SocialLink } from "@/features/public/public.types";
 import { AArrowDown } from "lucide-react";
+
+import type { NavItem, SocialLink } from "@/features/public/public.types";
 
 export const NAV_ITEMS: NavItem[] = [
   { label: "Home", to: "/" },

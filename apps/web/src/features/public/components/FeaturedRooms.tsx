@@ -1,15 +1,14 @@
+import { ArrowRight, BedDouble } from "lucide-react";
 import { useState } from "react";
 import { Link } from "react-router-dom";
-import { ArrowRight, BedDouble } from "lucide-react";
 
+import { RoomCard, RoomCardSkeleton } from "@/components/common/RoomCard";
+import { RoomDetailsDialog } from "@/components/common/RoomDetailsDialog";
 import { SectionHeading } from "@/components/common/SectionHeading";
-
 import { Button } from "@/components/ui/button";
 import { goldIcon } from "@/lib/ui";
 import { cn } from "@/lib/utils";
 import type { AvailableRoomListItemResponse } from "@/types/room.types";
-import { RoomCard, RoomCardSkeleton } from "@/components/common/RoomCard";
-import { RoomDetailsDialog } from "@/components/common/RoomDetailsDialog";
 
 type FeaturedRoomsProps = {
   rooms: AvailableRoomListItemResponse[];

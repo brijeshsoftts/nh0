@@ -1,10 +1,11 @@
 import type { StatCard } from "@/components/common/StatCard";
 
-import type { TrendChart } from "./components/TrendChart";
-import type { StatusBarChart } from "./components/StatusBarChart";
-import type { TodaysArrival, TodaysDeparture } from "./dashboard.types";
-import type { DonutChartData } from "./components/DonutChart";
 import type { HousekeeperRoom } from "../rooms/rooms.types";
+
+import type { DonutChartData } from "./components/DonutChart";
+import type { StatusBarChart } from "./components/StatusBarChart";
+import type { TrendChart } from "./components/TrendChart";
+import type { TodaysArrival, TodaysDeparture } from "./dashboard.types";
 
 // MANAGEMENT MOCK DATA
 export const MANAGEMENT_STAT: StatCard[] = [

@@ -1,3 +1,4 @@
+import { formatDate } from "date-fns/format";
 import {
   CalendarDays,
   CheckCircle2,
@@ -11,20 +12,20 @@ import {
 } from "lucide-react";
 
 import {
+  HousekeepingBadge,
+  TaskStatusBadge,
+} from "@/components/common/EnumBadges";
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import { Separator } from "@/components/ui/separator";
+import {
   Sheet,
   SheetContent,
   SheetDescription,
   SheetHeader,
   SheetTitle,
 } from "@/components/ui/sheet";
-import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
-import { Separator } from "@/components/ui/separator";
-import {
-  HousekeepingBadge,
-  TaskStatusBadge,
-} from "@/components/common/EnumBadges";
-import { formatDate } from "date-fns/format";
+
 import { TASK_DETAILS } from "../tasks.mock";
 
 interface TaskDetailsSheetProps {

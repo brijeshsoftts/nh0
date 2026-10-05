@@ -1,7 +1,8 @@
 import { BadgeCheck, ConciergeBell, ShieldCheck } from "lucide-react";
 
-import { HERO_IMAGE } from "../public.mock";
 import { AvailabilitySearch } from "@/components/common/AvailabilitySearch";
+
+import { HERO_IMAGE } from "../public.mock";
 
 const TRUST_POINTS = [
   { icon: BadgeCheck, label: "Instant booking confirmation" },

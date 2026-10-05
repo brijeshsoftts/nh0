@@ -13,6 +13,9 @@ import {
 } from "lucide-react";
 import type { ReactNode } from "react";
 
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import { Separator } from "@/components/ui/separator";
 import {
   Sheet,
   SheetContent,
@@ -20,15 +23,12 @@ import {
   SheetHeader,
   SheetTitle,
 } from "@/components/ui/sheet";
-import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
-import { Separator } from "@/components/ui/separator";
-
 import type {
   BookingStatus,
   InvoiceStatus,
   PaymentStatus,
 } from "@/types/enum.types";
+
 import { BOOKING_DETAILS } from "../bookings.mock";
 
 interface BookingDetailsSheetProps {

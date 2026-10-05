@@ -3,13 +3,13 @@ import {
   CarFront,
   Coffee,
   ConciergeBell,
+  type LucideIcon,
   ShieldCheck,
   ShowerHead,
   Sparkles,
   Tv,
   Wifi,
   Zap,
-  type LucideIcon,
 } from "lucide-react";
 
 /**

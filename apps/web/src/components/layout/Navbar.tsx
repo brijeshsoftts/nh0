@@ -1,6 +1,6 @@
+import { CalendarCheck, Menu } from "lucide-react";
 import { useEffect, useState } from "react";
 import { Link, NavLink, useLocation } from "react-router-dom";
-import { CalendarCheck, Menu } from "lucide-react";
 
 import { Logo } from "@/components/common/Logo";
 import { Button } from "@/components/ui/button";
@@ -13,10 +13,9 @@ import {
   SheetTitle,
   SheetTrigger,
 } from "@/components/ui/sheet";
-
+import { NAV_ITEMS } from "@/constants/navigation";
 import { goldButton, goldHairline } from "@/lib/ui";
 import { cn } from "@/lib/utils";
-import { NAV_ITEMS } from "@/constants/navigation";
 
 export function Navbar() {
   const { pathname } = useLocation();

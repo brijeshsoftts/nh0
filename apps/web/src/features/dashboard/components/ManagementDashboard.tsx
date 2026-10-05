@@ -1,11 +1,11 @@
 import { formatDate } from "date-fns/format";
-import { StatCard } from "@/components/common/StatCard";
+import { useState } from "react";
+
+import { type ColumnDef,DataTable } from "@/components/common/DataTable";
 import { BookingBadge } from "@/components/common/EnumBadges";
-import { DataTable, type ColumnDef } from "@/components/common/DataTable";
-import { TrendChart } from "./TrendChart";
-import { StatusBarChart } from "./StatusBarChart";
-import { DonutChart } from "./DonutChart";
-import type { TodaysArrival, TodaysDeparture } from "../dashboard.types";
+import { StatCard } from "@/components/common/StatCard";
+import { BookingDetailsSheet } from "@/features/bookings/components/BookingDetailsSheet";
+
 import {
   BOOKING_STATUS,
   MANAGEMENT_STAT,
@@ -14,8 +14,11 @@ import {
   TODAYS_ARRIVALS,
   TODAYS_DEPARTURES,
 } from "../dashboard.mock";
-import { BookingDetailsSheet } from "@/features/bookings/components/BookingDetailsSheet";
-import { useState } from "react";
+import type { TodaysArrival, TodaysDeparture } from "../dashboard.types";
+
+import { DonutChart } from "./DonutChart";
+import { StatusBarChart } from "./StatusBarChart";
+import { TrendChart } from "./TrendChart";
 
 function TodaysArrivals() {
   const columns: ColumnDef<TodaysArrival>[] = [

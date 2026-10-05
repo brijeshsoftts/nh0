@@ -1,5 +1,5 @@
-import { useMemo, useState, type KeyboardEvent } from "react";
 import { BedDouble, ChevronLeft, ChevronRight } from "lucide-react";
+import { type KeyboardEvent,useMemo, useState } from "react";
 
 import { goldIcon } from "@/lib/ui";
 import { cn } from "@/lib/utils";

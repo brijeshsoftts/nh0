@@ -2,6 +2,8 @@ import { cn } from "cn";
 import { AlertCircle, ChevronRight, Inbox, Search } from "lucide-react";
 import * as React from "react";
 
+import type { Pagination } from "@/types/api.types";
+
 import { Button } from "../ui/button";
 import { Input } from "../ui/input";
 import {
@@ -20,7 +22,6 @@ import {
   TableHeader,
   TableRow,
 } from "../ui/table";
-import type { Pagination } from "@/types/api.types";
 
 export interface ColumnDef<T> {
   key: string;

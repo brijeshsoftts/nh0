@@ -1,11 +1,11 @@
-import { Link } from "react-router-dom";
 import { ArrowRight } from "lucide-react";
+import { Link } from "react-router-dom";
 
 import { SectionHeading } from "@/components/common/SectionHeading";
 import { Button } from "@/components/ui/button";
-
 import { goldIconBox } from "@/lib/ui";
 import { cn } from "@/lib/utils";
+
 import { AMENITIES } from "../public.mock";
 
 export function AmenitiesSection() {

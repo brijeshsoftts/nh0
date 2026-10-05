@@ -2,10 +2,9 @@ import { Link } from "react-router-dom";
 
 import { Logo } from "@/components/common/Logo";
 import { Separator } from "@/components/ui/separator";
-
+import { LEGAL_ITEMS, NAV_ITEMS, SOCIAL_LINKS } from "@/constants/navigation";
 import { goldHairline } from "@/lib/ui";
 import { cn } from "@/lib/utils";
-import { LEGAL_ITEMS, NAV_ITEMS, SOCIAL_LINKS } from "@/constants/navigation";
 
 const linkClass =
   "text-sm text-muted-foreground transition-colors hover:text-amber-600 dark:hover:text-amber-400";

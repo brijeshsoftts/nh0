@@ -1,6 +1,5 @@
 import {
   BedDouble,
-  Bell,
   CalendarCheck,
   CalendarPlus,
   CircleDollarSign,

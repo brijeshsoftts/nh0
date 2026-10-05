@@ -8,6 +8,7 @@ import {
   Wifi,
   Zap,
 } from "lucide-react";
+
 import type { AmenityHighlight, Testimonial } from "./public.types";
 
 export const HERO_IMAGE =

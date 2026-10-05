@@ -1,12 +1,11 @@
 import { CartesianGrid, Line, LineChart, XAxis, YAxis } from "recharts";
 
 import {
+  type ChartConfig,
   ChartContainer,
   ChartTooltip,
   ChartTooltipContent,
-  type ChartConfig,
 } from "@/components/ui/chart";
-
 import {
   Select,
   SelectContent,
