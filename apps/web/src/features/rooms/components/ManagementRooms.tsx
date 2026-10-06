@@ -1,20 +1,15 @@
 import { Plus } from "lucide-react";
-import { useState } from "react";
 
 import { StatCard } from "@/components/common/StatCard";
 import { Button } from "@/components/ui/button";
 
-import { AmenityGrid } from "../amenities/components/AmenityGrid";
 import { NewAmenityModal } from "../amenities/components/NewAmenityModal";
 import { ROOMS_STAT } from "../rooms/rooms.mock";
 import { CreateRoomTypeDialog } from "../roomTypes/components/CreateRoomTypeDialog";
-import { RoomTypeGrid } from "../roomTypes/components/RoomTypeGrid";
 
 import { TabList } from "./TabList";
 
 export function ManagementRooms() {
-  const [activeTab, setActiveTab] = useState("rooms");
-
   return (
     <>
       <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-4">
@@ -37,10 +32,7 @@ export function ManagementRooms() {
         </NewAmenityModal>
       </div>
 
-      <TabList value={activeTab} onValueChange={setActiveTab} />
-
-      {activeTab === "room-types" && <RoomTypeGrid />}
-      {activeTab === "amenities" && <AmenityGrid />}
+      <TabList />
     </>
   );
 }

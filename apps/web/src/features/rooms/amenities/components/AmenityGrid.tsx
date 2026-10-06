@@ -1,4 +1,4 @@
-import { Plus, Search, X } from "lucide-react";
+import { Search, X } from "lucide-react";
 import { useState } from "react";
 
 import { Pagination } from "@/components/common/Pagination";
@@ -9,7 +9,6 @@ import { useDebounce } from "@/hooks/useDebounce";
 import { useAmenities } from "../hooks/useAmenities";
 
 import { AmenityCard } from "./AmenityCard";
-import { NewAmenityModal } from "./NewAmenityModal";
 
 interface AmenitySearchProps {
   value: string;
@@ -44,12 +43,6 @@ function AmenitySearch({
           </Button>
         )}
       </div>
-      <NewAmenityModal>
-        <Button>
-          <Plus className="size-4" />
-          New Amenity
-        </Button>
-      </NewAmenityModal>
     </div>
   );
 }
