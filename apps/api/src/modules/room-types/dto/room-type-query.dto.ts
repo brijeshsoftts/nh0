@@ -6,7 +6,6 @@ export const RoomTypeQuerySchema = z
     search: z
       .string('Search must be text')
       .trim()
-      .min(1, 'Search cannot be empty')
       .max(100, 'Search must be 100 characters or fewer')
       .optional(),
     isActive: z

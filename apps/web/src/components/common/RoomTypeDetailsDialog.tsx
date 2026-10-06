@@ -24,7 +24,8 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { Skeleton } from "@/components/ui/skeleton";
-import { roomTypeDetails } from "@/features/rooms/roomTypes/roomTypes.mock";
+import { useRoomType } from "@/features/rooms/roomTypes/hooks/useRoomType";
+// import { roomTypeDetails } from "@/features/rooms/roomTypes/roomTypes.mock";
 import type { RoomTypeDetails } from "@/features/rooms/roomTypes/roomTypes.types";
 import { useAuth } from "@/hooks/useAuth";
 import { getAmenityIcon } from "@/lib/amenity-icons";
@@ -184,7 +185,7 @@ function RoomContent({ room }: { room: RoomTypeDetails }) {
         <div className="lg:sticky lg:top-0 lg:self-start">
           <RoomGallery
             key={room.id}
-            images={room.images}
+            images={room?.images}
             roomName={room.name}
           />
         </div>
@@ -231,7 +232,7 @@ function RoomContent({ room }: { room: RoomTypeDetails }) {
             />
           </section>
 
-          {room.amenities.length > 0 && (
+          {room.amenities?.length > 0 && (
             <section className="space-y-4">
               <SectionTitle>Amenities</SectionTitle>
               <ul className="grid gap-x-6 gap-y-3 min-[480px]:grid-cols-2">
@@ -292,6 +293,7 @@ function BookingBar({
   onClose: () => void;
 }) {
   const { user } = useAuth();
+
   return (
     <div className="flex items-center justify-between gap-4 border-t bg-card/95 px-5 py-4 pb-[max(1rem,env(safe-area-inset-bottom))] backdrop-blur sm:px-8">
       <div>
@@ -359,13 +361,9 @@ type RoomTypeDetailsDialogProps = {
 export function RoomTypeDetailsDialog({
   open,
   onOpenChange,
+  slug,
 }: RoomTypeDetailsDialogProps) {
-  const { room, isLoading, isError, refetch } = {
-    room: roomTypeDetails,
-    isLoading: false,
-    isError: false,
-    refetch: () => {},
-  };
+  const { roomType, isLoading, isError, refetch } = useRoomType(slug);
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
@@ -386,12 +384,12 @@ export function RoomTypeDetailsDialog({
           </DialogClose>
         </div>
 
-        {isLoading || (!room && !isError) ? <LoadingState /> : null}
+        {isLoading || (!roomType && !isError) ? <LoadingState /> : null}
         {isError ? <ErrorState onRetry={refetch} /> : null}
-        {room ? (
+        {roomType ? (
           <>
-            <RoomContent room={room} />
-            <BookingBar room={room} onClose={() => onOpenChange(false)} />
+            <RoomContent room={roomType} />
+            <BookingBar room={roomType} onClose={() => onOpenChange(false)} />
           </>
         ) : null}
       </DialogContent>

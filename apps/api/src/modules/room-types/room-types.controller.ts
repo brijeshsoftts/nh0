@@ -60,10 +60,10 @@ export class RoomTypesController {
   }
 
   @Roles('ADMIN', 'MANAGER', 'STAFF')
-  @Get(':id')
+  @Get(':slug')
   @HttpCode(HttpStatus.OK)
-  async findOne(@Param('id') id: string) {
-    const data = await this.roomTypesService.findOne(id);
+  async findOne(@Param('slug') slug: string) {
+    const data = await this.roomTypesService.findOne(slug);
     return apiResponse({ data });
   }
 }

@@ -8,12 +8,6 @@ export type Image = {
   sortOrder: number;
 };
 
-export type Amenity = {
-  id: string;
-  name: string;
-  icon: string | null;
-};
-
 export type RoomTypeBase = {
   id: string;
   name: string;
@@ -23,44 +17,98 @@ export type RoomTypeBase = {
   isActive: boolean;
 };
 
-export type CreateRoomTypeResponse = RoomTypeBase & {
+export type CreateRoomType = RoomTypeBase & {
   createdAt: Date;
 };
 
-export type RoomTypeListItemResponse = RoomTypeBase & {
-  sizeSqFt: number | null;
-  bedType: BedType;
-  basePrice: number;
-  totalRooms: number;
-  image: {
-    id: string;
+type Amenity = {
+  name: string;
+  icon: string | null;
+};
+
+export type RoomType = {
+  id: string;
+  name: string;
+  slug: string;
+  primaryImage: {
     url: string;
     altText: string | null;
   } | null;
-};
-
-export type RoomTypeDetailsResponse = RoomTypeBase & {
-  description: string | null;
-  sizeSqFt: number | null;
+  basePrice: number;
+  currency: string;
+  maxGuests: number;
   adults: number;
   children: number;
-  currency: string;
   bedType: BedType;
   bedCount: number;
-  smokingAllowed: boolean;
-  petsAllowed: boolean;
-  createdAt: Date | null;
-  updatedAt: Date | null;
-  totalRooms: number;
+  numberOfRooms: number;
+  amenities: Amenity[];
+  isActive: boolean;
+};
+
+export type RoomTypeDetails = {
+  id: string;
+
+  // Images
   images: {
     id: string;
     url: string;
     altText: string | null;
+    isPrimary: boolean;
+    sortOrder: number;
   }[];
-  amenities: {
-    id: string;
-    name: string;
-    icon: string | null;
-  }[];
-  _count: undefined;
+
+  // Basic information
+  name: string;
+  slug: string;
+  description: string | null;
+
+  // Size & occupancy
+  sizeSqFt: number | null;
+  maxGuests: number;
+  adults: number;
+  children: number;
+
+  // Pricing
+  basePrice: number;
+  currency: string;
+
+  // Bed
+  bedType: BedType;
+  bedCount: number;
+
+  // Policies
+  smokingAllowed: boolean;
+  petsAllowed: boolean;
+
+  // Status
+  isActive: boolean;
+
+  // Amenities
+  amenities: Amenity[];
+
+  // Rooms
+  roomCount: number;
+  roomStatusSummary: {
+    total: number;
+    active: number;
+
+    occupancy: {
+      available: number;
+      occupied: number;
+      other: number;
+    };
+
+    housekeeping: {
+      clean: number;
+      dirty: number;
+      inspected: number;
+      inProgress: number;
+      other: number;
+    };
+  };
+
+  // Audit
+  createdAt: Date;
+  updatedAt: Date;
 };

@@ -7,9 +7,8 @@ import { Input } from "@/components/ui/input";
 import { useDebounce } from "@/hooks/useDebounce";
 
 import { useRoomTypes } from "../hooks/useRoomTypes";
-import { roomTypes } from "../roomTypes.mock";
 
-import { CreateRoomTypeDialog } from "./CreateRoomTypeDialog";
+// import { roomTypes } from "../roomTypes.mock";
 import { RoomTypeCard } from "./RoomTypeCard";
 
 interface AmenitySearchProps {
@@ -45,8 +44,6 @@ function AmenitySearch({
           </Button>
         )}
       </div>
-
-      <CreateRoomTypeDialog />
     </div>
   );
 }
@@ -55,7 +52,7 @@ export function RoomTypeGrid() {
   const [search, setSearch] = useState("");
   const [page, setPage] = useState(1);
   const query = useDebounce(search, 500);
-  const { pagination } = useRoomTypes({
+  const { pagination, items } = useRoomTypes({
     search: query,
     page,
   });
@@ -64,7 +61,7 @@ export function RoomTypeGrid() {
     <>
       <AmenitySearch value={search} onChange={setSearch} />
       <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 md:grid-cols-2 xl:grid-cols-3">
-        {roomTypes.map((roomType) => (
+        {items.map((roomType) => (
           <RoomTypeCard key={roomType.id} roomType={roomType} />
         ))}
       </div>

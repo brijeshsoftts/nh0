@@ -5,14 +5,14 @@ import type {
   ListParams,
 } from "@/types/api.types";
 
-import type { CreateRoomTypeInput } from "./roomTypes.schema";
-import type { RoomType } from "./roomTypes.types";
+import type { CreateRoomType } from "./schemas/createRoomType.schema";
+import type { RoomType, RoomTypeDetails } from "./roomTypes.types";
 
-function toRoomTypeFormData(data: CreateRoomTypeInput) {
+function toRoomTypeFormData(data: CreateRoomType) {
   const formData = new FormData();
 
   formData.append("name", data.name);
-  formData.append("description", data.description);
+  formData.append("description", data.description!);
   if (data.sizeSqFt !== undefined) {
     formData.append("sizeSqFt", String(data.sizeSqFt));
   }
@@ -25,7 +25,7 @@ function toRoomTypeFormData(data: CreateRoomTypeInput) {
   formData.append("bedCount", String(data.bedCount));
   formData.append("smokingAllowed", String(data.smokingAllowed));
   formData.append("petsAllowed", String(data.petsAllowed));
-  data.amenities.forEach((amenityId) =>
+  data.amenities.forEach((amenityId: string) =>
     formData.append("amenities", amenityId)
   );
 
@@ -38,7 +38,7 @@ function toRoomTypeFormData(data: CreateRoomTypeInput) {
 }
 
 export const roomTypesService = {
-  create: (data: CreateRoomTypeInput): Promise<ApiMessageResponse> =>
+  create: (data: CreateRoomType): Promise<ApiMessageResponse> =>
     apiClient
       .post("/room-types", toRoomTypeFormData(data))
       .then((response) => response.data),
@@ -46,4 +46,8 @@ export const roomTypesService = {
     apiClient.get("/room-types", { params }).then((response) => response.data),
   delete: (id: string): Promise<ApiMessageResponse> =>
     apiClient.delete(`/room-types/${id}`).then((response) => response.data),
+  findOne: (slug: string): Promise<RoomTypeDetails> =>
+    apiClient
+      .get(`/room-types/${slug}`)
+      .then((response) => response.data?.data),
 };

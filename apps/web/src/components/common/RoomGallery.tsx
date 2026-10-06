@@ -9,7 +9,7 @@ type RoomGalleryProps = {
   roomName: string;
 };
 
-export function RoomGallery({ images, roomName }: RoomGalleryProps) {
+export function RoomGallery({ images = [], roomName }: RoomGalleryProps) {
   const sorted = useMemo(
     () =>
       [...images].sort(
