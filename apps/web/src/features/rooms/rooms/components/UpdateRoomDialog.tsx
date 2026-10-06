@@ -16,7 +16,7 @@ import { Spinner } from "@/components/ui/spinner";
 
 import { housekeepingStatus, occupancyStatus } from "../../rooms.constants";
 import { useRoomTypes } from "../../roomTypes/hooks/useRoomTypes";
-import { useCreateRoomFacade } from "../hooks/useCreateRoom";
+import { useUpdateRoomFacade } from "../hooks/useUpdateRoom";
 import type { Room } from "../rooms.types";
 
 export function UpdateRoomDialog({
@@ -29,7 +29,7 @@ export function UpdateRoomDialog({
   room: Room;
 }) {
   const { handleSubmit, submit, register, errors, isPending, control } =
-    useCreateRoomFacade();
+    useUpdateRoomFacade(room.id);
   const { items } = useRoomTypes({ limit: 20 });
   const roomTypeOptions = items?.map((i) => ({
     id: i.id,

@@ -11,7 +11,7 @@ export function useProfile() {
   });
 
   return {
-    user: MOCK_USER ?? data,
+    user: data,
     isLoading,
     isError,
     refetch,

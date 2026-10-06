@@ -17,6 +17,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { useDebounce } from "@/hooks/useDebounce";
 
 import { AmenityGrid } from "../amenities/components/AmenityGrid";
 import { NewAmenityModal } from "../amenities/components/NewAmenityModal";
@@ -24,7 +25,8 @@ import { CreateRoomDialog } from "../rooms/components/CreateRoomDialog";
 import { UpdateRoomDialog } from "../rooms/components/UpdateRoomDialog";
 import { ViewRoomDialog } from "../rooms/components/ViewRoomDialog";
 import { useDeleteRoom } from "../rooms/hooks/useDeleteRoom";
-import { rooms, ROOMS_STAT } from "../rooms/rooms.mock";
+import { useRooms } from "../rooms/hooks/useRooms";
+import { ROOMS_STAT } from "../rooms/rooms.mock";
 import type { Room } from "../rooms/rooms.types";
 import { CreateRoomTypeDialog } from "../roomTypes/components/CreateRoomTypeDialog";
 import { RoomTypeGrid } from "../roomTypes/components/RoomTypeGrid";
@@ -130,13 +132,21 @@ function RoomTable() {
     },
   ];
 
+  const [search, setSearch] = useState<string | undefined>();
+  const [page, setPage] = useState<number>(1);
+  const query = useDebounce(search, 400);
+  const { items, pagination } = useRooms({ search: query, page });
+
   return (
     <>
       <DataTable
         title="Rooms"
         description="Manage rooms."
-        data={rooms}
+        data={items}
         columns={columns}
+        pagination={pagination}
+        onPageChange={setPage}
+        onSearchChange={setSearch}
         errorMessage="Something went wrong while loading customers."
         emptyMessage="Please add customers to your hotel."
       />

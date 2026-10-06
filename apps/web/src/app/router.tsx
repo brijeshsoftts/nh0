@@ -1,7 +1,9 @@
 import { createBrowserRouter } from "react-router-dom";
 
+import { AuthLayout } from "@/components/layout/AuthLayout";
 import { DashboardLayout } from "@/components/layout/DashboardLayout";
 import { PublicLayout } from "@/components/layout/PublicLayout";
+import LoginPage from "@/pages/auth/Login";
 import AuditLogsPage from "@/pages/protect/AuditLogs";
 import BookingsPage from "@/pages/protect/Bookings";
 import CustomersPage from "@/pages/protect/Customers";
@@ -19,6 +21,10 @@ import LandingPage from "@/pages/public/Landing";
 import RoomsPage from "@/pages/public/Rooms";
 
 export const router = createBrowserRouter([
+  {
+    element: <AuthLayout />,
+    children: [{ path: "/login", element: <LoginPage /> }],
+  },
   {
     element: <PublicLayout />,
     children: [

@@ -11,6 +11,7 @@ import {
   clearCookies,
   comparePassword,
   generateRandomStr,
+  // hashPassword,
   hashRandomStr,
   setCookies,
 } from '../../common/helpers';
@@ -27,8 +28,19 @@ export class AuthService {
   constructor(
     private readonly prismaService: PrismaService,
     private readonly jwtService: JwtService,
-  ) {}
-
+  ) {
+    // (async () => {
+    //   await this.prismaService.user.create({
+    //     data: {
+    //       fullName: 'Brijesh',
+    //       email: 'admin@duck.com',
+    //       passwordHash: await hashPassword('password'),
+    //       role: UserRole.ADMIN,
+    //       phone: '1234567890',
+    //     },
+    //   });
+    // })();
+  }
   async login(dto: LoginDto, res: Response): Promise<void> {
     const user = await this.prismaService.user.findFirst({
       where: {
