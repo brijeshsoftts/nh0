@@ -12,12 +12,7 @@ export interface ApiListResponse<T> {
 
 export interface ListResponse<T> {
   data: T;
-  meta: {
-    page: number;
-    limit: number;
-    total: number;
-    totalPages: number;
-  };
+  meta: Pagination;
 }
 
 export interface ApiResponse<T> {

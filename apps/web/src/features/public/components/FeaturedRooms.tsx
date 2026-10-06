@@ -3,7 +3,7 @@ import { useState } from "react";
 import { Link } from "react-router-dom";
 
 import { RoomCard, RoomCardSkeleton } from "@/components/common/RoomCard";
-import { RoomDetailsDialog } from "@/components/common/RoomDetailsDialog";
+import { RoomTypeDetailsDialog } from "@/components/common/RoomTypeDetailsDialog";
 import { SectionHeading } from "@/components/common/SectionHeading";
 import { Button } from "@/components/ui/button";
 import { goldIcon } from "@/lib/ui";
@@ -65,8 +65,8 @@ export function FeaturedRooms({
         )}
       </div>
 
-      <RoomDetailsDialog
-        slug={selectedSlug}
+      <RoomTypeDetailsDialog
+        slug={selectedSlug!}
         open={isDialogOpen}
         onOpenChange={setIsDialogOpen}
       />

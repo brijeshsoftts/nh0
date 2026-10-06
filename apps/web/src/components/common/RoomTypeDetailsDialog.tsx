@@ -24,10 +24,11 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { Skeleton } from "@/components/ui/skeleton";
-import { MOCK_ROOM } from "@/features/public/public.mock";
+import { roomTypeDetails } from "@/features/rooms/roomTypes/roomTypes.mock";
+import type { RoomTypeDetails } from "@/features/rooms/roomTypes/roomTypes.types";
+import { useAuth } from "@/hooks/useAuth";
 import { getAmenityIcon } from "@/lib/amenity-icons";
 import { formatBed, formatPrice } from "@/lib/format";
-import { goldButton, goldHairline, goldIcon, goldIconBox } from "@/lib/ui";
 import { cn } from "@/lib/utils";
 
 import { RoomGallery } from "./RoomGallery";
@@ -46,7 +47,7 @@ function Fact({
 }) {
   return (
     <div className="flex items-start gap-3 rounded-2xl border bg-muted/40 p-4">
-      <span className={cn(goldIconBox, "size-10 rounded-xl")}>
+      <span className="grid size-10 shrink-0 place-items-center rounded-xl bg-primary/10 text-primary ring-1 ring-primary/20">
         <Icon className="size-4" />
       </span>
       <div className="min-w-0">
@@ -73,7 +74,9 @@ function Rule({
       <span
         className={cn(
           "grid size-10 shrink-0 place-items-center rounded-xl",
-          allowed ? goldIconBox : "bg-muted text-muted-foreground"
+          allowed
+            ? "bg-primary/10 text-primary ring-1 ring-primary/20"
+            : "bg-muted text-muted-foreground"
         )}
       >
         <Icon className="size-4" />
@@ -92,8 +95,8 @@ function AvailabilityPill({ isAvailable }: { isAvailable: boolean }) {
       className={cn(
         "inline-flex items-center gap-1.5 rounded-full px-3 py-1 text-xs font-medium ring-1",
         isAvailable
-          ? "bg-emerald-500/15 text-emerald-700 ring-emerald-500/30 dark:text-emerald-300"
-          : "bg-rose-500/15 text-rose-700 ring-rose-500/30 dark:text-rose-300"
+          ? "bg-primary/10 text-primary ring-primary/30"
+          : "bg-destructive/10 text-destructive ring-destructive/30"
       )}
     >
       {isAvailable ? (
@@ -165,7 +168,8 @@ function ErrorState({ onRetry }: { onRetry: () => void }) {
 
 /* -------------------------------- Content -------------------------------- */
 
-function RoomContent({ room }: { room: any }) {
+function RoomContent({ room }: { room: RoomTypeDetails }) {
+  const isAvailable = room?.roomStatusSummary?.occupancy?.available > 0;
   const guestHint =
     room.children > 0
       ? `${room.adults} adults, ${room.children} ${room.children === 1 ? "child" : "children"}`
@@ -187,7 +191,7 @@ function RoomContent({ room }: { room: any }) {
 
         <div className="space-y-9 p-6 sm:p-8 lg:p-10">
           <header className="space-y-4 lg:pr-10">
-            <AvailabilityPill isAvailable={room.availability.isAvailable} />
+            <AvailabilityPill isAvailable={isAvailable} />
             <DialogTitle className="font-display text-4xl leading-tight font-medium text-balance sm:text-5xl">
               {room.name}
             </DialogTitle>
@@ -200,7 +204,7 @@ function RoomContent({ room }: { room: any }) {
             >
               {room.description ?? `Details for ${room.name}`}
             </DialogDescription>
-            <div aria-hidden className={cn("h-px w-full", goldHairline)} />
+            <div aria-hidden className="h-px w-full bg-border" />
           </header>
 
           <section
@@ -231,14 +235,14 @@ function RoomContent({ room }: { room: any }) {
             <section className="space-y-4">
               <SectionTitle>Amenities</SectionTitle>
               <ul className="grid gap-x-6 gap-y-3 min-[480px]:grid-cols-2">
-                {room.amenities.map((amenity: any) => {
+                {room.amenities.map((amenity) => {
                   const Icon = getAmenityIcon(amenity.icon);
                   return (
                     <li
-                      key={amenity.id}
+                      key={amenity.name}
                       className="flex items-center gap-3 text-sm"
                     >
-                      <Icon className={cn("size-4.5 shrink-0", goldIcon)} />
+                      <Icon className="size-4.5 shrink-0 text-primary" />
                       {amenity.name}
                     </li>
                   );
@@ -280,7 +284,14 @@ function RoomContent({ room }: { room: any }) {
   );
 }
 
-function BookingBar({ room, onClose }: { room: any; onClose: () => void }) {
+function BookingBar({
+  room,
+  onClose,
+}: {
+  room: RoomTypeDetails;
+  onClose: () => void;
+}) {
+  const { user } = useAuth();
   return (
     <div className="flex items-center justify-between gap-4 border-t bg-card/95 px-5 py-4 pb-[max(1rem,env(safe-area-inset-bottom))] backdrop-blur sm:px-8">
       <div>
@@ -304,11 +315,24 @@ function BookingBar({ room, onClose }: { room: any; onClose: () => void }) {
             Close
           </Button>
         </DialogClose>
-        {room.availability.isAvailable ? (
+        <Button
+          variant="outline"
+          size="lg"
+          className="hidden rounded-full sm:inline-flex"
+        >
+          Book Now
+        </Button>
+        {user?.role === "ADMIN" && (
           <Button
+            variant="outline"
             size="lg"
-            className={cn("rounded-full px-6 sm:px-8", goldButton)}
+            className="hidden rounded-full sm:inline-flex"
           >
+            Delete
+          </Button>
+        )}
+        {room.roomStatusSummary?.occupancy?.available > 0 ? (
+          <Button size="lg" className="rounded-full px-6 sm:px-8">
             <Link to={`/rooms/${room.slug}/book`} onClick={onClose}>
               <CalendarCheck className="size-4" />
               Book this room
@@ -326,18 +350,18 @@ function BookingBar({ room, onClose }: { room: any; onClose: () => void }) {
 
 /* --------------------------------- Dialog --------------------------------- */
 
-type RoomDetailsDialogProps = {
-  slug: string | null;
+type RoomTypeDetailsDialogProps = {
+  slug: string;
   open: boolean;
   onOpenChange: (open: boolean) => void;
 };
 
-export function RoomDetailsDialog({
+export function RoomTypeDetailsDialog({
   open,
   onOpenChange,
-}: RoomDetailsDialogProps) {
+}: RoomTypeDetailsDialogProps) {
   const { room, isLoading, isError, refetch } = {
-    room: MOCK_ROOM,
+    room: roomTypeDetails,
     isLoading: false,
     isError: false,
     refetch: () => {},
@@ -348,7 +372,7 @@ export function RoomDetailsDialog({
       <DialogContent
         // Full screen on phones, large centred modal from sm up.
         // The built-in close button is hidden in favour of the one below (it sits on photos).
-        className="flex h-svh w-full max-w-none flex-col gap-0 overflow-hidden rounded-none border-0 p-0 sm:h-auto sm:max-h-153.75 sm:max-w-6xl sm:rounded-3xl sm:border [&>button.absolute]:hidden"
+        className="h-svh w-full max-w-none flex-col gap-0 overflow-hidden rounded-none border-0 p-0 sm:h-auto sm:max-h-153.75 sm:max-w-6xl sm:rounded-3xl sm:border [&>button.absolute]:hidden"
       >
         <div className="absolute top-3 right-3 z-20 sm:top-4 sm:right-4">
           <DialogClose>

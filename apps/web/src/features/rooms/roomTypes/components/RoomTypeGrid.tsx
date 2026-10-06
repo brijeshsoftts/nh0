@@ -6,10 +6,10 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { useDebounce } from "@/hooks/useDebounce";
 
-import { useAmenities } from "../hooks/useAmenities";
+import { useRoomTypes } from "../hooks/useRoomTypes";
+import { roomTypes } from "../roomTypes.mock";
 
-import { AmenityCard } from "./AmenityCard";
-import { NewAmenityModal } from "./NewAmenityModal";
+import { RoomTypeCard } from "./RoomTypeCard";
 
 interface AmenitySearchProps {
   value: string;
@@ -44,21 +44,20 @@ function AmenitySearch({
           </Button>
         )}
       </div>
-      <NewAmenityModal>
-        <Button>
-          <Plus className="size-4" />
-          New Amenity
-        </Button>
-      </NewAmenityModal>
+
+      <Button>
+        <Plus className="size-4" />
+        New Room Type
+      </Button>
     </div>
   );
 }
 
-export function AmenityGrid() {
+export function RoomTypeGrid() {
   const [search, setSearch] = useState("");
   const [page, setPage] = useState(1);
   const query = useDebounce(search, 500);
-  const { items, pagination } = useAmenities({
+  const { pagination } = useRoomTypes({
     search: query,
     page,
   });
@@ -66,12 +65,12 @@ export function AmenityGrid() {
   return (
     <>
       <AmenitySearch value={search} onChange={setSearch} />
-      <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
-        {items?.map((a) => (
-          <AmenityCard amenity={a} key={a.id} />
+      <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 md:grid-cols-2 xl:grid-cols-3">
+        {roomTypes.map((roomType) => (
+          <RoomTypeCard key={roomType.id} roomType={roomType} />
         ))}
       </div>
-      <Pagination onPageChange={setPage} pagination={pagination!} />
+      <Pagination onPageChange={setPage} pagination={pagination} />
     </>
   );
 }

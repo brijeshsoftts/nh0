@@ -1,16 +1,15 @@
 import { BedDouble, ChevronLeft, ChevronRight } from "lucide-react";
-import { type KeyboardEvent,useMemo, useState } from "react";
+import { type KeyboardEvent, useMemo, useState } from "react";
 
-import { goldIcon } from "@/lib/ui";
+import type { RoomTypeDetails } from "@/features/rooms/roomTypes/roomTypes.types";
 import { cn } from "@/lib/utils";
 
 type RoomGalleryProps = {
-  images: any;
+  images: RoomTypeDetails["images"];
   roomName: string;
 };
 
 export function RoomGallery({ images, roomName }: RoomGalleryProps) {
-  // Primary image first, then by sortOrder.
   const sorted = useMemo(
     () =>
       [...images].sort(
@@ -25,8 +24,8 @@ export function RoomGallery({ images, roomName }: RoomGalleryProps) {
 
   if (!current) {
     return (
-      <div className="grid aspect-4/3 place-items-center bg-linear-to-br from-amber-100 to-stone-200 dark:from-stone-800 dark:to-stone-900">
-        <BedDouble className={cn("size-14", goldIcon)} />
+      <div className="grid aspect-4/3 place-items-center bg-muted">
+        <BedDouble className="size-14 text-muted-foreground" />
       </div>
     );
   }
@@ -45,7 +44,7 @@ export function RoomGallery({ images, roomName }: RoomGalleryProps) {
       aria-label={`${roomName} photos`}
       tabIndex={0}
       onKeyDown={handleKeyDown}
-      className="outline-none focus-visible:ring-2 focus-visible:ring-amber-500/60 focus-visible:ring-inset"
+      className="outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-inset"
     >
       <div className="relative aspect-4/3 overflow-hidden bg-muted">
         <img
@@ -65,7 +64,7 @@ export function RoomGallery({ images, roomName }: RoomGalleryProps) {
               type="button"
               onClick={() => go(index - 1)}
               aria-label="Previous photo"
-              className="absolute top-1/2 left-3 grid size-10 -translate-y-1/2 place-items-center rounded-full bg-black/45 text-white backdrop-blur-md transition hover:bg-black/65 focus-visible:ring-2 focus-visible:ring-amber-400 focus-visible:outline-none"
+              className="absolute top-1/2 left-3 grid size-10 -translate-y-1/2 place-items-center rounded-full bg-black/45 text-white backdrop-blur-md transition hover:bg-black/65 focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none"
             >
               <ChevronLeft className="size-5" />
             </button>
@@ -73,7 +72,7 @@ export function RoomGallery({ images, roomName }: RoomGalleryProps) {
               type="button"
               onClick={() => go(index + 1)}
               aria-label="Next photo"
-              className="absolute top-1/2 right-3 grid size-10 -translate-y-1/2 place-items-center rounded-full bg-black/45 text-white backdrop-blur-md transition hover:bg-black/65 focus-visible:ring-2 focus-visible:ring-amber-400 focus-visible:outline-none"
+              className="absolute top-1/2 right-3 grid size-10 -translate-y-1/2 place-items-center rounded-full bg-black/45 text-white backdrop-blur-md transition hover:bg-black/65 focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none"
             >
               <ChevronRight className="size-5" />
             </button>
@@ -97,15 +96,15 @@ export function RoomGallery({ images, roomName }: RoomGalleryProps) {
               aria-label={`Show photo ${i + 1}`}
               aria-current={i === index}
               className={cn(
-                "h-14 w-20 shrink-0 overflow-hidden rounded-lg transition focus-visible:ring-2 focus-visible:ring-amber-500 focus-visible:outline-none",
+                "h-14 w-20 shrink-0 overflow-hidden rounded-lg transition focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none",
                 i === index
-                  ? "ring-2 ring-amber-500 ring-offset-2 ring-offset-background"
+                  ? "ring-2 ring-primary ring-offset-2 ring-offset-background"
                   : "opacity-60 hover:opacity-100"
               )}
             >
               <img
                 src={image.url}
-                alt=""
+                alt={image.altText ?? roomName}
                 loading="lazy"
                 className="size-full object-cover"
               />
