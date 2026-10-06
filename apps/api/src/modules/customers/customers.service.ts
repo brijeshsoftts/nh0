@@ -10,8 +10,9 @@ import {
 import { hashPassword } from '../../common/helpers';
 import { uploadFile } from '../../config';
 import { PrismaService } from '../../prisma/prisma.service';
-import { KpiItem, ListResponse } from '../../types/api.types';
+import { ListResponse } from '../../types/api.types';
 import { BookingStatus, UserRole } from '../../types/prisma.types';
+import { StatItem } from '../../types/shared.types';
 
 import { CreateCustomerDto } from './dto/create-customer.dto';
 import { CustomersQueryDto } from './dto/customers-query.dto';
@@ -300,23 +301,27 @@ export class CustomersService {
     }
   }
 
-  async getStats(): Promise<KpiItem[]> {
+  async getStats(): Promise<StatItem[]> {
     const customerFilter = {
       role: UserRole.CUSTOMER,
       softDeletedAt: null,
     };
-    const [total, active, inactive, newCustomers] = await Promise.all([
+    const thirtyDaysAgo = new Date(Date.now() - 30 * 24 * 60 * 60 * 1000);
+    const [total, active, withActiveBooking, newCustomers] = await Promise.all([
       this.prismaService.user.count({ where: customerFilter }),
       this.prismaService.user.count({
         where: { ...customerFilter, isActive: true },
       }),
       this.prismaService.user.count({
-        where: { ...customerFilter, isActive: false },
+        where: {
+          ...customerFilter,
+          bookings: { some: { status: { in: ACTIVE_BOOKING_STATUSES } } },
+        },
       }),
       this.prismaService.user.count({
         where: {
           ...customerFilter,
-          createdAt: { gte: new Date(Date.now() - 7 * 24 * 60 * 60 * 1000) },
+          createdAt: { gte: thirtyDaysAgo },
         },
       }),
     ]);
@@ -326,29 +331,33 @@ export class CustomersService {
         id: 'total-customer',
         icon: 'Users',
         title: 'Total Customers',
-        value: total,
-        description: 'All registered customers',
+        value: total.toLocaleString(),
+        description: 'Registered customer accounts',
+        tone: 'gold',
       },
       {
         id: 'active-customer',
         icon: 'UserCheck',
         title: 'Active Customers',
-        value: active,
-        description: 'Currently active',
+        value: active.toLocaleString(),
+        description: 'Accounts currently active',
+        tone: 'emerald',
       },
       {
-        id: 'inactive-customer',
-        icon: 'UserX',
-        title: 'Inactive Customers',
-        value: inactive,
-        description: 'Currently inactive',
+        id: 'customers-with-active-bookings',
+        icon: 'CalendarCheck',
+        title: 'With Active Bookings',
+        value: withActiveBooking.toLocaleString(),
+        description: 'Pending, confirmed, or checked in',
+        tone: 'sky',
       },
       {
         id: 'new-customer',
         icon: 'UserPlus',
-        title: 'New Customers',
-        value: newCustomers,
-        description: 'Added in the last 7 days',
+        title: 'New This Month',
+        value: newCustomers.toLocaleString(),
+        description: 'Joined in the last 30 days',
+        tone: 'violet',
       },
     ];
   }

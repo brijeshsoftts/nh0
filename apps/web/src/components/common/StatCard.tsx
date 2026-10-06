@@ -7,6 +7,8 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { icons } from "@/constants/icons";
 import { cn } from "@/lib/utils";
 
+import { Skeleton } from "../ui/skeleton";
+
 type Shape = "rings" | "blob" | "diamonds" | "dots" | "waves";
 
 type Tone = "gold" | "emerald" | "sky" | "violet" | "rose" | "teal";
@@ -193,6 +195,45 @@ export function StatCard({
         </Card>
       </Link>
     </motion.div>
+  );
+}
+
+export function StatCardLoading() {
+  return (
+    <div
+      className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-4"
+      aria-busy="true"
+      aria-label="Loading customer statistics"
+    >
+      {Array.from({ length: 4 }, (_, index) => (
+        <div key={index} className="space-y-4 rounded-lg border bg-card p-6">
+          <div className="flex items-center justify-between">
+            <Skeleton className="h-4 w-28" />
+            <Skeleton className="size-8 rounded-md" />
+          </div>
+          <Skeleton className="h-8 w-20" />
+          <Skeleton className="h-3 w-36" />
+        </div>
+      ))}
+    </div>
+  );
+}
+
+export function StatCardError({ refetch }: { refetch: () => void }) {
+  return (
+    <div
+      role="alert"
+      className="flex items-center justify-between rounded-lg border border-destructive/30 bg-destructive/5 p-4 text-sm"
+    >
+      <span>Could not load customer statistics.</span>
+      <button
+        type="button"
+        onClick={() => refetch()}
+        className="font-medium text-primary underline underline-offset-4"
+      >
+        Try again
+      </button>
+    </div>
   );
 }
 

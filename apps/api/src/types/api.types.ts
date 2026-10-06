@@ -23,12 +23,3 @@ export interface ApiResponse<T> {
 }
 
 export type ApiMessageResponse = { message: string };
-
-export type KpiItem = {
-  id: string;
-  icon: string;
-  title: string;
-  value: string | number;
-  description: string;
-  link?: string;
-};
