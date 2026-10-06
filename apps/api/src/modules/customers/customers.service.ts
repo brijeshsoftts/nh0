@@ -174,6 +174,18 @@ export class CustomersService {
           select: {
             idProofNumber: true,
             address: true,
+            idProofImage: {
+              select: {
+                url: true,
+                altText: true,
+              },
+            },
+            signatureImage: {
+              select: {
+                url: true,
+                altText: true,
+              },
+            },
           },
         },
       },
@@ -197,6 +209,8 @@ export class CustomersService {
       lastLoginAt: customer.lastLoginAt,
       idProofNumber: customer.customer.idProofNumber,
       address: customer.customer.address,
+      idProof: customer.customer.idProofImage,
+      signature: customer.customer.signatureImage,
       profile: customer.profile,
     };
   }

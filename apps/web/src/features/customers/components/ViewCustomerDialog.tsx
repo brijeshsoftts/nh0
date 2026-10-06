@@ -90,7 +90,10 @@ export function ViewCustomerDialog({
               <TabsTrigger value="payments">Payments</TabsTrigger>
             </TabsList>
 
-            <TabsContent value="profile" className="mt-6 space-y-5">
+            <TabsContent
+              value="profile"
+              className="max-h-100 space-y-5 overflow-y-scroll py-6"
+            >
               <div className="flex items-center gap-4">
                 {customer.profile?.url ? (
                   <img
@@ -133,6 +136,24 @@ export function ViewCustomerDialog({
 
               <Separator />
 
+              <section aria-label="Customer documents" className="space-y-3">
+                <div>
+                  <h3 className="text-sm font-medium">Customer documents</h3>
+                  <p className="mt-1 text-sm text-muted-foreground">
+                    Uploaded ID proof and signature images.
+                  </p>
+                </div>
+                <div className="grid gap-4 sm:grid-cols-2">
+                  <CustomerDocument label="ID proof" image={customer.idProof} />
+                  <CustomerDocument
+                    label="Signature"
+                    image={customer.signature}
+                  />
+                </div>
+              </section>
+
+              <Separator />
+
               <div className="space-y-1">
                 <p className="text-sm font-medium text-muted-foreground">
                   Created
@@ -171,6 +192,42 @@ export function ViewCustomerDialog({
         id={customer.id}
       />
     </>
+  );
+}
+
+function CustomerDocument({
+  label,
+  image,
+}: {
+  label: string;
+  image: CustomerDetails["idProof"];
+}) {
+  return (
+    <figure className="overflow-hidden rounded-xl border bg-muted/20">
+      <figcaption className="border-b px-3 py-2 text-sm font-medium">
+        {label}
+      </figcaption>
+      {image?.url ? (
+        <a
+          href={image.url}
+          target="_blank"
+          rel="noreferrer"
+          aria-label={`Open ${label.toLowerCase()} image in a new tab`}
+          className="block p-2 focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none"
+        >
+          <img
+            src={image.url}
+            alt={image.altText ?? `${label} for customer`}
+            loading="lazy"
+            className="max-h-64 min-h-36 w-full rounded-lg object-contain"
+          />
+        </a>
+      ) : (
+        <div className="grid min-h-36 place-items-center p-4 text-sm text-muted-foreground">
+          No image uploaded
+        </div>
+      )}
+    </figure>
   );
 }
 

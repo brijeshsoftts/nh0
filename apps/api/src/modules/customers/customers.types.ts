@@ -25,6 +25,14 @@ export type CustomerDetails = {
   lastLoginAt: Date | null;
   idProofNumber: string;
   address: string;
+  idProof: {
+    url: string;
+    altText: string | null;
+  } | null;
+  signature: {
+    url: string;
+    altText: string | null;
+  } | null;
   profile: {
     url: string;
     altText: string | null;
