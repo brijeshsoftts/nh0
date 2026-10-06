@@ -1,4 +1,4 @@
-import { Plus, Search, X } from "lucide-react";
+import { Search, X } from "lucide-react";
 import { useState } from "react";
 
 import { Pagination } from "@/components/common/Pagination";
@@ -9,6 +9,7 @@ import { useDebounce } from "@/hooks/useDebounce";
 import { useRoomTypes } from "../hooks/useRoomTypes";
 import { roomTypes } from "../roomTypes.mock";
 
+import { CreateRoomTypeDialog } from "./CreateRoomTypeDialog";
 import { RoomTypeCard } from "./RoomTypeCard";
 
 interface AmenitySearchProps {
@@ -45,10 +46,7 @@ function AmenitySearch({
         )}
       </div>
 
-      <Button>
-        <Plus className="size-4" />
-        New Room Type
-      </Button>
+      <CreateRoomTypeDialog />
     </div>
   );
 }

@@ -67,12 +67,16 @@ export class RoomTypesService {
           name,
           slug,
           description: dto.description?.trim(),
+          sizeSqFt: dto.sizeSqFt ?? null,
           maxGuests: dto.maxGuests,
           basePrice: dto.basePrice,
+          currency: dto.currency,
           bedType: dto.bedType,
           adults: dto.adults,
           children: dto.children,
           bedCount: dto.bedCount,
+          smokingAllowed: dto.smokingAllowed,
+          petsAllowed: dto.petsAllowed,
           ...(dto.amenities?.length && {
             amenities: {
               connect: dto.amenities.map((id) => ({ id })),

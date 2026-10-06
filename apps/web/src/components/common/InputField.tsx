@@ -2,6 +2,7 @@ import { useId } from "react";
 
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { cn } from "@/lib/utils";
 
 type InputFieldProps = {
   label: string;
@@ -21,13 +22,14 @@ export function InputField({
   error,
   disabled,
   required,
+  className,
   ...props
 }: InputFieldProps) {
   const id = useId();
 
   return (
     <div className="space-y-1">
-      <div className="space-y-0.5">
+      <div className="space-y-1">
         <Label htmlFor={id}>{label}</Label>
 
         <Input
@@ -39,6 +41,7 @@ export function InputField({
           aria-invalid={!!error}
           aria-describedby={error ? `${id}-error` : undefined}
           disabled={disabled}
+          className={cn("h-10", className)}
           {...props}
         />
       </div>

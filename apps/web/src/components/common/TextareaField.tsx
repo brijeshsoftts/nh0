@@ -7,19 +7,19 @@ import { Textarea } from "../ui/textarea";
 
 type TextareaFieldProps = {
   label: string;
-  type?: React.HTMLInputTypeAttribute;
   placeholder?: string;
-  autoComplete?: string;
   error?: string;
   disabled?: boolean;
   required?: boolean;
   className?: string;
-};
+} & Omit<
+  React.ComponentPropsWithoutRef<"textarea">,
+  "className" | "disabled" | "placeholder" | "required"
+>;
 
 export function TextareaField({
   label,
   placeholder,
-  autoComplete,
   error,
   disabled,
   required,
@@ -37,7 +37,6 @@ export function TextareaField({
           id={id}
           required={required}
           placeholder={placeholder}
-          autoComplete={autoComplete}
           aria-invalid={!!error}
           aria-describedby={error ? `${id}-error` : undefined}
           disabled={disabled}
