@@ -12,6 +12,7 @@ import { env } from './config';
 import { PublicModule } from './modules/public/public.module';
 import { RoomsModule } from './modules/rooms/rooms.module';
 import { BookingsModule } from './modules/bookings/bookings.module';
+import { CustomersModule } from './modules/customers/customers.module';
 
 @Module({
   imports: [
@@ -28,6 +29,7 @@ import { BookingsModule } from './modules/bookings/bookings.module';
     PublicModule,
     RoomsModule,
     BookingsModule,
+    CustomersModule,
   ],
   controllers: [AppController],
   providers: [AppService],
