@@ -1,5 +1,5 @@
 import { cn } from "cn";
-import { AlertCircle, ChevronRight, Inbox, Search } from "lucide-react";
+import { AlertCircle, Inbox, Search } from "lucide-react";
 import * as React from "react";
 
 import type { Pagination } from "@/types/api.types";
@@ -80,7 +80,6 @@ export function DataTable<T extends Record<string, any>>({
   data = [],
   columns,
   searchPlaceholder = "Search...",
-  pageSizeOptions = [10, 25, 50],
   defaultPageSize = 10,
   onPageChange,
   showSearch = true,
@@ -102,7 +101,7 @@ export function DataTable<T extends Record<string, any>>({
     Record<string, string>
   >({});
   const [localPage, setLocalPage] = React.useState(1);
-  const [pageSize, setPageSize] = React.useState(defaultPageSize);
+  const [pageSize] = React.useState(defaultPageSize);
   const [selectRow, setSelectRow] = React.useState<T | null>(null);
 
   const handleSearch = (val: string) => {
@@ -322,25 +321,6 @@ export function DataTable<T extends Record<string, any>>({
             </div>
 
             <div className="flex items-center gap-2">
-              {/* Page Size Selector */}
-              <div className="relative mr-2">
-                <select
-                  value={pageSize}
-                  onChange={(e) => {
-                    setPageSize(Number(e.target.value));
-                    handlePage(1);
-                  }}
-                  className="cursor-pointer appearance-none rounded-md border border-input bg-background py-1 pr-7 pl-2.5 text-foreground focus:ring-1 focus:ring-ring focus:outline-none"
-                >
-                  {pageSizeOptions.map((option) => (
-                    <option key={option} value={option}>
-                      {option} / page
-                    </option>
-                  ))}
-                </select>
-                <ChevronRight className="pointer-events-none absolute top-1/2 right-2 h-3.5 w-3.5 -translate-y-1/2 rotate-90 text-muted-foreground" />
-              </div>
-
               {/* Previous Page Button */}
               <button
                 type="button"
