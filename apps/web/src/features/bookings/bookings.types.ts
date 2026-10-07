@@ -113,3 +113,57 @@ export interface BookingDetails {
 
   invoices: BookingDetailsInvoice[];
 }
+
+export type BookingGuestInput = {
+  fullName: string;
+  age: number;
+  gender: Gender;
+  idProofNumber?: string;
+};
+
+export type AvailableBookingRoom = {
+  id: string;
+  roomNumber: string;
+  floor: number;
+  roomName: string | null;
+  roomType: {
+    id: string;
+    name: string;
+    maxGuests: number;
+    basePrice: number;
+    currency: string;
+    bedType: string;
+    bedCount: number;
+    sizeSqFt: number | null;
+    image: { url: string; altText: string | null } | null;
+    amenities: { id: string; name: string; icon: string | null }[];
+  };
+};
+
+export type BookingAvailabilityParams = {
+  checkInDate: string;
+  checkOutDate: string;
+  adults: number;
+  children: number;
+};
+
+export type CreateBookingInput = BookingAvailabilityParams & {
+  customerId: string;
+  roomId: string;
+  guests: BookingGuestInput[];
+  specialRequest?: string;
+  paymentMethod: PaymentMethod;
+};
+
+export type CreateBookingResult = {
+  id: string;
+  bookingId: string;
+  bookingReference: string;
+  paymentMethod: PaymentMethod;
+  paymentStatus: PaymentStatus;
+  paymentReference: string;
+  subtotal: number;
+  taxAmount: number;
+  amount: number;
+  paymentMessage: string;
+};

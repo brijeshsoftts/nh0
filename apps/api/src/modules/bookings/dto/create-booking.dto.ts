@@ -1,104 +1,83 @@
 import { createZodDto } from 'nestjs-zod';
 import { z } from 'zod';
 
-const cuidSchema = z.string().cuid();
-
-const getToday = () => {
-  const today = new Date();
-  today.setHours(0, 0, 0, 0);
-  return today;
-};
-
-const getTomorrow = () => {
-  const tomorrow = getToday();
-  tomorrow.setDate(tomorrow.getDate() + 1);
-  return tomorrow;
-};
-
-export const guestSchema = z.object({
-  fullName: z
-    .string()
-    .trim()
-    .min(2, 'Guest name must be at least 2 characters long')
-    .max(100, 'Guest name must not exceed 100 characters'),
-
-  age: z
-    .number()
-    .int('Guest age must be a whole number')
-    .min(1, 'Guest age must be at least 1')
-    .max(120, 'Guest age must not exceed 120'),
-
-  gender: z.enum(['MALE', 'FEMALE', 'OTHER'], {
-    message: 'Please select a valid gender',
-  }),
-
-  idProofNumber: z
-    .string()
-    .trim()
-    .max(50, 'ID proof number must not exceed 50 characters')
-    .optional(),
-});
+export const guestSchema = z
+  .object({
+    fullName: z
+      .string()
+      .trim()
+      .min(1, 'Guest name is required')
+      .max(120, 'Guest name is too long'),
+    age: z.coerce
+      .number('Age must be a valid number')
+      .int('Age must be a whole number')
+      .min(1, 'Age must be at least 1')
+      .max(120, 'Age must be 120 or less'),
+    gender: z.enum(['MALE', 'FEMALE', 'OTHER']),
+    idProofNumber: z
+      .string()
+      .trim()
+      .max(50, 'ID proof number is too long')
+      .optional()
+      .transform((value) => (value && value.length > 0 ? value : undefined)),
+  })
+  .strict();
 
 export const CreateBookingSchema = z
   .object({
-    customerId: cuidSchema,
-    roomId: cuidSchema,
-    checkInDate: z.coerce.date({
-      message: 'Please provide a valid check-in date',
-    }),
-    checkOutDate: z.coerce.date({
-      message: 'Please provide a valid check-out date',
-    }),
-    totalGuests: z
-      .number()
-      .int('Total guests must be a whole number')
-      .min(1, 'Total guests must be at least 1'),
-    guests: z.array(guestSchema).optional(),
+    customerId: z.string().trim().min(1, 'Customer is required'),
+    checkInDate: z.coerce.date('Check-in date is required'),
+    checkOutDate: z.coerce.date('Check-out date is required'),
+    adults: z.coerce
+      .number('Adults must be a number')
+      .int('Adults must be a whole number')
+      .min(1, 'At least one adult is required')
+      .max(10, 'Maximum 10 adults allowed'),
+    children: z.coerce
+      .number('Children must be a number')
+      .int('Children must be a whole number')
+      .min(0, 'Children cannot be negative')
+      .max(10, 'Maximum 10 children allowed'),
+    roomId: z.string().trim().min(1, 'Room is required'),
+    guests: z.array(guestSchema).min(1, 'At least one guest is required'),
     specialRequest: z
       .string()
       .trim()
-      .max(500, 'Special request must not exceed 500 characters')
-      .optional(),
-    paymentMethod: z.enum(['CASH', 'ONLINE'], {
-      message: 'Please select a valid payment method',
-    }),
+      .max(500, 'Special request is too long')
+      .optional()
+      .transform((value) => (value && value.length > 0 ? value : undefined)),
+    paymentMethod: z.enum(['CASH', 'ONLINE']),
   })
-  .superRefine((data, ctx) => {
-    const today = getToday();
-    const tomorrow = getTomorrow();
+  .strict()
+  .superRefine(
+    ({ checkInDate, checkOutDate, adults, children, guests }, ctx) => {
+      const today = new Date();
+      today.setHours(0, 0, 0, 0);
 
-    if (data.checkInDate < today) {
-      ctx.addIssue({
-        code: 'custom',
-        path: ['checkInDate'],
-        message: 'Check-in date cannot be earlier than today',
-      });
-    }
+      if (checkInDate < today) {
+        ctx.addIssue({
+          code: 'custom',
+          path: ['checkInDate'],
+          message: 'Check-in cannot be in the past',
+        });
+      }
 
-    if (data.checkOutDate < tomorrow) {
-      ctx.addIssue({
-        code: 'custom',
-        path: ['checkOutDate'],
-        message: 'Check-out date must be at least tomorrow',
-      });
-    }
+      if (checkOutDate <= checkInDate) {
+        ctx.addIssue({
+          code: 'custom',
+          path: ['checkOutDate'],
+          message: 'Check-out must be after check-in',
+        });
+      }
 
-    if (data.checkOutDate <= data.checkInDate) {
-      ctx.addIssue({
-        code: 'custom',
-        path: ['checkOutDate'],
-        message: 'Check-out date must be after the check-in date',
-      });
-    }
-
-    if (data.guests && data.guests?.length !== data.totalGuests) {
-      ctx.addIssue({
-        code: 'custom',
-        path: ['guests'],
-        message:
-          'Number of guest details must match the total number of guests',
-      });
-    }
-  });
+      if (guests.length !== adults + children) {
+        ctx.addIssue({
+          code: 'custom',
+          path: ['guests'],
+          message: 'Guest count must match adults + children',
+        });
+      }
+    },
+  );
 
 export class CreateBookingDto extends createZodDto(CreateBookingSchema) {}

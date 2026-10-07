@@ -1,5 +1,6 @@
 import { Check } from "lucide-react";
 import type { ReactNode } from "react";
+import { useEffect, useState } from "react";
 
 import { InputField } from "@/components/common/InputField";
 import { TextareaField } from "@/components/common/TextareaField";
@@ -20,12 +21,32 @@ import { useCreateCustomerFacade } from "../hooks/useCreateCustomer";
 
 import { CustomerDocumentField } from "./CustomerDocumentField";
 
-export function CreateCustomerDialog({ children }: { children: ReactNode }) {
-  const { handleSubmit, submit, register, control, errors, isPending } =
-    useCreateCustomerFacade();
+export function CreateCustomerDialog({
+  children,
+  onCreated,
+}: {
+  children: ReactNode;
+  onCreated?: () => void;
+}) {
+  const [open, setOpen] = useState(false);
+  const {
+    handleSubmit,
+    submit,
+    register,
+    control,
+    errors,
+    isPending,
+    isSuccess,
+  } = useCreateCustomerFacade();
+
+  useEffect(() => {
+    if (!isSuccess) return;
+    onCreated?.();
+    setOpen(false);
+  }, [isSuccess, onCreated]);
 
   return (
-    <Dialog>
+    <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger>{children}</DialogTrigger>
       <DialogContent className="sm:max-w-120">
         <DialogHeader>

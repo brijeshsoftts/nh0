@@ -21,7 +21,7 @@ function useCreateCustomer() {
     onSuccess: (res) => {
       toast.success(res?.message || "Customer registered successfully.");
       queryClient.invalidateQueries({
-        queryKey: customersKeys.lists(),
+        queryKey: customersKeys.all,
       });
     },
     onError: notifyError,
