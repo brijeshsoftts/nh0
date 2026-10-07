@@ -1,15 +1,33 @@
-import { ArrowUpRight, CalendarDays, Plus, Users } from "lucide-react";
+import {
+  ArrowUpRight,
+  CalendarDays,
+  EllipsisVertical,
+  Eye,
+  Plus,
+  Users,
+} from "lucide-react";
 import { useState } from "react";
 import { Link } from "react-router-dom";
 
 import { type ColumnDef, DataTable } from "@/components/common/DataTable";
 import { BookingBadge, InvoiceBadge } from "@/components/common/EnumBadges";
+import { IconBtn } from "@/components/common/IconBtn";
 import { Button } from "@/components/ui/button";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 import { useDebounce } from "@/hooks/useDebounce";
 import type { BookingStatus } from "@/types/enum.types";
 
-import { useBookings } from "../hooks/useBookings";
 import type { BookingListItem } from "../bookings.types";
+import { getBookingStatusActions } from "../booking-status";
+import { BookingDetailsSheet } from "./BookingDetailsSheet";
+import { useBookings } from "../hooks/useBookings";
+import { useUpdateBookingStatus } from "../hooks/useUpdateBookingStatus";
 
 const BOOKING_STATUSES: BookingStatus[] = [
   "PENDING",
@@ -132,6 +150,12 @@ export function ManagementBooking() {
       header: "Status",
       cell: (booking) => <BookingBadge value={booking.status} />,
     },
+    {
+      key: "actions",
+      header: "Action",
+      align: "right",
+      cell: (booking) => <BookingRowActions booking={booking} />,
+    },
   ];
 
   return (
@@ -193,5 +217,60 @@ export function ManagementBooking() {
         emptyMessage="No bookings match these filters. Try another search or create a booking."
       />
     </main>
+  );
+}
+
+function BookingRowActions({ booking }: { booking: BookingListItem }) {
+  const [isDetailsOpen, setIsDetailsOpen] = useState(false);
+  const { mutate: updateStatus, isPending } = useUpdateBookingStatus();
+  const statusActions = getBookingStatusActions(booking.status);
+
+  return (
+    <>
+      <DropdownMenu>
+        <DropdownMenuTrigger
+          render={
+            <IconBtn
+              size="sm"
+              variant="ghost"
+              aria-label={`Actions for ${booking.bookingReference}`}
+            />
+          }
+        >
+          <EllipsisVertical />
+        </DropdownMenuTrigger>
+        <DropdownMenuContent align="end">
+          <DropdownMenuItem onClick={() => setIsDetailsOpen(true)}>
+            <Eye />
+            View booking
+          </DropdownMenuItem>
+          {statusActions.length > 0 && <DropdownMenuSeparator />}
+          {statusActions.map((action) => (
+            <DropdownMenuItem
+              key={action.status}
+              disabled={isPending}
+              className={action.destructive ? "text-destructive" : undefined}
+              onClick={() => {
+                if (
+                  action.confirmMessage &&
+                  !window.confirm(action.confirmMessage)
+                ) {
+                  return;
+                }
+
+                updateStatus({ id: booking.id, status: action.status });
+              }}
+            >
+              {action.label}
+            </DropdownMenuItem>
+          ))}
+        </DropdownMenuContent>
+      </DropdownMenu>
+      <BookingDetailsSheet
+        open={isDetailsOpen}
+        onOpenChange={setIsDetailsOpen}
+        bookingId={booking.id}
+      />
+    </>
   );
 }

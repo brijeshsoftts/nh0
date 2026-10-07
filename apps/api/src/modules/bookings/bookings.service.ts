@@ -18,7 +18,7 @@ import {
 import { BookingAvailabilityQueryDto } from './dto/available-rooms-query.dto';
 import { BookingsQueryDto } from './dto/bookings-query.dto';
 import { CreateBookingDto } from './dto/create-booking.dto';
-import { BookingListItem } from './bookings.types';
+import { BookingDetailsResponse, BookingListItem } from './bookings.types';
 
 export type BookingTotalsInput = {
   roomPricePerNight: number;
@@ -133,6 +133,241 @@ export class BookingsService {
         bookedAt: booking.bookedAt.toISOString(),
       })),
       meta: { page, limit, total },
+    };
+  }
+
+  async updateStatus(
+    id: string,
+    nextStatus: BookingStatus,
+  ): Promise<{ id: string; status: BookingStatus }> {
+    const allowedTransitions: Record<BookingStatus, BookingStatus[]> = {
+      [BookingStatus.PENDING]: [
+        BookingStatus.CONFIRMED,
+        BookingStatus.CANCELLED,
+        BookingStatus.NO_SHOW,
+      ],
+      [BookingStatus.CONFIRMED]: [
+        BookingStatus.CHECKED_IN,
+        BookingStatus.CANCELLED,
+        BookingStatus.NO_SHOW,
+      ],
+      [BookingStatus.CHECKED_IN]: [BookingStatus.CHECKED_OUT],
+      [BookingStatus.CHECKED_OUT]: [],
+      [BookingStatus.CANCELLED]: [],
+      [BookingStatus.NO_SHOW]: [],
+    };
+
+    return this.prismaService.$transaction(async (tx) => {
+      const booking = await tx.booking.findUnique({
+        where: { id },
+        select: { id: true, status: true },
+      });
+
+      if (!booking) {
+        throw new NotFoundException('Booking not found');
+      }
+
+      if (!allowedTransitions[booking.status].includes(nextStatus)) {
+        throw new BadRequestException(
+          `Cannot change booking status from ${booking.status} to ${nextStatus}`,
+        );
+      }
+
+      const timestamp = new Date();
+      const updateResult = await tx.booking.updateMany({
+        where: { id, status: booking.status },
+        data: {
+          status: nextStatus,
+          ...(nextStatus === BookingStatus.CHECKED_IN && {
+            checkedInAt: timestamp,
+          }),
+          ...(nextStatus === BookingStatus.CHECKED_OUT && {
+            checkedOutAt: timestamp,
+          }),
+          ...(nextStatus === BookingStatus.CANCELLED && {
+            cancelledAt: timestamp,
+          }),
+        },
+      });
+
+      if (updateResult.count !== 1) {
+        throw new ConflictException(
+          'Booking status changed before this update could be applied',
+        );
+      }
+
+      return { id, status: nextStatus };
+    });
+  }
+
+  async findOne(id: string): Promise<BookingDetailsResponse> {
+    const booking = await this.prismaService.booking.findUnique({
+      where: { id },
+      select: {
+        id: true,
+        bookingReference: true,
+        status: true,
+        checkInDate: true,
+        checkOutDate: true,
+        totalGuests: true,
+        totalAmount: true,
+        specialRequest: true,
+        bookedAt: true,
+        checkedInAt: true,
+        checkedOutAt: true,
+        cancelledAt: true,
+        createdAt: true,
+        updatedAt: true,
+        customer: {
+          select: {
+            id: true,
+            fullName: true,
+            email: true,
+            phone: true,
+            profile: { select: { id: true, url: true, altText: true } },
+            customer: {
+              select: { idProofNumber: true, address: true },
+            },
+          },
+        },
+        bookingRooms: {
+          select: {
+            id: true,
+            pricePerNight: true,
+            assignedRoom: {
+              select: { id: true, roomNumber: true, name: true, floor: true },
+            },
+            roomType: {
+              select: {
+                id: true,
+                name: true,
+                slug: true,
+                maxGuests: true,
+                basePrice: true,
+                currency: true,
+                bedType: true,
+                bedCount: true,
+              },
+            },
+          },
+        },
+        bookingGuests: {
+          select: {
+            id: true,
+            fullName: true,
+            age: true,
+            gender: true,
+            idProofNumber: true,
+          },
+        },
+        invoice: {
+          select: {
+            id: true,
+            invoiceNumber: true,
+            subtotal: true,
+            taxAmount: true,
+            discountAmount: true,
+            totalAmount: true,
+            status: true,
+            issuedAt: true,
+            payments: {
+              select: {
+                id: true,
+                paymentReference: true,
+                transactionId: true,
+                amount: true,
+                paymentMethod: true,
+                paymentStatus: true,
+                paidAt: true,
+                createdAt: true,
+                recorder: { select: { id: true, fullName: true } },
+              },
+            },
+          },
+        },
+      },
+    });
+
+    if (!booking) {
+      throw new NotFoundException('Booking not found');
+    }
+
+    return {
+      id: booking.id,
+      bookingReference: booking.bookingReference,
+      status: booking.status,
+      checkInDate: booking.checkInDate.toISOString(),
+      checkOutDate: booking.checkOutDate.toISOString(),
+      totalGuests: booking.totalGuests,
+      totalAmount: booking.totalAmount,
+      ...(booking.specialRequest && { specialRequest: booking.specialRequest }),
+      bookedAt: booking.bookedAt.toISOString(),
+      ...(booking.checkedInAt && {
+        checkedInAt: booking.checkedInAt.toISOString(),
+      }),
+      ...(booking.checkedOutAt && {
+        checkedOutAt: booking.checkedOutAt.toISOString(),
+      }),
+      ...(booking.cancelledAt && {
+        cancelledAt: booking.cancelledAt.toISOString(),
+      }),
+      createdAt: booking.createdAt.toISOString(),
+      updatedAt: booking.updatedAt.toISOString(),
+      customer: {
+        id: booking.customer.id,
+        fullName: booking.customer.fullName,
+        email: booking.customer.email,
+        phone: booking.customer.phone,
+        ...(booking.customer.profile && {
+          profileImage: booking.customer.profile,
+        }),
+        ...(booking.customer.customer && {
+          profile: booking.customer.customer,
+        }),
+      },
+      bookingRooms: booking.bookingRooms.map((bookingRoom) => ({
+        id: bookingRoom.id,
+        roomNumber: bookingRoom.assignedRoom?.roomNumber ?? 'Unassigned',
+        name: bookingRoom.assignedRoom?.name ?? undefined,
+        floor: bookingRoom.assignedRoom?.floor ?? 0,
+        roomType: {
+          ...bookingRoom.roomType,
+          currency: bookingRoom.roomType.currency ?? 'INR',
+        },
+        pricePerNight: bookingRoom.pricePerNight,
+      })),
+      bookingGuests: booking.bookingGuests.map((guest) => ({
+        id: guest.id,
+        fullName: guest.fullName,
+        age: guest.age ?? 0,
+        gender: guest.gender ?? 'OTHER',
+        ...(guest.idProofNumber && { idProofNumber: guest.idProofNumber }),
+      })),
+      invoices: booking.invoice
+        ? [
+            {
+              id: booking.invoice.id,
+              invoiceNumber: booking.invoice.invoiceNumber,
+              subtotal: booking.invoice.subtotal,
+              taxAmount: booking.invoice.taxAmount,
+              discountAmount: booking.invoice.discountAmount,
+              totalAmount: booking.invoice.totalAmount,
+              status: booking.invoice.status,
+              issuedAt: booking.invoice.issuedAt.toISOString(),
+              payments: booking.invoice.payments.map((payment) => ({
+                id: payment.id,
+                paymentReference: payment.paymentReference,
+                transactionId: payment.transactionId ?? undefined,
+                amount: payment.amount,
+                paymentMethod: payment.paymentMethod,
+                paymentStatus: payment.paymentStatus,
+                paidAt: payment.paidAt?.toISOString(),
+                createdAt: payment.createdAt.toISOString(),
+                ...(payment.recorder && { recordedBy: payment.recorder }),
+              })),
+            },
+          ]
+        : [],
     };
   }
 

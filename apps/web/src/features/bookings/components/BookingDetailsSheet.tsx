@@ -16,6 +16,7 @@ import type { ReactNode } from "react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
+import { Spinner } from "@/components/ui/spinner";
 import {
   Sheet,
   SheetContent,
@@ -29,7 +30,9 @@ import type {
   PaymentStatus,
 } from "@/types/enum.types";
 
-import { BOOKING_DETAILS } from "../bookings.mock";
+import { getBookingStatusActions } from "../booking-status";
+import { useBooking } from "../hooks/useBooking";
+import { useUpdateBookingStatus } from "../hooks/useUpdateBookingStatus";
 
 interface BookingDetailsSheetProps {
   open: boolean;
@@ -161,8 +164,48 @@ function getNights(checkIn: string, checkOut: string) {
 export function BookingDetailsSheet({
   open,
   onOpenChange,
+  bookingId,
 }: BookingDetailsSheetProps) {
-  const booking = BOOKING_DETAILS;
+  const { booking, isLoading, isError, refetch } = useBooking(bookingId, open);
+  const { mutate: updateStatus, isPending } = useUpdateBookingStatus();
+
+  if (isLoading) {
+    return (
+      <Sheet open={open} onOpenChange={onOpenChange}>
+        <SheetContent
+          side="right"
+          className="flex w-full flex-col items-center justify-center sm:max-w-xl"
+        >
+          <Spinner className="size-8" />
+          <p className="text-sm text-muted-foreground">
+            Loading booking details…
+          </p>
+        </SheetContent>
+      </Sheet>
+    );
+  }
+
+  if (isError || !booking) {
+    return (
+      <Sheet open={open} onOpenChange={onOpenChange}>
+        <SheetContent
+          side="right"
+          className="flex w-full flex-col items-center justify-center gap-3 sm:max-w-xl"
+        >
+          <p className="text-sm text-destructive">
+            Booking details could not be loaded.
+          </p>
+          <Button
+            type="button"
+            variant="outline"
+            onClick={() => void refetch()}
+          >
+            Try again
+          </Button>
+        </SheetContent>
+      </Sheet>
+    );
+  }
 
   const invoice = booking.invoices[0];
   const nights = getNights(booking.checkInDate, booking.checkOutDate);
@@ -204,7 +247,14 @@ export function BookingDetailsSheet({
           </div>
 
           {/* Actions */}
-          <BookingActions status={booking.status} />
+          <BookingActions
+            status={booking.status}
+            isPending={isPending}
+            onChangeStatus={(status, confirmMessage) => {
+              if (confirmMessage && !window.confirm(confirmMessage)) return;
+              updateStatus({ id: booking.id, status });
+            }}
+          />
         </SheetHeader>
 
         {/* Scrollable body */}
@@ -643,41 +693,33 @@ export function BookingDetailsSheet({
   );
 }
 
-function BookingActions({ status }: { status: BookingStatus }) {
-  if (
-    status === "CANCELLED" ||
-    status === "CHECKED_OUT" ||
-    status === "NO_SHOW"
-  ) {
-    return null;
-  }
-
+function BookingActions({
+  status,
+  isPending,
+  onChangeStatus,
+}: {
+  status: BookingStatus;
+  isPending: boolean;
+  onChangeStatus: (status: BookingStatus, confirmMessage?: string) => void;
+}) {
+  const actions = getBookingStatusActions(status);
+  if (actions.length === 0) return null;
   return (
-    <div className="mt-4 grid grid-cols-2 gap-2 sm:grid-cols-4">
-      {status === "PENDING" && (
-        <Button size="sm">
-          <CheckCircle2 className="size-3.5" />
-          Confirm
+    <div className="mt-4 flex flex-wrap gap-2">
+      {actions.map((action) => (
+        <Button
+          key={action.status}
+          size="sm"
+          variant={action.destructive ? "destructive" : "default"}
+          disabled={isPending}
+          onClick={() => onChangeStatus(action.status, action.confirmMessage)}
+        >
+          {action.status === "CONFIRMED" && (
+            <CheckCircle2 className="size-3.5" />
+          )}
+          {action.label}
         </Button>
-      )}
-
-      {status === "CONFIRMED" && <Button size="sm">Check-in</Button>}
-
-      {status === "CHECKED_IN" && <Button size="sm">Check-out</Button>}
-
-      {(status === "PENDING" ||
-        status === "CONFIRMED" ||
-        status === "CHECKED_IN") && (
-        <>
-          <Button size="sm" variant="outline">
-            No-show
-          </Button>
-
-          <Button size="sm" variant="outline">
-            Cancel
-          </Button>
-        </>
-      )}
+      ))}
     </div>
   );
 }

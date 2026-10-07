@@ -132,11 +132,86 @@ export type BookingListItem = {
   invoice: { status: InvoiceStatus } | null;
 };
 
+export type BookingDetails = {
+  id: string;
+  bookingReference: string;
+  status: BookingStatus;
+  checkInDate: string;
+  checkOutDate: string;
+  totalGuests: number;
+  totalAmount: number;
+  specialRequest?: string;
+  bookedAt: string;
+  checkedInAt?: string;
+  checkedOutAt?: string;
+  cancelledAt?: string;
+  createdAt: string;
+  updatedAt: string;
+  customer: {
+    id: string;
+    fullName: string;
+    email: string;
+    phone: string;
+    profileImage?: { id: string; url: string; altText: string };
+    profile?: { idProofNumber: string; address: string };
+  };
+  bookingRooms: {
+    id: string;
+    roomNumber: string;
+    name?: string;
+    floor: number;
+    roomType?: {
+      id: string;
+      name: string;
+      slug: string;
+      maxGuests: number;
+      basePrice: number;
+      currency: string;
+      bedType: string;
+      bedCount: number;
+    };
+    pricePerNight: number;
+  }[];
+  bookingGuests: {
+    id: string;
+    fullName: string;
+    age: number;
+    gender: import("@/types/enum.types").Gender;
+    idProofNumber?: string;
+  }[];
+  invoices: {
+    id: string;
+    invoiceNumber: string;
+    subtotal: number;
+    taxAmount: number;
+    discountAmount: number;
+    totalAmount: number;
+    status: InvoiceStatus;
+    issuedAt: string;
+    payments: {
+      id: string;
+      paymentReference: string;
+      transactionId?: string;
+      amount: number;
+      paymentMethod: PaymentMethod;
+      paymentStatus: PaymentStatus;
+      paidAt?: string;
+      createdAt: string;
+      recordedBy?: { id: string; fullName: string };
+    }[];
+  }[];
+};
+
 export type BookingListParams = {
   page: number;
   limit: number;
   search?: string;
   status?: BookingStatus;
+};
+
+export type UpdateBookingStatusInput = {
+  id: string;
+  status: BookingStatus;
 };
 
 export type BookingGuestInput = {

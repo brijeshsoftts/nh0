@@ -4,6 +4,8 @@ import {
   Get,
   HttpCode,
   HttpStatus,
+  Param,
+  Patch,
   Post,
   Query,
   UseGuards,
@@ -19,13 +21,17 @@ import {
   BookingAvailabilityQuerySchema,
 } from './dto/available-rooms-query.dto';
 import {
+  BookingsQueryDto,
+  BookingsQuerySchema,
+} from './dto/bookings-query.dto';
+import {
   CreateBookingDto,
   CreateBookingSchema,
 } from './dto/create-booking.dto';
 import {
-  BookingsQueryDto,
-  BookingsQuerySchema,
-} from './dto/bookings-query.dto';
+  UpdateBookingStatusDto,
+  UpdateBookingStatusSchema,
+} from './dto/update-booking-status.dto';
 import { BookingsService } from './bookings.service';
 
 @Controller('bookings')
@@ -43,6 +49,19 @@ export class BookingsController {
     return apiListResponse({ data, meta });
   }
 
+  @UseGuards(AuthGuard, RoleGuard)
+  @Roles('ADMIN', 'MANAGER', 'STAFF')
+  @Patch(':id/status')
+  @HttpCode(HttpStatus.OK)
+  async updateStatus(
+    @Param('id') id: string,
+    @Body(new ValidationPipe(UpdateBookingStatusSchema))
+    body: UpdateBookingStatusDto,
+  ) {
+    const data = await this.bookingsService.updateStatus(id, body.status);
+    return apiResponse({ data });
+  }
+
   @Get('available-rooms')
   @HttpCode(HttpStatus.OK)
   async findAvailableRooms(
@@ -50,6 +69,15 @@ export class BookingsController {
     query: BookingAvailabilityQueryDto,
   ) {
     const data = await this.bookingsService.findAvailableRooms(query);
+    return apiResponse({ data });
+  }
+
+  @UseGuards(AuthGuard, RoleGuard)
+  @Roles('ADMIN', 'MANAGER', 'STAFF')
+  @Get(':id')
+  @HttpCode(HttpStatus.OK)
+  async findOne(@Param('id') id: string) {
+    const data = await this.bookingsService.findOne(id);
     return apiResponse({ data });
   }
 
