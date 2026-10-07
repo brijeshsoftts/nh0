@@ -1,7 +1,13 @@
-import type { BookingAvailabilityParams } from "./bookings.types";
+import type {
+  BookingAvailabilityParams,
+  BookingListParams,
+} from "./bookings.types";
 
 export const bookingsKeys = {
   all: ["bookings"] as const,
+  lists: () => [...bookingsKeys.all, "list"] as const,
+  list: (params: BookingListParams) =>
+    [...bookingsKeys.lists(), params] as const,
   availability: (params: BookingAvailabilityParams | undefined) =>
     [...bookingsKeys.all, "available-rooms", params] as const,
 } as const;

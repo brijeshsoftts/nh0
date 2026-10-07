@@ -6,6 +6,7 @@ import {
 } from '@nestjs/common';
 
 import { PrismaService } from '../../prisma/prisma.service';
+import { ListResponse } from '../../types/api.types';
 import {
   BookingStatus,
   InvoiceStatus,
@@ -15,7 +16,9 @@ import {
 } from '../../types/prisma.types';
 
 import { BookingAvailabilityQueryDto } from './dto/available-rooms-query.dto';
+import { BookingsQueryDto } from './dto/bookings-query.dto';
 import { CreateBookingDto } from './dto/create-booking.dto';
+import { BookingListItem } from './bookings.types';
 
 export type BookingTotalsInput = {
   roomPricePerNight: number;
@@ -42,6 +45,96 @@ export function calculateBookingTotals({
 @Injectable()
 export class BookingsService {
   constructor(private readonly prismaService: PrismaService) {}
+
+  async findAll(
+    query: BookingsQueryDto,
+  ): Promise<ListResponse<BookingListItem>> {
+    const { search, status, page, limit } = query;
+    const where = {
+      ...(status && { status }),
+      ...(search && {
+        OR: [
+          {
+            bookingReference: {
+              contains: search,
+              mode: 'insensitive' as const,
+            },
+          },
+          {
+            customer: {
+              is: {
+                OR: [
+                  {
+                    fullName: {
+                      contains: search,
+                      mode: 'insensitive' as const,
+                    },
+                  },
+                  { email: { contains: search, mode: 'insensitive' as const } },
+                  { phone: { contains: search, mode: 'insensitive' as const } },
+                ],
+              },
+            },
+          },
+          {
+            bookingRooms: {
+              some: {
+                assignedRoom: {
+                  is: {
+                    roomNumber: {
+                      contains: search,
+                      mode: 'insensitive' as const,
+                    },
+                  },
+                },
+              },
+            },
+          },
+        ],
+      }),
+    };
+
+    const [bookings, total] = await this.prismaService.$transaction([
+      this.prismaService.booking.findMany({
+        where,
+        skip: (page - 1) * limit,
+        take: limit,
+        orderBy: { bookedAt: 'desc' },
+        select: {
+          id: true,
+          bookingReference: true,
+          status: true,
+          checkInDate: true,
+          checkOutDate: true,
+          totalGuests: true,
+          totalAmount: true,
+          bookedAt: true,
+          customer: {
+            select: { id: true, fullName: true, email: true, phone: true },
+          },
+          bookingRooms: {
+            select: {
+              id: true,
+              assignedRoom: { select: { roomNumber: true } },
+              roomType: { select: { name: true } },
+            },
+          },
+          invoice: { select: { status: true } },
+        },
+      }),
+      this.prismaService.booking.count({ where }),
+    ]);
+
+    return {
+      data: bookings.map((booking) => ({
+        ...booking,
+        checkInDate: booking.checkInDate.toISOString(),
+        checkOutDate: booking.checkOutDate.toISOString(),
+        bookedAt: booking.bookedAt.toISOString(),
+      })),
+      meta: { page, limit, total },
+    };
+  }
 
   async findAvailableRooms(query: BookingAvailabilityQueryDto) {
     const { checkInDate, checkOutDate, adults, children } = query;

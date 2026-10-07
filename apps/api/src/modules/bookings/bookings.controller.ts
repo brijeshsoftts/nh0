@@ -6,9 +6,12 @@ import {
   HttpStatus,
   Post,
   Query,
+  UseGuards,
 } from '@nestjs/common';
 
-import { apiResponse } from '../../common/helpers';
+import { Roles } from '../../common/decorators';
+import { AuthGuard, RoleGuard } from '../../common/guards';
+import { apiListResponse, apiResponse } from '../../common/helpers';
 import { ValidationPipe } from '../../common/pipes';
 
 import {
@@ -19,11 +22,26 @@ import {
   CreateBookingDto,
   CreateBookingSchema,
 } from './dto/create-booking.dto';
+import {
+  BookingsQueryDto,
+  BookingsQuerySchema,
+} from './dto/bookings-query.dto';
 import { BookingsService } from './bookings.service';
 
 @Controller('bookings')
 export class BookingsController {
   constructor(private readonly bookingsService: BookingsService) {}
+
+  @UseGuards(AuthGuard, RoleGuard)
+  @Roles('ADMIN', 'MANAGER', 'STAFF')
+  @Get()
+  @HttpCode(HttpStatus.OK)
+  async findAll(
+    @Query(new ValidationPipe(BookingsQuerySchema)) query: BookingsQueryDto,
+  ) {
+    const { data, meta } = await this.bookingsService.findAll(query);
+    return apiListResponse({ data, meta });
+  }
 
   @Get('available-rooms')
   @HttpCode(HttpStatus.OK)

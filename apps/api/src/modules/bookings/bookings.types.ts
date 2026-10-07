@@ -1,4 +1,27 @@
-import { PaymentMethod, PaymentStatus } from '../../types/prisma.types';
+import {
+  BookingStatus,
+  InvoiceStatus,
+  PaymentMethod,
+  PaymentStatus,
+} from '../../types/prisma.types';
+
+export type BookingListItem = {
+  id: string;
+  bookingReference: string;
+  status: BookingStatus;
+  checkInDate: string;
+  checkOutDate: string;
+  totalGuests: number;
+  totalAmount: number;
+  bookedAt: string;
+  customer: { id: string; fullName: string; email: string; phone: string };
+  bookingRooms: {
+    id: string;
+    assignedRoom: { roomNumber: string } | null;
+    roomType: { name: string };
+  }[];
+  invoice: { status: InvoiceStatus } | null;
+};
 
 export type AvailableRoom = {
   id: string;

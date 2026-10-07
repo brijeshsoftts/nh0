@@ -114,6 +114,31 @@ export interface BookingDetails {
   invoices: BookingDetailsInvoice[];
 }
 
+export type BookingListItem = {
+  id: string;
+  bookingReference: string;
+  status: BookingStatus;
+  checkInDate: string;
+  checkOutDate: string;
+  totalGuests: number;
+  totalAmount: number;
+  bookedAt: string;
+  customer: Pick<BookingDetailsCustomer, "id" | "fullName" | "email" | "phone">;
+  bookingRooms: {
+    id: string;
+    assignedRoom: { roomNumber: string } | null;
+    roomType: { name: string };
+  }[];
+  invoice: { status: InvoiceStatus } | null;
+};
+
+export type BookingListParams = {
+  page: number;
+  limit: number;
+  search?: string;
+  status?: BookingStatus;
+};
+
 export type BookingGuestInput = {
   fullName: string;
   age: number;

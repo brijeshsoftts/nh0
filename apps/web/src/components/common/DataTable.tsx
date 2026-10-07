@@ -133,14 +133,14 @@ export function DataTable<T extends Record<string, any>>({
   // Pagination Math
   const totalRecords = pagination?.total || 0;
   const totalPages = pagination?.total
-    ? Math.ceil(pagination?.total / pagination.page)
+    ? Math.ceil(pagination.total / (pagination.limit || pageSize))
     : 1;
 
   const currentPage = pagination?.page || localPage;
   const startIndex = (currentPage - 1) * pageSize;
   const startRecord = totalRecords === 0 ? 0 : startIndex + 1;
   const endRecord = Math.min(
-    startIndex + (pagination?.page || 0),
+    startIndex + (pagination?.limit || pageSize),
     totalRecords
   );
 
