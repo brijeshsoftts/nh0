@@ -124,11 +124,11 @@ export type BookingListItem = {
   totalAmount: number;
   bookedAt: string;
   customer: Pick<BookingDetailsCustomer, "id" | "fullName" | "email" | "phone">;
-  bookingRooms: {
+  bookingRoom?: {
     id: string;
     assignedRoom: { roomNumber: string } | null;
     roomType: { name: string };
-  }[];
+  };
   invoice: { status: InvoiceStatus } | null;
 };
 

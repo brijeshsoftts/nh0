@@ -14,44 +14,68 @@ export type BookingListItem = {
   totalGuests: number;
   totalAmount: number;
   bookedAt: string;
-  customer: { id: string; fullName: string; email: string; phone: string };
-  bookingRooms: {
-    id: string;
-    assignedRoom: { roomNumber: string } | null;
-    roomType: { name: string };
-  }[];
-  invoice: { status: InvoiceStatus } | null;
-};
-
-export type BookingDetailsResponse = {
-  id: string;
-  bookingReference: string;
-  status: BookingStatus;
-  checkInDate: string;
-  checkOutDate: string;
-  totalGuests: number;
-  totalAmount: number;
-  specialRequest?: string;
-  bookedAt: string;
-  checkedInAt?: string;
-  checkedOutAt?: string;
-  cancelledAt?: string;
-  createdAt: string;
-  updatedAt: string;
   customer: {
     id: string;
     fullName: string;
     email: string;
     phone: string;
-    profileImage?: { id: string; url: string; altText: string };
-    profile?: { idProofNumber: string; address: string };
   };
-  bookingRooms: {
+  bookingRoom: {
+    id: string;
+    assignedRoom: { roomNumber: string } | null;
+    roomType: { name: string };
+  } | null;
+  invoice: { status: InvoiceStatus } | null;
+};
+
+export type BookingDetails = {
+  id: string;
+  bookingReference: string;
+  customerId: string;
+  checkInDate: string;
+  checkOutDate: string;
+  totalGuests: number;
+  totalAmount: number;
+  specialRequest: string | null;
+  status: BookingStatus;
+  bookedAt: string;
+  checkedInAt: string | null;
+  checkedOutAt: string | null;
+  cancelledAt: string | null;
+  createdBy: string;
+  createdAt: string;
+  updatedAt: string;
+
+  customer: {
+    id: string;
+    fullName: string;
+    email: string;
+    phone: string;
+    profileImage: {
+      url: string;
+      altText: string | null;
+    } | null;
+    profile: {
+      idProofNumber: string;
+      address: string;
+    } | null;
+  };
+  creator: {
+    id: string;
+    fullName: string;
+    email: string;
+    phone: string;
+    profileImage: {
+      url: string;
+      altText: string | null;
+    } | null;
+  };
+  bookingRoom: {
     id: string;
     roomNumber: string;
-    name?: string;
+    name: string | null;
     floor: number;
-    roomType: {
+    roomType?: {
       id: string;
       name: string;
       slug: string;
@@ -62,15 +86,16 @@ export type BookingDetailsResponse = {
       bedCount: number;
     };
     pricePerNight: number;
-  }[];
+  } | null;
   bookingGuests: {
     id: string;
     fullName: string;
-    age: number;
+    age: number | null;
     gender: string | null;
-    idProofNumber?: string;
+    idProofNumber: string | null;
   }[];
-  invoices: {
+
+  invoice: {
     id: string;
     invoiceNumber: string;
     subtotal: number;
@@ -82,15 +107,18 @@ export type BookingDetailsResponse = {
     payments: {
       id: string;
       paymentReference: string;
-      transactionId?: string;
+      transactionId: string | null;
       amount: number;
       paymentMethod: PaymentMethod;
       paymentStatus: PaymentStatus;
-      paidAt?: string;
+      paidAt: string | null;
       createdAt: string;
-      recordedBy?: { id: string; fullName: string };
+      recordedBy: {
+        id: string;
+        fullName: string;
+      } | null;
     }[];
-  }[];
+  } | null;
 };
 
 export type AvailableRoom = {

@@ -304,7 +304,7 @@ model Booking {
 
   customer      User           @relation("BookingCustomer", fields: [customerId], references: [id])
   creator       User           @relation("BookingCreatedBy", fields: [createdBy], references: [id])
-  bookingRooms  BookingRoom[]
+  bookingRoom  BookingRoom?
   bookingGuests BookingGuest[]
 
   invoice Invoice?
@@ -313,12 +313,12 @@ model Booking {
 
 model BookingRoom {
   id             String  @id @default(cuid())
-  bookingId      String
+  bookingId      String        @unique
   roomTypeId     String
   assignedRoomId String?
   pricePerNight  Int
 
-  booking      Booking  @relation(fields: [bookingId], references: [id], onDelete: Cascade)
+  booking  Booking   @relation(fields: [bookingId], references: [id])
   roomType     RoomType @relation(fields: [roomTypeId], references: [id])
   assignedRoom Room?    @relation(fields: [assignedRoomId], references: [id])
 }

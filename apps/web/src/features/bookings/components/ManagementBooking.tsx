@@ -23,11 +23,12 @@ import {
 import { useDebounce } from "@/hooks/useDebounce";
 import type { BookingStatus } from "@/types/enum.types";
 
-import type { BookingListItem } from "../bookings.types";
 import { getBookingStatusActions } from "../booking-status";
-import { BookingDetailsSheet } from "./BookingDetailsSheet";
+import type { BookingListItem } from "../bookings.types";
 import { useBookings } from "../hooks/useBookings";
 import { useUpdateBookingStatus } from "../hooks/useUpdateBookingStatus";
+
+import { BookingDetailsSheet } from "./BookingDetailsSheet";
 
 const BOOKING_STATUSES: BookingStatus[] = [
   "PENDING",
@@ -117,16 +118,12 @@ export function ManagementBooking() {
       header: "Room",
       cell: (booking) => (
         <div className="min-w-36">
-          {booking.bookingRooms.map((room) => (
-            <p key={room.id} className="font-medium">
-              {room.roomType.name}
-              {room.assignedRoom && (
-                <span className="ml-1 text-muted-foreground">
-                  · {room.assignedRoom.roomNumber}
-                </span>
-              )}
-            </p>
-          ))}
+          <p className="font-medium">{booking.bookingRoom?.roomType.name}</p>
+          {booking.bookingRoom?.assignedRoom && (
+            <span className="ml-1 text-muted-foreground">
+              · {booking.bookingRoom?.assignedRoom.roomNumber}
+            </span>
+          )}
         </div>
       ),
     },
@@ -137,13 +134,16 @@ export function ManagementBooking() {
       cell: (booking) => (
         <div className="min-w-24 text-right">
           <p className="font-semibold">{formatCurrency(booking.totalAmount)}</p>
-          {booking.invoice && (
-            <div className="mt-1">
-              <InvoiceBadge value={booking.invoice.status} />
-            </div>
-          )}
         </div>
       ),
+    },
+    {
+      key: "invoiceStatus",
+      header: "Invoice",
+      cell: (booking) =>
+        booking.invoice?.status && (
+          <InvoiceBadge value={booking.invoice.status} />
+        ),
     },
     {
       key: "status",
@@ -173,7 +173,7 @@ export function ManagementBooking() {
             Find reservations, check stay details, and keep arrivals moving.
           </p>
         </div>
-        <Button asChild className="shrink-0">
+        <Button className="shrink-0">
           <Link to="/dashboard/bookings/new">
             <Plus className="size-4" />
             New booking

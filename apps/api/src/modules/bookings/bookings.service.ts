@@ -18,7 +18,7 @@ import {
 import { BookingAvailabilityQueryDto } from './dto/available-rooms-query.dto';
 import { BookingsQueryDto } from './dto/bookings-query.dto';
 import { CreateBookingDto } from './dto/create-booking.dto';
-import { BookingDetailsResponse, BookingListItem } from './bookings.types';
+import { BookingDetails, BookingListItem } from './bookings.types';
 
 export type BookingTotalsInput = {
   roomPricePerNight: number;
@@ -77,14 +77,12 @@ export class BookingsService {
             },
           },
           {
-            bookingRooms: {
-              some: {
-                assignedRoom: {
-                  is: {
-                    roomNumber: {
-                      contains: search,
-                      mode: 'insensitive' as const,
-                    },
+            bookingRoom: {
+              assignedRoom: {
+                is: {
+                  roomNumber: {
+                    contains: search,
+                    mode: 'insensitive' as const,
                   },
                 },
               },
@@ -112,7 +110,7 @@ export class BookingsService {
           customer: {
             select: { id: true, fullName: true, email: true, phone: true },
           },
-          bookingRooms: {
+          bookingRoom: {
             select: {
               id: true,
               assignedRoom: { select: { roomNumber: true } },
@@ -128,6 +126,13 @@ export class BookingsService {
     return {
       data: bookings.map((booking) => ({
         ...booking,
+        bookingRoom: booking.bookingRoom
+          ? {
+              id: booking.bookingRoom.id,
+              assignedRoom: booking.bookingRoom.assignedRoom,
+              roomType: booking.bookingRoom.roomType,
+            }
+          : null,
         checkInDate: booking.checkInDate.toISOString(),
         checkOutDate: booking.checkOutDate.toISOString(),
         bookedAt: booking.bookedAt.toISOString(),
@@ -200,22 +205,24 @@ export class BookingsService {
     });
   }
 
-  async findOne(id: string): Promise<BookingDetailsResponse> {
+  async findOne(id: string): Promise<BookingDetails> {
     const booking = await this.prismaService.booking.findUnique({
       where: { id },
       select: {
         id: true,
         bookingReference: true,
-        status: true,
+        customerId: true,
         checkInDate: true,
         checkOutDate: true,
         totalGuests: true,
         totalAmount: true,
         specialRequest: true,
+        status: true,
         bookedAt: true,
         checkedInAt: true,
         checkedOutAt: true,
         cancelledAt: true,
+        createdBy: true,
         createdAt: true,
         updatedAt: true,
         customer: {
@@ -224,18 +231,45 @@ export class BookingsService {
             fullName: true,
             email: true,
             phone: true,
-            profile: { select: { id: true, url: true, altText: true } },
+            profile: {
+              select: {
+                url: true,
+                altText: true,
+              },
+            },
             customer: {
-              select: { idProofNumber: true, address: true },
+              select: {
+                idProofNumber: true,
+                address: true,
+              },
             },
           },
         },
-        bookingRooms: {
+        creator: {
+          select: {
+            id: true,
+            fullName: true,
+            email: true,
+            phone: true,
+            profile: {
+              select: {
+                url: true,
+                altText: true,
+              },
+            },
+          },
+        },
+        bookingRoom: {
           select: {
             id: true,
             pricePerNight: true,
             assignedRoom: {
-              select: { id: true, roomNumber: true, name: true, floor: true },
+              select: {
+                id: true,
+                roomNumber: true,
+                name: true,
+                floor: true,
+              },
             },
             roomType: {
               select: {
@@ -280,7 +314,12 @@ export class BookingsService {
                 paymentStatus: true,
                 paidAt: true,
                 createdAt: true,
-                recorder: { select: { id: true, fullName: true } },
+                recorder: {
+                  select: {
+                    id: true,
+                    fullName: true,
+                  },
+                },
               },
             },
           },
@@ -292,25 +331,18 @@ export class BookingsService {
       throw new NotFoundException('Booking not found');
     }
 
+    const customerProfile = booking.customer?.customer ?? null;
+
     return {
-      id: booking.id,
-      bookingReference: booking.bookingReference,
-      status: booking.status,
+      ...booking,
       checkInDate: booking.checkInDate.toISOString(),
       checkOutDate: booking.checkOutDate.toISOString(),
       totalGuests: booking.totalGuests,
       totalAmount: booking.totalAmount,
-      ...(booking.specialRequest && { specialRequest: booking.specialRequest }),
       bookedAt: booking.bookedAt.toISOString(),
-      ...(booking.checkedInAt && {
-        checkedInAt: booking.checkedInAt.toISOString(),
-      }),
-      ...(booking.checkedOutAt && {
-        checkedOutAt: booking.checkedOutAt.toISOString(),
-      }),
-      ...(booking.cancelledAt && {
-        cancelledAt: booking.cancelledAt.toISOString(),
-      }),
+      checkedInAt: booking.checkedInAt?.toISOString() ?? null,
+      checkedOutAt: booking.checkedOutAt?.toISOString() ?? null,
+      cancelledAt: booking.cancelledAt?.toISOString() ?? null,
       createdAt: booking.createdAt.toISOString(),
       updatedAt: booking.updatedAt.toISOString(),
       customer: {
@@ -318,56 +350,48 @@ export class BookingsService {
         fullName: booking.customer.fullName,
         email: booking.customer.email,
         phone: booking.customer.phone,
-        ...(booking.customer.profile && {
-          profileImage: booking.customer.profile,
-        }),
-        ...(booking.customer.customer && {
-          profile: booking.customer.customer,
-        }),
+        profileImage: booking.customer.profile ?? null,
+        profile: customerProfile
+          ? {
+              idProofNumber: customerProfile.idProofNumber,
+              address: customerProfile.address,
+            }
+          : null,
       },
-      bookingRooms: booking.bookingRooms.map((bookingRoom) => ({
-        id: bookingRoom.id,
-        roomNumber: bookingRoom.assignedRoom?.roomNumber ?? 'Unassigned',
-        name: bookingRoom.assignedRoom?.name ?? undefined,
-        floor: bookingRoom.assignedRoom?.floor ?? 0,
-        roomType: {
-          ...bookingRoom.roomType,
-          currency: bookingRoom.roomType.currency ?? 'INR',
-        },
-        pricePerNight: bookingRoom.pricePerNight,
-      })),
-      bookingGuests: booking.bookingGuests.map((guest) => ({
-        id: guest.id,
-        fullName: guest.fullName,
-        age: guest.age ?? 0,
-        gender: guest.gender ?? 'OTHER',
-        ...(guest.idProofNumber && { idProofNumber: guest.idProofNumber }),
-      })),
-      invoices: booking.invoice
-        ? [
-            {
-              id: booking.invoice.id,
-              invoiceNumber: booking.invoice.invoiceNumber,
-              subtotal: booking.invoice.subtotal,
-              taxAmount: booking.invoice.taxAmount,
-              discountAmount: booking.invoice.discountAmount,
-              totalAmount: booking.invoice.totalAmount,
-              status: booking.invoice.status,
-              issuedAt: booking.invoice.issuedAt.toISOString(),
-              payments: booking.invoice.payments.map((payment) => ({
-                id: payment.id,
-                paymentReference: payment.paymentReference,
-                transactionId: payment.transactionId ?? undefined,
-                amount: payment.amount,
-                paymentMethod: payment.paymentMethod,
-                paymentStatus: payment.paymentStatus,
-                paidAt: payment.paidAt?.toISOString(),
+      creator: {
+        id: booking.creator.id,
+        fullName: booking.creator.fullName,
+        email: booking.creator.email,
+        phone: booking.creator.phone,
+        profileImage: booking.creator.profile ?? null,
+      },
+      bookingRoom: booking.bookingRoom
+        ? {
+            id: booking.bookingRoom.id,
+            roomNumber: booking.bookingRoom.assignedRoom?.roomNumber ?? '',
+            name: booking.bookingRoom.assignedRoom?.name ?? null,
+            floor: booking.bookingRoom.assignedRoom?.floor ?? 0,
+            roomType: booking.bookingRoom.roomType ?? undefined,
+            pricePerNight: booking.bookingRoom.pricePerNight,
+          }
+        : null,
+      bookingGuests: booking.bookingGuests ?? [],
+      invoice: booking.invoice
+        ? {
+            ...booking.invoice,
+            issuedAt: booking.invoice.issuedAt.toISOString(),
+            payments: (booking.invoice.payments ?? []).map((payment) => {
+              const { recorder, ...rest } = payment;
+
+              return {
+                ...rest,
+                recordedBy: recorder ?? null,
+                paidAt: payment.paidAt?.toISOString() ?? null,
                 createdAt: payment.createdAt.toISOString(),
-                ...(payment.recorder && { recordedBy: payment.recorder }),
-              })),
-            },
-          ]
-        : [],
+              };
+            }),
+          }
+        : null,
     };
   }
 
@@ -518,10 +542,8 @@ export class BookingsService {
             BookingStatus.CHECKED_IN,
           ],
         },
-        bookingRooms: {
-          some: {
-            assignedRoomId: dto.roomId,
-          },
+        bookingRoom: {
+          assignedRoomId: dto.roomId,
         },
         AND: [
           { checkInDate: { lt: checkOutDate } },
