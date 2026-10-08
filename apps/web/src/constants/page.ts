@@ -6,6 +6,7 @@ import {
   ClipboardCheck,
   FileClock,
   LayoutDashboard,
+  Pickaxe,
   UserCheck,
   UserRound,
   Users,
@@ -27,7 +28,7 @@ export const ADMIN_PAGES: NavItem[] = [
   },
   {
     title: "Staff",
-    icon: Users,
+    icon: Pickaxe,
     href: "/dashboard/staff",
   },
   {
@@ -85,7 +86,7 @@ export const MANAGER_PAGES: NavItem[] = [
   },
   {
     title: "Staff",
-    icon: Users,
+    icon: Pickaxe,
     href: "/dashboard/staff",
   },
   {

@@ -10,6 +10,7 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import { useLogout } from "@/features/auth/hooks/useLogout";
 import { useAuth } from "@/hooks/useAuth";
 import { getInitials } from "@/lib/format";
 
@@ -19,10 +20,7 @@ export const DropdownProfile = ({
   children?: React.ReactNode;
 }) => {
   const { user } = useAuth();
-  const { isLoading, handleLogout } = {
-    isLoading: false,
-    handleLogout: () => {},
-  };
+  const { isLoading, handleLogout } = useLogout();
 
   return (
     <DropdownMenu>

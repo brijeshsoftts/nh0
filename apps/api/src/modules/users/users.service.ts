@@ -194,7 +194,9 @@ export class UsersService {
     }
 
     const existingUser = await this.prismaService.user.findUnique({
-      where: { id },
+      where: {
+        id,
+      },
       select: {
         id: true,
         fullName: true,
@@ -210,6 +212,10 @@ export class UsersService {
 
     if (!isAdmin && dto.role !== undefined) {
       throw new ForbiddenException(USER_ERROR_MSG.FORBIDDEN);
+    }
+
+    if (dto.email && existingUser.email !== dto.email) {
+      throw new ConflictException(USER_ERROR_MSG.CONFLICT_EMAIL);
     }
 
     const updatedUser = await this.prismaService.user.update({
