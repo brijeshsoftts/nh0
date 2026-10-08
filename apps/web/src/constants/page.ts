@@ -21,6 +21,11 @@ export const ADMIN_PAGES: NavItem[] = [
     href: "/dashboard",
   },
   {
+    title: "Users",
+    icon: Users,
+    href: "/dashboard/users",
+  },
+  {
     title: "Staff",
     icon: Users,
     href: "/dashboard/staff",

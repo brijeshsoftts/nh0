@@ -1,7 +1,7 @@
-import type { User } from "@/features/users/users.types";
+import type { UserProfile } from "@/features/users/users.types";
 
 export type AuthCTX = {
   isAuthenticated: boolean;
   isLoading: boolean;
-  user: User | null;
+  user: UserProfile | null;
 };

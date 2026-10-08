@@ -15,6 +15,7 @@ import ProfilePage from "@/pages/protect/Profile";
 import PRoomsPage from "@/pages/protect/Rooms";
 import StaffPage from "@/pages/protect/Staff";
 import TasksPage from "@/pages/protect/Tasks";
+import UsersPage from "@/pages/protect/Users";
 import AboutPage from "@/pages/public/About";
 import ContactPage from "@/pages/public/Contact";
 import LandingPage from "@/pages/public/Landing";
@@ -39,6 +40,7 @@ export const router = createBrowserRouter([
     path: "dashboard",
     children: [
       { index: true, element: <DashboardPage /> },
+      { path: "users", element: <UsersPage /> },
       { path: "staff", element: <StaffPage /> },
       { path: "customers", element: <CustomersPage /> },
       { path: "rooms", element: <PRoomsPage /> },
