@@ -8,6 +8,7 @@ export const UsersQuerySchema = z
       .trim()
       .max(100, 'Search must be 100 characters or less')
       .optional(),
+    role: z.enum(['MANAGER', 'STAFF']).optional(),
     isActive: z
       .enum(['true', 'false'])
       .transform((value) => value === 'true')

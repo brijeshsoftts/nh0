@@ -6,6 +6,9 @@ export type UserProfile = {
   email: string;
   phone: string;
   role: UserRole;
+  isActive: boolean;
+  createdAt: string;
+  lastLoginAt: string | null;
   category?: Category;
   avatar: {
     id: string;
@@ -13,6 +16,8 @@ export type UserProfile = {
     altText: string | null;
   } | null;
 };
+
+export type UserDetails = UserProfile;
 
 export type User = {
   id: string;

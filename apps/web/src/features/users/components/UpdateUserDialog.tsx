@@ -2,7 +2,7 @@ import { Check } from "lucide-react";
 import { useEffect } from "react";
 
 import { InputField } from "@/components/common/InputField";
-import { SelectField } from "@/components/common/SelectField";
+// import { SelectField } from "@/components/common/SelectField";
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
@@ -32,7 +32,7 @@ export function UpdateUserDialog({
     handleSubmit,
     submit,
     register,
-    control,
+    // control,
     errors,
     isPending,
     isSuccess,
@@ -87,7 +87,7 @@ export function UpdateUserDialog({
               disabled={isPending}
             />
 
-            <SelectField
+            {/* <SelectField
               name="role"
               label="Role"
               control={control}
@@ -97,7 +97,7 @@ export function UpdateUserDialog({
               ]}
               error={errors.role?.message}
               disabled={isPending}
-            />
+            /> */}
           </div>
 
           <DialogFooter className="flex flex-col-reverse gap-2 sm:flex-row sm:justify-end">

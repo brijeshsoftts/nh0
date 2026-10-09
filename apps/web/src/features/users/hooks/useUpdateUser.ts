@@ -47,10 +47,19 @@ export function useUpdateUserFacade(userId: string) {
 }
 
 export const useUpdateUserStatus = (userId: string, isActive: boolean) => {
-  const { mutate, isPending } = useUpdateUser(userId);
+  const queryClient = useQueryClient();
+  const { mutate, isPending } = useMutation({
+    mutationKey: usersMutationKeys.update,
+    mutationFn: () => usersService.updateStatus(userId, !isActive),
+    onSuccess: (res) => {
+      toast.success(res?.message || "User status updated successfully.");
+      queryClient.invalidateQueries({ queryKey: usersKeys.all });
+    },
+    onError: notifyError,
+  });
 
   const handleToggleStatus = () => {
-    mutate({ isActive: !isActive });
+    mutate();
   };
 
   return {

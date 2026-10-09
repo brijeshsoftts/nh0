@@ -14,12 +14,41 @@ export const CreateUserSchema = z
       .trim()
       .min(7, 'Phone number must be at least 7 characters')
       .max(20, 'Phone number must be 20 characters or fewer'),
+    role: z.enum(['MANAGER', 'STAFF']).default('MANAGER'),
     password: z
       .string('Password must be a string')
       .min(8, 'Password must be at least 8 characters')
       .max(128, 'Password must be 128 characters or fewer')
       .default('Admin@1234'),
+    staffProfile: z
+      .object({
+        fatherName: z.string().trim().min(2).max(100),
+        motherName: z.string().trim().min(2).max(100),
+        idProofNumber: z.string().trim().min(1).max(100),
+        qualification: z.string().trim().min(1).max(200),
+        experience: z.string().trim().min(1).max(100),
+        category: z.enum([
+          'RECEPTIONIST',
+          'HOUSEKEEPER',
+          'SECURITY_GUARD',
+          'WAITER',
+        ]),
+        emergencyContact: z.string().trim().min(7).max(20),
+        address: z.string().trim().min(1).max(500),
+      })
+      .strict()
+      .optional(),
   })
-  .strict();
+  .strict()
+  .refine(
+    (value) =>
+      (value.role === 'STAFF' && value.staffProfile !== undefined) ||
+      (value.role === 'MANAGER' && value.staffProfile === undefined),
+    {
+      message:
+        'Staff accounts require a staff profile; manager accounts must not include one',
+      path: ['staffProfile'],
+    },
+  );
 
 export class CreateUserDto extends createZodDto(CreateUserSchema) {}

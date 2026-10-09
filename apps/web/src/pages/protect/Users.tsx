@@ -3,6 +3,7 @@ import { Plus } from "lucide-react";
 import { Header } from "@/components/common/Header";
 import { Button } from "@/components/ui/button";
 import { CreateUserDialog } from "@/features/users/components/CreateUserDialog";
+import { UsersStats } from "@/features/users/components/UsersStats";
 import { UserTable } from "@/features/users/components/UserTable";
 
 export default function UsersPage() {
@@ -25,6 +26,7 @@ export default function UsersPage() {
           </CreateUserDialog>
         }
       />
+      <UsersStats />
       <UserTable />
     </>
   );

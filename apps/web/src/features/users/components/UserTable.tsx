@@ -12,11 +12,13 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { useDebounce } from "@/hooks/useDebounce";
 
+import { useDeleteUser } from "../hooks/useDeleteUser";
 import { useUpdateUserStatus } from "../hooks/useUpdateUser";
 import { useUsers } from "../hooks/useUsers";
 import type { User } from "../users.types";
 
 import { UpdateUserDialog } from "./UpdateUserDialog";
+import { ViewUserDetails } from "./ViewUserDetails";
 
 export function UserTable() {
   const [search, setSearch] = useState("");
@@ -102,10 +104,13 @@ export function UserTable() {
 
 function ActionDropdownMenu({ user }: { user: User }) {
   const [isUpdateOpen, setIsUpdateOpen] = useState(false);
+  const [isViewOpen, setIsViewOpen] = useState(false);
+
   const { handleToggleStatus, isPending } = useUpdateUserStatus(
     user.id,
     user.isActive
   );
+  const { handleDelete, isDeleting } = useDeleteUser(user.id);
 
   return (
     <>
@@ -122,22 +127,32 @@ function ActionDropdownMenu({ user }: { user: User }) {
         </DropdownMenuTrigger>
 
         <DropdownMenuContent align="end">
-          <DropdownMenuItem>
+          <DropdownMenuItem onClick={() => setIsViewOpen(true)}>
             <Eye className="mr-2 size-4" />
             View
           </DropdownMenuItem>
 
-          <DropdownMenuItem onClick={handleToggleStatus} disabled={isPending}>
+          <DropdownMenuItem
+            onClick={handleToggleStatus}
+            disabled={isPending || isDeleting}
+          >
             <Power className="mr-2 size-4" />
             {user.isActive ? "Deactivate" : "Activate"}
           </DropdownMenuItem>
 
-          <DropdownMenuItem onClick={() => setIsUpdateOpen(true)}>
+          <DropdownMenuItem
+            onClick={() => setIsUpdateOpen(true)}
+            disabled={isDeleting || isPending}
+          >
             <Pencil className="mr-2 size-4" />
             Update
           </DropdownMenuItem>
 
-          <DropdownMenuItem className="text-destructive">
+          <DropdownMenuItem
+            className="text-destructive"
+            onClick={() => handleDelete()}
+            disabled={isDeleting}
+          >
             <Trash2 className="mr-2 size-4" />
             Delete
           </DropdownMenuItem>
@@ -149,6 +164,14 @@ function ActionDropdownMenu({ user }: { user: User }) {
           user={user}
           open={isUpdateOpen}
           onOpenChange={setIsUpdateOpen}
+        />
+      )}
+
+      {isViewOpen && (
+        <ViewUserDetails
+          id={user.id}
+          open={isViewOpen}
+          onOpenChange={setIsViewOpen}
         />
       )}
     </>
