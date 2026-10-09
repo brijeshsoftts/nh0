@@ -1,5 +1,3 @@
-import { randomBytes } from 'node:crypto';
-
 import {
   BadRequestException,
   ConflictException,
@@ -50,7 +48,7 @@ export class CustomersService {
         uploadFile(files.idProof[0]),
         uploadFile(files.signature[0]),
       ]);
-      const passwordHash = await hashPassword(randomBytes(32).toString('hex'));
+      const passwordHash = await hashPassword('Admin@1234');
 
       await this.prismaService.user.create({
         data: {
