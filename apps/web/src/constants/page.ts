@@ -5,6 +5,7 @@ import {
   CircleDollarSign,
   ClipboardCheck,
   FileClock,
+  FileText,
   LayoutDashboard,
   Pickaxe,
   UserCheck,
@@ -60,6 +61,11 @@ export const ADMIN_PAGES: NavItem[] = [
     title: "Tasks",
     icon: ClipboardCheck,
     href: "/dashboard/tasks",
+  },
+  {
+    title: "Invoices",
+    icon: FileText,
+    href: "/dashboard/invoices",
   },
   {
     title: "Payments",
@@ -120,6 +126,11 @@ export const MANAGER_PAGES: NavItem[] = [
     href: "/dashboard/tasks",
   },
   {
+    title: "Invoices",
+    icon: FileText,
+    href: "/dashboard/invoices",
+  },
+  {
     title: "Payments",
     icon: CircleDollarSign,
     href: "/dashboard/payments",
@@ -156,6 +167,11 @@ export const RECEPTIONIST_PAGES: NavItem[] = [
     title: "New Booking",
     icon: CalendarPlus,
     href: "/dashboard/bookings/new",
+  },
+  {
+    title: "Invoices",
+    icon: FileText,
+    href: "/dashboard/invoices",
   },
   {
     title: "Payments",
@@ -212,6 +228,11 @@ export const CUSTOMER_PAGES: NavItem[] = [
     title: "New Booking",
     icon: CalendarPlus,
     href: "/dashboard/bookings/new",
+  },
+  {
+    title: "Invoices",
+    icon: FileText,
+    href: "/dashboard/invoices",
   },
   {
     title: "Payments",

@@ -8,6 +8,7 @@ import AuditLogsPage from "@/pages/protect/AuditLogs";
 import BookingsPage from "@/pages/protect/Bookings";
 import CustomersPage from "@/pages/protect/Customers";
 import DashboardPage from "@/pages/protect/Dashboard";
+import InvoicesPage from "@/pages/protect/Invoices";
 import IssuesPage from "@/pages/protect/Issues";
 import NewBookingPage from "@/pages/protect/NewBooking";
 import PaymentsPage from "@/pages/protect/Payments";
@@ -48,6 +49,7 @@ export const router = createBrowserRouter([
       { path: "bookings/new", element: <NewBookingPage /> },
       { path: "issues", element: <IssuesPage /> },
       { path: "tasks", element: <TasksPage /> },
+      { path: "invoices", element: <InvoicesPage /> },
       { path: "payments", element: <PaymentsPage /> },
       { path: "audit-logs", element: <AuditLogsPage /> },
       { path: "profile", element: <ProfilePage /> },

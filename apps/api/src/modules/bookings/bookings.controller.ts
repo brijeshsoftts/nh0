@@ -81,6 +81,8 @@ export class BookingsController {
     return apiResponse({ data });
   }
 
+  @UseGuards(AuthGuard, RoleGuard)
+  @Roles('ADMIN', 'MANAGER', 'STAFF')
   @Post()
   @HttpCode(HttpStatus.CREATED)
   async create(

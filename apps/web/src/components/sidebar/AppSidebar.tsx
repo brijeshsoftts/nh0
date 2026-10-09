@@ -1,4 +1,4 @@
-import { ArrowUpRight, ExternalLink, ShieldCheck } from "lucide-react";
+import { ShieldCheck } from "lucide-react";
 import { Link, useNavigate } from "react-router-dom";
 
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
@@ -64,16 +64,6 @@ export function AppSidebar() {
           <ScrollArea className="h-full">
             <div className="px-4">{links && <NavMain items={links} />}</div>
             <div className="absolute bottom-2 w-full space-y-3 border-t border-border/80 p-4 pb-0">
-              <Link
-                to="/"
-                className="flex items-center justify-between rounded-xl px-3 py-2 text-xs transition-colors hover:bg-muted hover:text-foreground"
-              >
-                <span className="flex items-center gap-2">
-                  <ExternalLink className="h-3.5 w-3.5" />
-                  <span>Public</span>
-                </span>
-                <ArrowUpRight className="h-3.5 w-3.5 opacity-60" />
-              </Link>
               <div className="rounded-md border border-border/60 bg-background/50 p-2 shadow-xs">
                 <div className="flex items-center gap-3 rounded-md px-2 py-2 transition-colors hover:bg-muted/50">
                   <Avatar className="size-9 shrink-0 border border-border/60">
