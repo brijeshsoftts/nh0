@@ -144,11 +144,9 @@ export const InvoiceBadge = ({
   value: "UNPAID" | "PARTIALLY_PAID" | "PAID" | "REFUNDED";
 }) => <EnumBadge value={value} />;
 
-export const PaymentMethodBadge = ({
-  value,
-}: {
-  value: "CASH" | "CARD" | "UPI" | "BANK_TRANSFER";
-}) => <EnumBadge value={value} />;
+export const PaymentMethodBadge = ({ value }: { value: "CASH" | "ONLINE" }) => (
+  <EnumBadge value={value} />
+);
 
 export const PaymentStatusBadge = ({
   value,

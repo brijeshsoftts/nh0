@@ -13,6 +13,7 @@ import { PrismaModule } from './prisma/prisma.module';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
 import { env } from './config';
+import { PaymentsModule } from './modules/payments/payments.module';
 
 @Module({
   imports: [
@@ -30,6 +31,7 @@ import { env } from './config';
     RoomsModule,
     BookingsModule,
     CustomersModule,
+    PaymentsModule,
   ],
   controllers: [AppController],
   providers: [AppService],

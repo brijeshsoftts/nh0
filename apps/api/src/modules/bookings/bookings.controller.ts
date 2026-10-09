@@ -11,7 +11,7 @@ import {
   UseGuards,
 } from '@nestjs/common';
 
-import { Roles } from '../../common/decorators';
+import { CurrentUser, Roles } from '../../common/decorators';
 import { AuthGuard, RoleGuard } from '../../common/guards';
 import { apiListResponse, apiResponse } from '../../common/helpers';
 import { ValidationPipe } from '../../common/pipes';
@@ -85,8 +85,9 @@ export class BookingsController {
   @HttpCode(HttpStatus.CREATED)
   async create(
     @Body(new ValidationPipe(CreateBookingSchema)) body: CreateBookingDto,
+    @CurrentUser('id') userId: string,
   ) {
-    const data = await this.bookingsService.create(body);
+    const data = await this.bookingsService.create(userId, body);
     return apiResponse({ data });
   }
 }

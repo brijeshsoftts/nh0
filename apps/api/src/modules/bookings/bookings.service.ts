@@ -477,7 +477,7 @@ export class BookingsService {
     }));
   }
 
-  async create(dto: CreateBookingDto) {
+  async create(createdBy: string, dto: CreateBookingDto) {
     const checkInDate = new Date(dto.checkInDate);
     const checkOutDate = new Date(dto.checkOutDate);
     const nights = Math.max(
@@ -568,6 +568,16 @@ export class BookingsService {
     const bookingReference = `BK-${Date.now()}-${Math.random().toString(36).slice(2, 6).toUpperCase()}`;
     const paymentReference = `PAY-${Date.now()}-${Math.random().toString(36).slice(2, 7).toUpperCase()}`;
 
+    const paymentStatus =
+      dto.paymentMethod === PaymentMethod.CASH
+        ? PaymentStatus.COMPLETED
+        : PaymentStatus.PENDING;
+
+    const invoiceStatus =
+      dto.paymentMethod === PaymentMethod.CASH
+        ? InvoiceStatus.PAID
+        : InvoiceStatus.UNPAID;
+
     const result = await this.prismaService.$transaction(async (tx) => {
       const booking = await tx.booking.create({
         data: {
@@ -580,7 +590,7 @@ export class BookingsService {
           specialRequest: dto.specialRequest,
           status: BookingStatus.PENDING,
           bookedAt: new Date(),
-          createdBy: dto.customerId,
+          createdBy,
         },
         select: { id: true, bookingReference: true },
       });
@@ -613,16 +623,11 @@ export class BookingsService {
           taxAmount,
           discountAmount: 0,
           totalAmount,
-          status: InvoiceStatus.UNPAID,
+          status: invoiceStatus,
           issuedAt: new Date(),
         },
         select: { id: true },
       });
-
-      const paymentStatus =
-        dto.paymentMethod === PaymentMethod.CASH
-          ? PaymentStatus.COMPLETED
-          : PaymentStatus.PENDING;
 
       const payment = await tx.payment.create({
         data: {

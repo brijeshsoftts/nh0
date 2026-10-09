@@ -117,11 +117,12 @@ export function CustomerTable() {
         isLoading={isLoading}
         isError={isError}
         refetch={refetch}
+        onPageChange={setPage}
+        pagination={pagination}
         errorMessage="Could not load customers. Please try again."
         emptyMessage="No customers match your search."
         showPagination={false}
       />
-      <Pagination pagination={pagination} onPageChange={setPage} />
     </div>
   );
 }
