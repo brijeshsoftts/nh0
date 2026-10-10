@@ -1,4 +1,4 @@
-import { EllipsisVertical } from "lucide-react";
+import { EllipsisVertical, Eye, Pencil, Power, Trash2 } from "lucide-react";
 import { useState } from "react";
 import { useSearchParams } from "react-router-dom";
 
@@ -17,8 +17,10 @@ import { getInitials } from "@/lib/format";
 
 import { useDeleteStaff } from "../hooks/useDeleteStaff";
 import { useStaffs } from "../hooks/useStaffs";
+import { useUpdateStaffStatus } from "../hooks/useUpdateStaff";
 import type { StaffItem } from "../staff.types";
 
+import { UpdateStaffDialog } from "./UpdateStaffDialog";
 import { ViewStaffDetails } from "./ViewStaffDetails";
 
 const columns: ColumnDef<StaffItem>[] = [
@@ -127,6 +129,10 @@ function ActionDropdownMenu({ staff }: { staff: StaffItem }) {
   const [isUpdateModal, setIsUpdateModal] = useState(false);
   const [isViewModal, setIsViewModal] = useState(false);
   const { handleDelete, isDeleting } = useDeleteStaff(staff.id);
+  const { handleToggleStatus, isPending } = useUpdateStaffStatus(
+    staff.id,
+    staff.isActive
+  );
 
   return (
     <>
@@ -143,29 +149,39 @@ function ActionDropdownMenu({ staff }: { staff: StaffItem }) {
 
         <DropdownMenuContent align="end">
           <DropdownMenuItem onClick={() => setIsViewModal(true)}>
+            <Eye className="mr-2 size-4" />
             View
           </DropdownMenuItem>
+          <DropdownMenuItem
+            onClick={handleToggleStatus}
+            disabled={isPending || isDeleting}
+          >
+            <Power className="mr-2 size-4" />
+            {staff.isActive ? "Deactivate" : "Activate"}
+          </DropdownMenuItem>
           <DropdownMenuItem onClick={() => setIsUpdateModal(true)}>
-            Edit
+            <Pencil className="mr-2 size-4" />
+            Update
           </DropdownMenuItem>
           <DropdownMenuItem
             className="text-destructive"
             onClick={handleDelete}
             disabled={isDeleting}
           >
+            <Trash2 className="mr-2 size-4" />
             Delete
           </DropdownMenuItem>
         </DropdownMenuContent>
       </DropdownMenu>
 
-      {/* {isUpdateModal && (
-        <UpdateCustomerDialog
+      {isUpdateModal && (
+        <UpdateStaffDialog
           open={isUpdateModal}
           onOpenChange={setIsUpdateModal}
           id={staff.id}
         />
       )}
-      */}
+
       {isViewModal && (
         <ViewStaffDetails
           open={isViewModal}

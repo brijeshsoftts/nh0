@@ -38,6 +38,7 @@ export function useUpdateStaffFacade(id: string) {
     control,
     formState: { errors },
     getValues,
+    reset,
   } = useForm<UpdateStaff>({
     resolver: zodResolver(UpdateStaffSchema),
   });
@@ -51,5 +52,30 @@ export function useUpdateStaffFacade(id: string) {
     handleSubmit,
     errors,
     getValues,
+    reset,
   };
 }
+
+export const useUpdateStaffStatus = (staffId: string, isActive: boolean) => {
+  const queryClient = useQueryClient();
+  const { mutate, isPending } = useMutation({
+    mutationKey: staffMutationKeys.update,
+    mutationFn: () => staffService.updateStatus(staffId, !isActive),
+    onSuccess: (res) => {
+      toast.success(
+        res?.message || "Staff member status updated successfully."
+      );
+      queryClient.invalidateQueries({ queryKey: staffKeys.all });
+    },
+    onError: notifyError,
+  });
+
+  const handleToggleStatus = () => {
+    mutate();
+  };
+
+  return {
+    isPending,
+    handleToggleStatus,
+  };
+};

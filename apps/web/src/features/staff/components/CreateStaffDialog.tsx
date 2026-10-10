@@ -18,7 +18,6 @@ import {
 import { Spinner } from "@/components/ui/spinner";
 
 import { useCreateStaffFacade } from "../hooks/useCreateStaff";
-import type { CreateStaff } from "../schemas/createStaff.schema";
 
 const CATEGORY_OPTIONS = [
   { id: "RECEPTIONIST", name: "Receptionist" },
@@ -107,7 +106,7 @@ export function CreateStaffDialog({ children }: { children: React.ReactNode }) {
                   disabled={isPending}
                   {...register("phone")}
                 />
-                <SelectField<CreateStaff>
+                <SelectField
                   name="category"
                   label="Staff category"
                   placeholder="Select category"
