@@ -19,7 +19,7 @@ export interface TrendChart {
   value: number;
 }
 
-type Range = "7d" | "30d" | "12m";
+export type Range = "7d" | "14d" | "28d";
 
 type Option = {
   label: string;
@@ -86,7 +86,7 @@ export function TrendChart({
             margin={{
               top: 10,
               right: 10,
-              left: 0,
+              left: 10,
               bottom: 0,
             }}
           >

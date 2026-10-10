@@ -1,29 +1,34 @@
-import type { BookingStatus } from "@/types/enum.types";
+import type { BookingStatus, PaymentStatus } from "@/types/enum.types";
 
-export interface TodaysArrival {
-  booking: {
-    id: string;
-    bookingReference: string;
-  };
-  customer: {
-    id: string;
-    fullName: string;
-  };
-  roomNumber: string;
-  checkInDate: string;
-  status: BookingStatus;
-}
+export type ArrivalItem = {
+  bookingId: string;
+  bookingReference: string;
+  customerName: string;
+  roomTypeName: string;
+  roomNumber?: string;
+  checkIn: string;
+  bookingStatus: BookingStatus;
+};
 
-export interface TodaysDeparture {
-  booking: {
-    id: string;
-    bookingReference: string;
+export type DepartureItem = {
+  bookingId: string;
+  bookingReference: string;
+  customerName: string;
+  roomTypeName: string;
+  roomNumber?: string;
+  checkOut: string;
+  paymentStatus: PaymentStatus;
+  outstandingBalance: number;
+};
+
+export type Stays = {
+  date: string;
+  arrivals: {
+    items: ArrivalItem[];
+    total: number;
   };
-  customer: {
-    id: string;
-    fullName: string;
+  departures: {
+    items: DepartureItem[];
+    total: number;
   };
-  roomNumber: string;
-  checkOutDate: string;
-  status: BookingStatus;
-}
+};

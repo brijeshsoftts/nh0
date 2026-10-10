@@ -1,51 +1,48 @@
 import { formatDate } from "date-fns/format";
 import { useState } from "react";
 
-import { type ColumnDef,DataTable } from "@/components/common/DataTable";
-import { BookingBadge } from "@/components/common/EnumBadges";
-import { StatCard } from "@/components/common/StatCard";
+import { type ColumnDef, DataTable } from "@/components/common/DataTable";
+import {
+  BookingBadge,
+  PaymentStatusBadge,
+} from "@/components/common/EnumBadges";
 import { BookingDetailsSheet } from "@/features/bookings/components/BookingDetailsSheet";
 
-import {
-  BOOKING_STATUS,
-  MANAGEMENT_STAT,
-  REVENUE_DATA,
-  ROOM_STATUS,
-  TODAYS_ARRIVALS,
-  TODAYS_DEPARTURES,
-} from "../dashboard.mock";
-import type { TodaysArrival, TodaysDeparture } from "../dashboard.types";
+import type { ArrivalItem, DepartureItem, Stays } from "../dashboard.types";
+import { useDashbaordRevenueTrend } from "../hooks/useDashbaordRevenueTrend";
+import { useDashbaordStays } from "../hooks/useDashbaordStays";
+import { useDashbaordBookingStatus } from "../hooks/useDashboardBookingStatus";
 
+import { DashboardStats } from "./DashboardStats";
 import { DonutChart } from "./DonutChart";
-import { StatusBarChart } from "./StatusBarChart";
-import { TrendChart } from "./TrendChart";
+import { type Range, TrendChart } from "./TrendChart";
 
-function TodaysArrivals() {
-  const columns: ColumnDef<TodaysArrival>[] = [
+function Arrivals({ arrivals }: { arrivals: Stays["arrivals"] }) {
+  const columns: ColumnDef<ArrivalItem>[] = [
     {
       key: "booking",
       header: "Booking",
-      cell: (row) => <>{row.booking.bookingReference}</>,
+      cell: (row) => <>{row.bookingReference}</>,
     },
     {
       key: "customer",
       header: "Customer",
-      cell: (row) => <>{row.customer.fullName}</>,
+      cell: (row) => <>{row.customerName}</>,
     },
     {
       key: "room",
       header: "Room",
-      cell: (row) => row.roomNumber,
+      cell: (row) => row.roomNumber ?? "-",
     },
     {
       key: "checkin",
       header: "Check In",
-      cell: (row) => formatDate(row.checkInDate, "dd MMM, yyyy"),
+      cell: (row) => formatDate(row.checkIn, "dd MMM, yyyy"),
     },
     {
       key: "status",
       header: "Status",
-      cell: (row) => <BookingBadge value={row.status} />,
+      cell: (row) => <BookingBadge value={row.bookingStatus} />,
     },
   ];
 
@@ -55,8 +52,8 @@ function TodaysArrivals() {
     <>
       <DataTable
         title="Today's Arrivals"
-        description="Guests scheduled to check in today"
-        data={TODAYS_ARRIVALS}
+        description={`Guests scheduled to check in today - ${arrivals.total} total`}
+        data={arrivals.items}
         columns={columns}
         showSearch={false}
         showPagination={false}
@@ -66,7 +63,7 @@ function TodaysArrivals() {
             <BookingDetailsSheet
               onOpenChange={() => setIsVisible(false)}
               open={isVisible}
-              bookingId={row.booking.id}
+              bookingId={row.bookingId}
             />
           )
         }
@@ -75,41 +72,47 @@ function TodaysArrivals() {
   );
 }
 
-function TodaysDepartures() {
-  const columns: ColumnDef<TodaysDeparture>[] = [
+function Departures({ departures }: { departures: Stays["departures"] }) {
+  const columns: ColumnDef<DepartureItem>[] = [
     {
       key: "booking",
       header: "Booking",
-      cell: (row) => <>{row.booking.bookingReference}</>,
+      cell: (row) => <>{row.bookingReference}</>,
     },
     {
       key: "customer",
       header: "Customer",
-      cell: (row) => <>{row.customer.fullName}</>,
+      cell: (row) => <>{row.customerName}</>,
     },
     {
       key: "room",
       header: "Room",
-      cell: (row) => row.roomNumber,
+      cell: (row) => row.roomNumber ?? "-",
     },
     {
       key: "checkout",
       header: "Check Out",
-      cell: (row) => formatDate(row.checkOutDate, "dd MMM, yyyy"),
+      cell: (row) => formatDate(row.checkOut, "dd MMM, yyyy"),
     },
     {
-      key: "status",
-      header: "Status",
-      cell: (row) => <BookingBadge value={row.status} />,
+      key: "paymentStatus",
+      header: "Payment Status",
+      cell: (row) => <PaymentStatusBadge value={row.paymentStatus} />,
+    },
+    {
+      key: "outstandingBalance",
+      header: "Outstanding Balance",
+      cell: (row) => row.outstandingBalance.toLocaleString(),
     },
   ];
+
   const [isVisible, setIsVisible] = useState(false);
 
   return (
     <DataTable
-      title="Today's Departures"
-      description="Guests scheduled to check out today"
-      data={TODAYS_DEPARTURES}
+      title="Today's departures"
+      description={`Guests scheduled to check out today - ${departures.total} total`}
+      data={departures.items}
       columns={columns}
       showSearch={false}
       showPagination={false}
@@ -119,7 +122,7 @@ function TodaysDepartures() {
           <BookingDetailsSheet
             onOpenChange={() => setIsVisible(false)}
             open={isVisible}
-            bookingId={row.booking.id}
+            bookingId={row.bookingId}
           />
         )
       }
@@ -127,54 +130,89 @@ function TodaysDepartures() {
   );
 }
 
+function RevenueTrend() {
+  const [range, setRange] = useState<Range>("7d");
+  const { data, isLoading, isError } = useDashbaordRevenueTrend(range);
+
+  if (isLoading) {
+    return <>Loading</>;
+  }
+  if (isError || !data) {
+    return <>Error</>;
+  }
+
+  return (
+    <TrendChart
+      data={data}
+      range={range}
+      onRangeChange={setRange}
+      title="Revenue trend"
+      description="Successful payments collected per day."
+      options={[
+        {
+          label: "7 days",
+          value: "7d",
+        },
+        {
+          label: "14 days",
+          value: "14d",
+        },
+        {
+          label: "28 days",
+          value: "28d",
+        },
+      ]}
+    />
+  );
+}
+
+function BookingStatus() {
+  const { data, isLoading, isError } = useDashbaordBookingStatus();
+
+  if (isLoading) {
+    return <>Loading</>;
+  }
+  if (isError || !data) {
+    return <>Error</>;
+  }
+
+  return (
+    <DonutChart
+      data={data}
+      title="Booking status distribution"
+      description="Booking counts grouped by current status."
+      centerLabel="Total"
+    />
+  );
+}
+
+function Stays() {
+  const { data, isLoading, isError } = useDashbaordStays();
+
+  if (isLoading) {
+    return <>Loading</>;
+  }
+  if (isError || !data) {
+    return <>Error</>;
+  }
+
+  return (
+    <div className="grid gap-6 lg:grid-cols-2">
+      <Arrivals arrivals={data.arrivals} />
+      <Departures departures={data.departures} />
+    </div>
+  );
+}
+
 export function ManagementDashboard() {
   return (
     <>
-      <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-4">
-        {MANAGEMENT_STAT.map((kpi) => (
-          <StatCard key={kpi.id} {...kpi} />
-        ))}
+      <DashboardStats />
+      <div className="grid items-start gap-6 lg:grid-cols-2">
+        <RevenueTrend />
+        <BookingStatus />
       </div>
-
-      <TrendChart
-        data={REVENUE_DATA}
-        range={"7d"}
-        title="Revenue Trend"
-        description="Revenue from completed payments"
-        options={[
-          {
-            label: "7 days",
-            value: "7d",
-          },
-          {
-            label: "30 days",
-            value: "30d",
-          },
-          {
-            label: "12 months",
-            value: "12m",
-          },
-        ]}
-      />
-
-      <div className="grid gap-6 lg:grid-cols-2">
-        <StatusBarChart
-          data={BOOKING_STATUS}
-          title="Booking Status"
-          description="Current booking distribution"
-        />
-        <DonutChart
-          data={ROOM_STATUS}
-          title="Room Status"
-          description="Current room availability"
-          centerLabel="Total"
-        />
-      </div>
-
-      <div className="grid gap-6 lg:grid-cols-2">
-        <TodaysArrivals />
-        <TodaysDepartures />
-      </div>
+      <Stays />
     </>
   );
 }

@@ -613,6 +613,7 @@ export class DashboardService {
         description: 'Occupied rooms ÷ active rooms',
         icon: 'BedDouble',
         tone: 'emerald',
+        link: '/rooms?status=occupied',
       },
       {
         id: 'todays-arrivals',
@@ -621,6 +622,7 @@ export class DashboardService {
         description: 'Expected check-ins',
         icon: 'LogIn',
         tone: 'gold',
+        link: '/bookings?checkIn=today',
       },
       {
         id: 'monthly-revenue',
@@ -629,6 +631,7 @@ export class DashboardService {
         description: 'Successful payments received',
         icon: 'IndianRupee',
         tone: 'teal',
+        link: '/payments',
       },
       {
         id: 'open-issues',
@@ -637,6 +640,7 @@ export class DashboardService {
         description: 'Unresolved maintenance issues',
         icon: 'Wrench',
         tone: 'rose',
+        link: '/issues',
       },
     ];
   }
