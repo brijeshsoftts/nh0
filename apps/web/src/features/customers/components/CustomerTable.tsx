@@ -4,7 +4,6 @@ import { useState } from "react";
 import { type ColumnDef, DataTable } from "@/components/common/DataTable";
 import { StatusBadge } from "@/components/common/EnumBadges";
 import { IconBtn } from "@/components/common/IconBtn";
-import { Pagination } from "@/components/common/Pagination";
 import { Badge } from "@/components/ui/badge";
 import {
   DropdownMenu,
@@ -121,7 +120,7 @@ export function CustomerTable() {
         pagination={pagination}
         errorMessage="Could not load customers. Please try again."
         emptyMessage="No customers match your search."
-        showPagination={false}
+        showPagination
       />
     </div>
   );

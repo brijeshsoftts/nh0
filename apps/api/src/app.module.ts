@@ -5,7 +5,9 @@ import { AmenitiesModule } from './modules/amenities/amenities.module';
 import { AuthModule } from './modules/auth/auth.module';
 import { BookingsModule } from './modules/bookings/bookings.module';
 import { CustomersModule } from './modules/customers/customers.module';
+import { DashboardModule } from './modules/dashboard/dashboard.module';
 import { InvoicesModule } from './modules/invoices/invoices.module';
+import { IssuesModule } from './modules/issues/issues.module';
 import { PaymentsModule } from './modules/payments/payments.module';
 import { PublicModule } from './modules/public/public.module';
 import { RoomTypesModule } from './modules/room-types/room-types.module';
@@ -16,7 +18,6 @@ import { PrismaModule } from './prisma/prisma.module';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
 import { env } from './config';
-import { DashboardModule } from './modules/dashboard/dashboard.module';
 
 @Module({
   imports: [
@@ -38,6 +39,7 @@ import { DashboardModule } from './modules/dashboard/dashboard.module';
     InvoicesModule,
     StaffModule,
     DashboardModule,
+    IssuesModule,
   ],
   controllers: [AppController],
   providers: [AppService],

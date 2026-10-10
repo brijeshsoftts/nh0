@@ -1,11 +1,8 @@
 import type { StatCard } from "@/components/common/StatCard";
 
-import type { HousekeeperRoom } from "../rooms/rooms.types";
-
 import type { DonutChartData } from "./components/DonutChart";
 import type { StatusBarChart } from "./components/StatusBarChart";
 import type { TrendChart } from "./components/TrendChart";
-import type { TodaysArrival, TodaysDeparture } from "./dashboard.types";
 
 // MANAGEMENT MOCK DATA
 export const MANAGEMENT_STAT: StatCard[] = [
@@ -47,7 +44,7 @@ export const MANAGEMENT_STAT: StatCard[] = [
   },
 ];
 
-export const TODAYS_ARRIVALS: TodaysArrival[] = [
+export const TODAYS_ARRIVALS = [
   {
     booking: {
       id: "booking-1001",
@@ -115,7 +112,7 @@ export const TODAYS_ARRIVALS: TodaysArrival[] = [
   },
 ];
 
-export const TODAYS_DEPARTURES: TodaysDeparture[] = [
+export const TODAYS_DEPARTURES = [
   {
     booking: {
       id: "booking-0901",
@@ -349,7 +346,7 @@ export const TASK_TYPES_STATUS: DonutChartData[] = [
   },
 ];
 
-export const HOUSEKEEPER_ROOMS: HousekeeperRoom[] = [
+export const HOUSEKEEPER_ROOMS = [
   {
     id: "room-101",
     name: "Deluxe King Room",
