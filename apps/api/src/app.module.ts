@@ -16,6 +16,7 @@ import { PrismaModule } from './prisma/prisma.module';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
 import { env } from './config';
+import { DashboardModule } from './modules/dashboard/dashboard.module';
 
 @Module({
   imports: [
@@ -36,6 +37,7 @@ import { env } from './config';
     PaymentsModule,
     InvoicesModule,
     StaffModule,
+    DashboardModule,
   ],
   controllers: [AppController],
   providers: [AppService],

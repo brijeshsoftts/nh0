@@ -17,7 +17,7 @@ import {
 } from '../../common/helpers';
 import { env } from '../../config';
 import { PrismaService } from '../../prisma/prisma.service';
-import { UserRole } from '../../types/prisma.types';
+import { Category, UserRole } from '../../types/prisma.types';
 
 import { LoginDto } from './dto/login.dto';
 import { AUTH_ERROR_MSG } from './auth.constants';
@@ -82,6 +82,7 @@ export class AuthService {
       user.id,
       user.email,
       user.role,
+      user.staff?.category,
     );
 
     setCookies(res, accessToken, refreshToken);
@@ -140,6 +141,11 @@ export class AuthService {
             id: true,
             role: true,
             email: true,
+            staff: {
+              select: {
+                category: true,
+              },
+            },
           },
         },
       },
@@ -156,6 +162,7 @@ export class AuthService {
       sub: session.userId,
       email: session.user.email,
       role: session.user.role,
+      category: session.user.staff?.category,
     };
 
     const newAccessToken = await this.jwtService.signAsync(payload, {
@@ -181,11 +188,13 @@ export class AuthService {
     userId: string,
     email: string,
     role: UserRole,
+    category?: Category,
   ): Promise<{ accessToken: string; refreshToken: string }> {
     const payload: JwtPayload = {
       sub: userId,
       email,
       role,
+      category,
     };
 
     const accessToken = await this.jwtService.signAsync(payload, {
