@@ -16,7 +16,6 @@ import type { ReactNode } from "react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
-import { Spinner } from "@/components/ui/spinner";
 import {
   Sheet,
   SheetContent,
@@ -24,6 +23,7 @@ import {
   SheetHeader,
   SheetTitle,
 } from "@/components/ui/sheet";
+import { Spinner } from "@/components/ui/spinner";
 import type {
   BookingStatus,
   InvoiceStatus,
@@ -207,17 +207,16 @@ export function BookingDetailsSheet({
     );
   }
 
-  const invoice = booking.invoices[0];
   const nights = getNights(booking.checkInDate, booking.checkOutDate);
 
   const totalPaid =
-    invoice?.payments
-      .filter((payment) => payment.paymentStatus === "COMPLETED")
+    booking.invoice?.payments
+      ?.filter((payment) => payment.paymentStatus === "COMPLETED")
       .reduce((total, payment) => total + payment.amount, 0) ?? 0;
 
   const remainingAmount = Math.max(
     0,
-    (invoice?.totalAmount ?? booking.totalAmount) - totalPaid
+    (booking.invoice?.totalAmount ?? booking.totalAmount) - totalPaid
   );
 
   return (
@@ -267,7 +266,7 @@ export function BookingDetailsSheet({
                   {booking.customer.profileImage ? (
                     <img
                       src={booking.customer.profileImage.url}
-                      alt={booking.customer.profileImage.altText}
+                      alt={booking.customer.profileImage?.altText}
                       className="size-10 shrink-0 rounded-full object-cover"
                     />
                   ) : (
@@ -371,58 +370,56 @@ export function BookingDetailsSheet({
             <Separator />
 
             {/* Rooms */}
-            <Section
-              icon={BedDouble}
-              title={`Rooms (${booking.bookingRooms.length})`}
-            >
+            <Section icon={BedDouble} title={`Rooms (${booking.bookingRoom})`}>
               <div className="space-y-2">
-                {booking.bookingRooms.map((room) => (
-                  <div key={room.id} className="rounded-lg border p-3">
-                    <div className="flex items-start justify-between gap-3">
-                      <div className="flex min-w-0 items-center gap-3">
-                        <div className="flex size-9 shrink-0 items-center justify-center rounded-md bg-muted">
-                          <BedDouble className="size-4 text-muted-foreground" />
-                        </div>
-
-                        <div className="min-w-0">
-                          <p className="text-sm font-semibold">
-                            Room {room.roomNumber}
-                          </p>
-
-                          <p className="truncate text-xs text-muted-foreground">
-                            {room.roomType?.name ?? "Room type unavailable"}
-                          </p>
-                        </div>
+                <div className="rounded-lg border p-3">
+                  <div className="flex items-start justify-between gap-3">
+                    <div className="flex min-w-0 items-center gap-3">
+                      <div className="flex size-9 shrink-0 items-center justify-center rounded-md bg-muted">
+                        <BedDouble className="size-4 text-muted-foreground" />
                       </div>
 
-                      <p className="shrink-0 text-sm font-semibold">
-                        {formatCurrency(
-                          room.pricePerNight,
-                          room.roomType?.currency
-                        )}
-                        <span className="ml-1 text-xs font-normal text-muted-foreground">
-                          /night
-                        </span>
-                      </p>
-                    </div>
+                      <div className="min-w-0">
+                        <p className="text-sm font-semibold">
+                          Room {booking.bookingRoom.roomNumber}
+                        </p>
 
-                    <div className="mt-3 grid grid-cols-2 gap-2 border-t pt-3">
-                      <div>
-                        <p className="text-xs text-muted-foreground">Floor</p>
-
-                        <p className="mt-1 text-sm font-medium">{room.floor}</p>
-                      </div>
-
-                      <div>
-                        <p className="text-xs text-muted-foreground">Bed</p>
-
-                        <p className="mt-1 text-sm font-medium">
-                          {room.roomType?.bedType ?? "—"}
+                        <p className="truncate text-xs text-muted-foreground">
+                          {booking.bookingRoom.roomType?.name ??
+                            "Room type unavailable"}
                         </p>
                       </div>
                     </div>
+
+                    <p className="shrink-0 text-sm font-semibold">
+                      {formatCurrency(
+                        booking.bookingRoom.pricePerNight,
+                        booking.bookingRoom.roomType?.currency
+                      )}
+                      <span className="ml-1 text-xs font-normal text-muted-foreground">
+                        /night
+                      </span>
+                    </p>
                   </div>
-                ))}
+
+                  <div className="mt-3 grid grid-cols-2 gap-2 border-t pt-3">
+                    <div>
+                      <p className="text-xs text-muted-foreground">Floor</p>
+
+                      <p className="mt-1 text-sm font-medium">
+                        {booking.bookingRoom.floor}
+                      </p>
+                    </div>
+
+                    <div>
+                      <p className="text-xs text-muted-foreground">Bed</p>
+
+                      <p className="mt-1 text-sm font-medium">
+                        {booking.bookingRoom.roomType?.bedType ?? "—"}
+                      </p>
+                    </div>
+                  </div>
+                </div>
               </div>
             </Section>
 
@@ -468,7 +465,7 @@ export function BookingDetailsSheet({
                           </td>
 
                           <td className="px-3 py-3 text-muted-foreground">
-                            {formatLabel(guest.gender)}
+                            {formatLabel(guest.gender ?? "OTHER")}
                           </td>
 
                           <td className="px-3 py-3 text-muted-foreground">
@@ -486,23 +483,23 @@ export function BookingDetailsSheet({
 
             {/* Pricing */}
             <Section icon={Receipt} title="Pricing">
-              {invoice ? (
+              {booking?.invoice ? (
                 <div className="rounded-lg border p-3">
                   <DetailRow
                     label="Subtotal"
-                    value={formatCurrency(invoice.subtotal)}
+                    value={formatCurrency(booking.invoice.subtotal)}
                   />
 
                   <DetailRow
                     label="Tax"
-                    value={formatCurrency(invoice.taxAmount)}
+                    value={formatCurrency(booking.invoice.taxAmount)}
                   />
 
                   <DetailRow
                     label="Discount"
                     value={
-                      invoice.discountAmount > 0
-                        ? `-${formatCurrency(invoice.discountAmount)}`
+                      booking.invoice.discountAmount > 0
+                        ? `-${formatCurrency(booking.invoice.discountAmount)}`
                         : formatCurrency(0)
                     }
                   />
@@ -514,7 +511,7 @@ export function BookingDetailsSheet({
                       label="Grand total"
                       value={
                         <span className="text-base font-bold">
-                          {formatCurrency(invoice.totalAmount)}
+                          {formatCurrency(booking.invoice.totalAmount)}
                         </span>
                       }
                     />
@@ -545,7 +542,7 @@ export function BookingDetailsSheet({
 
                     <p className="mt-1 text-sm font-semibold">
                       {formatCurrency(
-                        invoice?.totalAmount ?? booking.totalAmount
+                        booking.invoice?.totalAmount ?? booking.totalAmount
                       )}
                     </p>
                   </div>
@@ -567,21 +564,23 @@ export function BookingDetailsSheet({
                   </div>
                 </div>
 
-                {invoice && (
+                {booking.invoice && (
                   <div className="mt-4 flex items-center justify-between border-t pt-3">
                     <span className="text-sm text-muted-foreground">
                       Payment status
                     </span>
 
-                    <Badge variant={getInvoiceStatusVariant(invoice.status)}>
-                      {formatLabel(invoice.status)}
+                    <Badge
+                      variant={getInvoiceStatusVariant(booking.invoice.status)}
+                    >
+                      {formatLabel(booking.invoice.status)}
                     </Badge>
                   </div>
                 )}
               </div>
 
               {/* Payment history */}
-              {invoice?.payments.length ? (
+              {booking?.invoice?.payments?.length ? (
                 <div className="overflow-hidden rounded-lg border">
                   <div className="border-b bg-muted/50 px-3 py-2.5">
                     <p className="text-xs font-medium text-muted-foreground">
@@ -590,7 +589,7 @@ export function BookingDetailsSheet({
                   </div>
 
                   <div className="divide-y">
-                    {invoice.payments.map((payment) => (
+                    {booking.invoice.payments.map((payment) => (
                       <div
                         key={payment.id}
                         className="flex items-center justify-between gap-3 p-3"

@@ -43,14 +43,14 @@ export const ADMIN_PAGES: NavItem[] = [
     href: "/dashboard/rooms",
   },
   {
-    title: "Bookings",
-    icon: CalendarCheck,
-    href: "/dashboard/bookings",
-  },
-  {
     title: "New Booking",
     icon: CalendarPlus,
     href: "/dashboard/bookings/new",
+  },
+  {
+    title: "Bookings",
+    icon: CalendarCheck,
+    href: "/dashboard/bookings",
   },
   {
     title: "Issues",
@@ -63,14 +63,14 @@ export const ADMIN_PAGES: NavItem[] = [
     href: "/dashboard/tasks",
   },
   {
-    title: "Invoices",
-    icon: FileText,
-    href: "/dashboard/invoices",
-  },
-  {
     title: "Payments",
     icon: CircleDollarSign,
     href: "/dashboard/payments",
+  },
+  {
+    title: "Invoices",
+    icon: FileText,
+    href: "/dashboard/invoices",
   },
   {
     title: "Audit Logs",
@@ -106,14 +106,14 @@ export const MANAGER_PAGES: NavItem[] = [
     href: "/dashboard/rooms",
   },
   {
-    title: "Bookings",
-    icon: CalendarCheck,
-    href: "/dashboard/bookings",
-  },
-  {
     title: "New Booking",
     icon: CalendarPlus,
     href: "/dashboard/bookings/new",
+  },
+  {
+    title: "Bookings",
+    icon: CalendarCheck,
+    href: "/dashboard/bookings",
   },
   {
     title: "Issues",
@@ -126,14 +126,14 @@ export const MANAGER_PAGES: NavItem[] = [
     href: "/dashboard/tasks",
   },
   {
-    title: "Invoices",
-    icon: FileText,
-    href: "/dashboard/invoices",
-  },
-  {
     title: "Payments",
     icon: CircleDollarSign,
     href: "/dashboard/payments",
+  },
+  {
+    title: "Invoices",
+    icon: FileText,
+    href: "/dashboard/invoices",
   },
   {
     title: "Profile",
@@ -159,24 +159,24 @@ export const RECEPTIONIST_PAGES: NavItem[] = [
     href: "/dashboard/rooms",
   },
   {
-    title: "Bookings",
-    icon: CalendarCheck,
-    href: "/dashboard/bookings",
-  },
-  {
     title: "New Booking",
     icon: CalendarPlus,
     href: "/dashboard/bookings/new",
   },
   {
-    title: "Invoices",
-    icon: FileText,
-    href: "/dashboard/invoices",
+    title: "Bookings",
+    icon: CalendarCheck,
+    href: "/dashboard/bookings",
   },
   {
     title: "Payments",
     icon: CircleDollarSign,
     href: "/dashboard/payments",
+  },
+  {
+    title: "Invoices",
+    icon: FileText,
+    href: "/dashboard/invoices",
   },
   {
     title: "Profile",
@@ -220,24 +220,24 @@ export const CUSTOMER_PAGES: NavItem[] = [
     href: "/dashboard/rooms",
   },
   {
-    title: "My Bookings",
-    icon: CalendarCheck,
-    href: "/dashboard/bookings",
-  },
-  {
     title: "New Booking",
     icon: CalendarPlus,
     href: "/dashboard/bookings/new",
   },
   {
-    title: "Invoices",
-    icon: FileText,
-    href: "/dashboard/invoices",
+    title: "My Bookings",
+    icon: CalendarCheck,
+    href: "/dashboard/bookings",
   },
   {
     title: "Payments",
     icon: CircleDollarSign,
     href: "/dashboard/payments",
+  },
+  {
+    title: "Invoices",
+    icon: FileText,
+    href: "/dashboard/invoices",
   },
   {
     title: "Issues",

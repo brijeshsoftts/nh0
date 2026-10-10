@@ -83,37 +83,6 @@ export interface BookingDetailsInvoice {
   payments: BookingDetailsPayment[];
 }
 
-export interface BookingDetails {
-  id: string;
-  bookingReference: string;
-
-  status: BookingStatus;
-
-  checkInDate: string;
-  checkOutDate: string;
-
-  totalGuests: number;
-  totalAmount: number;
-
-  specialRequest?: string;
-
-  bookedAt: string;
-  checkedInAt?: string;
-  checkedOutAt?: string;
-  cancelledAt?: string;
-
-  createdAt: string;
-  updatedAt: string;
-
-  customer: BookingDetailsCustomer;
-
-  bookingRooms: BookingDetailsRoom[];
-
-  bookingGuests: BookingDetailsGuest[];
-
-  invoices: BookingDetailsInvoice[];
-}
-
 export type BookingListItem = {
   id: string;
   bookingReference: string;
@@ -135,27 +104,46 @@ export type BookingListItem = {
 export type BookingDetails = {
   id: string;
   bookingReference: string;
-  status: BookingStatus;
+  customerId: string;
   checkInDate: string;
   checkOutDate: string;
   totalGuests: number;
   totalAmount: number;
   specialRequest?: string;
+  status: BookingStatus;
   bookedAt: string;
   checkedInAt?: string;
   checkedOutAt?: string;
   cancelledAt?: string;
+  createdBy: string;
   createdAt: string;
   updatedAt: string;
+
   customer: {
     id: string;
     fullName: string;
     email: string;
     phone: string;
-    profileImage?: { id: string; url: string; altText: string };
-    profile?: { idProofNumber: string; address: string };
+    profileImage?: {
+      url: string;
+      altText?: string;
+    };
+    profile?: {
+      idProofNumber: string;
+      address: string;
+    };
   };
-  bookingRooms: {
+  creator: {
+    id: string;
+    fullName: string;
+    email: string;
+    phone: string;
+    profileImage?: {
+      url: string;
+      altText?: string;
+    };
+  };
+  bookingRoom: {
     id: string;
     roomNumber: string;
     name?: string;
@@ -171,15 +159,16 @@ export type BookingDetails = {
       bedCount: number;
     };
     pricePerNight: number;
-  }[];
+  };
   bookingGuests: {
     id: string;
     fullName: string;
-    age: number;
-    gender: import("@/types/enum.types").Gender;
+    age: number | null;
+    gender?: string;
     idProofNumber?: string;
   }[];
-  invoices: {
+
+  invoice: {
     id: string;
     invoiceNumber: string;
     subtotal: number;
@@ -188,7 +177,7 @@ export type BookingDetails = {
     totalAmount: number;
     status: InvoiceStatus;
     issuedAt: string;
-    payments: {
+    payments?: {
       id: string;
       paymentReference: string;
       transactionId?: string;
@@ -197,9 +186,12 @@ export type BookingDetails = {
       paymentStatus: PaymentStatus;
       paidAt?: string;
       createdAt: string;
-      recordedBy?: { id: string; fullName: string };
+      recordedBy?: {
+        id: string;
+        fullName: string;
+      };
     }[];
-  }[];
+  };
 };
 
 export type BookingListParams = {
