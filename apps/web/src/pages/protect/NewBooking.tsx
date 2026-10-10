@@ -8,6 +8,7 @@ import { Input } from "@/components/ui/input";
 import type { AvailableBookingRoom } from "@/features/bookings/bookings.types";
 import { useAvailableBookingRooms } from "@/features/bookings/hooks/useAvailableBookingRooms";
 import { useCreateBooking } from "@/features/bookings/hooks/useCreateBooking";
+import { CreateCustomerDialog } from "@/features/customers/components/CreateCustomerDialog";
 import { SearchCustomer } from "@/features/customers/components/SearchCustomer";
 import type { SearchCustomer as CustomerSearchResult } from "@/features/customers/customers.types";
 
@@ -278,9 +279,11 @@ export default function NewBookingPage() {
               </Card>
             )}
 
-            <Button type="button" variant="outline" className="w-full">
-              Create Customer
-            </Button>
+            <CreateCustomerDialog>
+              <Button type="button" variant="outline" className="w-full">
+                Create Customer
+              </Button>
+            </CreateCustomerDialog>
           </div>
         );
       case 2:
