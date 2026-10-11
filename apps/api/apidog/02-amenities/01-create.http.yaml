@@ -2,11 +2,11 @@ method: post
 url: "{{base_url}}/amenities"
 requestBody:
   type: application/json
-  data: |2-
-     {
-        "name": "Work Desk",
-        "description": "Dedicated workspace with a desk and comfortable chair.",
-        "icon": "briefcase-business",
+  data: >2-
+      {
+        "name": "Tea and Coffee Maker",
+        "description": "In-room equipment for preparing tea and coffee at your convenience.",
+        "icon": "Coffee",
         "category": "ROOM",
         "isActive": true
       }

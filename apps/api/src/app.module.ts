@@ -13,6 +13,7 @@ import { PublicModule } from './modules/public/public.module';
 import { RoomTypesModule } from './modules/room-types/room-types.module';
 import { RoomsModule } from './modules/rooms/rooms.module';
 import { StaffModule } from './modules/staff/staff.module';
+import { TasksModule } from './modules/tasks/tasks.module';
 import { UsersModule } from './modules/users/users.module';
 import { PrismaModule } from './prisma/prisma.module';
 import { AppController } from './app.controller';
@@ -40,6 +41,7 @@ import { env } from './config';
     StaffModule,
     DashboardModule,
     IssuesModule,
+    TasksModule,
   ],
   controllers: [AppController],
   providers: [AppService],

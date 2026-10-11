@@ -32,17 +32,15 @@ export function Pagination({ pagination, onPageChange }: PaginationProps) {
       onPageChange(currentPage + 1);
     }
   }; // Don't render pagination when there are no records.
-  if (totalRecords === 0) {
-    return null;
-  }
+
   return (
     <div className="flex flex-col gap-4 border-t border-border/60 bg-card px-4 py-4 sm:px-6 md:flex-row md:items-center md:justify-between">
       {/* ───────────────── Record information ───────────────── */}
       <div className="text-center text-xs text-muted-foreground md:text-left">
-        Showing
+        Showing{" "}
         <span className="font-medium text-foreground">
           {startRecord}–{endRecord}
-        </span>
+        </span>{" "}
         of <span className="font-medium text-foreground"> {totalRecords} </span>
         records
       </div>

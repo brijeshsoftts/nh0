@@ -1,66 +1,18 @@
-import type {
-  HousekeepingStatus,
-  OccupancyStatus,
-  TaskStatus,
-  TaskType,
-} from "@/types/enum.types";
+import type { TaskStatus, TaskType } from "@/types/enum.types";
 
-export interface TaskDetailsRoom {
+export type TaskItem = {
   id: string;
-  roomNumber: string;
-  name?: string;
-  floor: number;
-  description?: string;
-
-  occupancyStatus: OccupancyStatus;
-  housekeepingStatus: HousekeepingStatus;
-
-  roomType: {
+  room: {
     id: string;
-    name: string;
+    roomNumber: string;
   };
-}
-
-export interface TaskDetailsAssignee {
-  id: string;
-  fullName: string;
-  email: string;
-  phone: string;
-}
-
-export interface TaskDetailsAssignment {
-  id: string;
-  isActive: boolean;
-  createdAt: string;
-
-  housekeeper: {
-    id: string;
-    fullName: string;
-  };
-
-  assignedBy: {
-    id: string;
-    fullName: string;
-  };
-}
-
-export interface TaskDetails {
-  id: string;
-
   taskType: TaskType;
   status: TaskStatus;
-
   scheduledDate: string;
-
-  startedAt?: string;
-  completedAt?: string;
-
-  createdAt: string;
-  updatedAt: string;
-
-  room: TaskDetailsRoom;
-
-  assignee: TaskDetailsAssignee;
-
-  assignment?: TaskDetailsAssignment;
-}
+  startedAt: string | null;
+  completedAt: string | null;
+  assignee: {
+    id: string;
+    fullName: string;
+  };
+};
