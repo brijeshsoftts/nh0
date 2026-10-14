@@ -19,6 +19,7 @@ import { PrismaModule } from './prisma/prisma.module';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
 import { env } from './config';
+import { ProfileModule } from './modules/profile/profile.module';
 
 @Module({
   imports: [
@@ -42,6 +43,7 @@ import { env } from './config';
     DashboardModule,
     IssuesModule,
     TasksModule,
+    ProfileModule,
   ],
   controllers: [AppController],
   providers: [AppService],

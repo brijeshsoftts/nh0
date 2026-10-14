@@ -1,6 +1,6 @@
 import { createContext, type ReactNode } from "react";
 
-import { useProfile } from "@/features/users/hooks/useProfile";
+import { useProfile } from "@/features/profile/profile.crud";
 import type { AuthCTX } from "@/types/shared.types";
 
 const initialCTX: AuthCTX = {
