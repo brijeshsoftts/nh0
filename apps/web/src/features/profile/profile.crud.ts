@@ -11,10 +11,7 @@ import {
   type ChangePassword,
   ChangePasswordSchema,
 } from "./schemas/changePassword.schema";
-import {
-  type UpdateProfile,
-  UpdateProfileSchema,
-} from "./schemas/profileUpdate.schema";
+import { type UpdateProfile } from "./schemas/profileUpdate.schema";
 import type { Profile, ProfileDetails } from "./profile.types";
 
 export const profile = createCrud()({
@@ -29,7 +26,7 @@ export const profileService = profile.service;
 const useChangePasswordMutation = profile.createAction<ChangePassword>({
   name: "changePassword",
   mutationFn: (data) =>
-    apiClient.post("/profile/change-password", data).then((r) => r.data),
+    apiClient.patch("/profile/change-password", data).then((r) => r.data),
   successMessage: "Password changed successfully.",
 });
 
