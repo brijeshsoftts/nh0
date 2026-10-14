@@ -10,6 +10,12 @@ export type RoomBase = {
   isActive: boolean;
 };
 
+export type RoomLookupItem = {
+  id: string;
+  name: string | null;
+  floor: number;
+};
+
 export type CreateRoomResponse = RoomBase & {
   createdAt: Date | null;
 };

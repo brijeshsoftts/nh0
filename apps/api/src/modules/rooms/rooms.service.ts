@@ -8,6 +8,7 @@ import { PrismaService } from '../../prisma/prisma.service';
 import { ListResponse } from '../../types/api.types';
 
 import { CreateRoomDto } from './dto/create-room.dto';
+import { RoomsLookupQueryDto } from './dto/rooms-lookup-query.dto';
 import { RoomsQueryDto } from './dto/rooms-query.dto';
 import { UpdateRoomDto } from './dto/update-room.dto';
 import { ROOM_ERROR_MSG } from './rooms.constants';
@@ -15,6 +16,7 @@ import {
   CreateRoomResponse,
   RoomDetailsResponse,
   RoomListItemResponse,
+  RoomLookupItem,
 } from './rooms.types';
 
 @Injectable()
@@ -159,6 +161,25 @@ export class RoomsService {
         total,
       },
     };
+  }
+
+  async lookup(query: RoomsLookupQueryDto): Promise<RoomLookupItem[]> {
+    const rooms = await this.prismaService.room.findMany({
+      where: {
+        ...(query.search && {
+          OR: [
+            { roomNumber: { contains: query.search, mode: 'insensitive' } },
+            { name: { contains: query.search, mode: 'insensitive' } },
+            { description: { contains: query.search, mode: 'insensitive' } },
+          ],
+        }),
+      },
+      select: { id: true, name: true, floor: true },
+      orderBy: { roomNumber: 'asc' },
+      take: query.limit,
+    });
+
+    return rooms;
   }
 
   async findOne(id: string): Promise<RoomDetailsResponse> {

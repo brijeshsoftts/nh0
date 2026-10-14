@@ -122,7 +122,7 @@ export class TasksService {
     if (!room) {
       throw new NotFoundException(TASK_ERROR_MSG.ROOM_NOT_FOUND);
     }
-
+    console.log(staff);
     if (
       staff?.category !== Category.HOUSEKEEPER ||
       !staff.user.isActive ||

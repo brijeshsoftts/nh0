@@ -26,4 +26,12 @@ export type ListParams = {
   page?: number;
   limit?: number;
   search?: string;
+  filters?: Record<string, unknown>;
+};
+
+export type LookupParams = {
+  search?: string;
+  limit?: number;
+  cursor?: string;
+  filters?: Record<string, unknown>;
 };

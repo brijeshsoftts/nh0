@@ -16,6 +16,7 @@ import {
 import { StatItem } from '../../types/shared.types';
 
 import { CreateStaffDto } from './dto/create-staff.dto';
+import { StaffLookupQueryDto } from './dto/staff-lookup-query.dto';
 import { StaffQueryDto } from './dto/staff-query.dto';
 import { UpdateStaffDto } from './dto/update-staff.dto';
 import { STAFF_ERROR_MSG } from './staff.constants';
@@ -24,6 +25,7 @@ import {
   DeleteStaffResult,
   StaffDetails,
   StaffItem,
+  StaffLookupItem,
   UpdateStaffResponse,
 } from './staff.types';
 
@@ -203,6 +205,37 @@ export class StaffService {
       data: staff.map((member) => this.mapListItem(member)),
       meta: { page, limit, total },
     };
+  }
+
+  async lookup(query: StaffLookupQueryDto): Promise<StaffLookupItem[]> {
+    const staff = await this.prismaService.staff.findMany({
+      where: {
+        ...(query.category && { category: query.category }),
+        user: {
+          is: {
+            softDeletedAt: null,
+            ...(query.search && {
+              OR: [
+                { fullName: { contains: query.search, mode: 'insensitive' } },
+                { email: { contains: query.search, mode: 'insensitive' } },
+              ],
+            }),
+          },
+        },
+      },
+      select: {
+        id: true,
+        user: { select: { id: true, fullName: true, email: true } },
+      },
+      orderBy: { user: { fullName: 'asc' } },
+      take: query.limit,
+    });
+
+    return staff.map(({ user }) => ({
+      id: user.id,
+      fullName: user.fullName,
+      email: user.email,
+    }));
   }
 
   async findOne(id: string): Promise<StaffDetails> {

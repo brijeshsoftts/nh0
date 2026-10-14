@@ -12,6 +12,12 @@ export type StaffItem = {
   createdAt: string;
 };
 
+export type StaffLookupItem = {
+  id: string;
+  fullName: string;
+  email: string;
+};
+
 export type StaffTask = {
   id: string;
   taskType: TaskType;

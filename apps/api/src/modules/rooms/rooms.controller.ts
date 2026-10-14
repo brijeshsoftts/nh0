@@ -22,6 +22,10 @@ import {
 import { ValidationPipe } from '../../common/pipes';
 
 import { CreateRoomDto, CreateRoomSchema } from './dto/create-room.dto';
+import {
+  RoomsLookupQueryDto,
+  RoomsLookupQuerySchema,
+} from './dto/rooms-lookup-query.dto';
 import { RoomsQueryDto, RoomsQuerySchema } from './dto/rooms-query.dto';
 import { UpdateRoomDto, UpdateRoomSchema } from './dto/update-room.dto';
 import { ROOM_SUCCESS_MSG } from './rooms.constants';
@@ -48,6 +52,17 @@ export class RoomsController {
   ) {
     const { data, meta } = await this.roomsService.findAll(query);
     return apiListResponse({ data, meta });
+  }
+
+  @Roles('ADMIN', 'MANAGER', 'STAFF')
+  @Get('lookup')
+  @HttpCode(HttpStatus.OK)
+  async lookup(
+    @Query(new ValidationPipe(RoomsLookupQuerySchema))
+    query: RoomsLookupQueryDto,
+  ) {
+    const data = await this.roomsService.lookup(query);
+    return apiResponse({ data });
   }
 
   @Roles('ADMIN', 'MANAGER', 'STAFF')

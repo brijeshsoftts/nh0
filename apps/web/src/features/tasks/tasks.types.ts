@@ -16,3 +16,15 @@ export type TaskItem = {
     fullName: string;
   };
 };
+
+export type HousekeeperLookupItem = {
+  id: string;
+  fullName: string;
+  phone: string;
+};
+
+export type RoomLookupItem = {
+  id: string;
+  name: string | null;
+  floor: number;
+};

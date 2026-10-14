@@ -1,53 +1,17 @@
 import { Search } from "lucide-react";
-import { useSearchParams } from "react-router-dom";
 
 import { Pagination } from "@/components/common/Pagination";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { useDebounce } from "@/hooks/useDebounce";
+import { useListParams } from "@/hooks/useListParams";
 
 import { useTasks } from "../hooks/useTasks";
 
 import { TaskCard, TaskCardSkeleton } from "./TaskCard";
 
-function parsePage(value: string | null) {
-  const page = Number(value);
-  return Number.isInteger(page) && page > 0 ? page : 1;
-}
-
 export function TaskGrid() {
-  const [searchParams, setSearchParams] = useSearchParams();
-  const search = searchParams.get("search") ?? "";
-  const page = parsePage(searchParams.get("page"));
-  const query = useDebounce(search.trim(), 400);
-
-  const { items, pagination, isLoading, isError, refetch } = useTasks({
-    search: query || undefined,
-    page,
-    limit: 10,
-  });
-
-  function updateParams(updates: Record<string, string | undefined>) {
-    const next = new URLSearchParams(searchParams);
-
-    for (const [key, value] of Object.entries(updates)) {
-      if (value) {
-        next.set(key, value);
-      } else {
-        next.delete(key);
-      }
-    }
-
-    setSearchParams(next, { replace: true });
-  }
-
-  function handleSearchChange(value: string) {
-    updateParams({ search: value || undefined, page: undefined });
-  }
-
-  function handlePageChange(nextPage: number) {
-    updateParams({ page: String(nextPage) });
-  }
+  const { searchInput, setSearch, setPage, params } = useListParams();
+  const { items, pagination, isLoading, isError, refetch } = useTasks(params);
 
   return (
     <div className="w-full overflow-hidden rounded-md border border-border bg-card text-card-foreground shadow-sm">
@@ -63,8 +27,8 @@ export function TaskGrid() {
           <Search className="pointer-events-none absolute top-1/2 left-3 size-4 -translate-y-1/2 text-muted-foreground" />
           <Input
             type="text"
-            value={search}
-            onChange={(event) => handleSearchChange(event.target.value)}
+            value={searchInput}
+            onChange={(event) => setSearch(event.target.value)}
             placeholder="Search tasks..."
             aria-label="Search tasks"
             className="h-9 pl-9 text-sm"
@@ -93,7 +57,7 @@ export function TaskGrid() {
         </div>
       ) : items.length === 0 ? (
         <p className="py-12 text-center text-sm text-muted-foreground">
-          {query ? "No tasks match your search." : "No tasks found."}
+          {searchInput ? "No tasks match your search." : "No tasks found."}
         </p>
       ) : (
         <div className="grid grid-cols-1 gap-6 p-4 sm:grid-cols-2 sm:p-6 lg:grid-cols-4">
@@ -104,8 +68,10 @@ export function TaskGrid() {
       )}
 
       <Pagination
-        pagination={pagination ? { ...pagination, page } : undefined}
-        onPageChange={handlePageChange}
+        pagination={
+          pagination ? { ...pagination, page: params.page || 1 } : undefined
+        }
+        onPageChange={setPage}
       />
     </div>
   );

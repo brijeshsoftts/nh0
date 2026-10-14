@@ -22,6 +22,10 @@ import {
 import { ValidationPipe } from '../../common/pipes';
 
 import { CreateStaffDto, CreateStaffSchema } from './dto/create-staff.dto';
+import {
+  StaffLookupQueryDto,
+  StaffLookupQuerySchema,
+} from './dto/staff-lookup-query.dto';
 import { StaffQueryDto, StaffQuerySchema } from './dto/staff-query.dto';
 import { UpdateStaffDto, UpdateStaffSchema } from './dto/update-staff.dto';
 import {
@@ -52,6 +56,17 @@ export class StaffController {
   ) {
     const { data, meta } = await this.staffService.findAll(query);
     return apiListResponse({ data, meta });
+  }
+
+  @Roles('ADMIN', 'MANAGER')
+  @Get('lookup')
+  @HttpCode(HttpStatus.OK)
+  async lookup(
+    @Query(new ValidationPipe(StaffLookupQuerySchema))
+    query: StaffLookupQueryDto,
+  ) {
+    const data = await this.staffService.lookup(query);
+    return apiResponse({ data });
   }
 
   @Roles('ADMIN', 'MANAGER')
