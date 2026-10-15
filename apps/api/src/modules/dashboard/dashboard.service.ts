@@ -389,19 +389,18 @@ export class DashboardService {
     const tomorrow = new Date(today);
     tomorrow.setDate(tomorrow.getDate() + 1);
 
-    const [myTasksToday, pendingTasks, inProgressTasks, completedToday] =
+    const [pendingTasks, inProgressTasks, completedToday, overdueTasks] =
       await Promise.all([
         this.prismaService.housekeepingTask.count({
           where: {
             assignedTo: userId,
-            scheduledDate: { gte: today, lt: tomorrow },
+            status: TaskStatus.PENDING,
           },
         }),
         this.prismaService.housekeepingTask.count({
           where: {
             assignedTo: userId,
-            scheduledDate: { gte: today, lt: tomorrow },
-            status: TaskStatus.PENDING,
+            status: TaskStatus.IN_PROGRESS,
           },
         }),
         this.prismaService.housekeepingTask.count({
@@ -418,30 +417,29 @@ export class DashboardService {
             completedAt: { gte: today, lt: tomorrow },
           },
         }),
+        this.prismaService.housekeepingTask.count({
+          where: {
+            assignedTo: userId,
+            status: { in: [TaskStatus.PENDING, TaskStatus.IN_PROGRESS] },
+            scheduledDate: { lt: today },
+          },
+        }),
       ]);
 
     return [
       {
-        id: 'my-tasks-today',
-        title: 'My tasks today',
-        value: String(myTasksToday),
-        description: 'Tasks assigned to me',
+        id: 'pending-tasks',
+        title: 'My pending tasks',
+        value: String(pendingTasks),
+        description: 'Assigned tasks waiting to start',
         icon: 'ClipboardList',
         tone: 'gold',
-      },
-      {
-        id: 'pending-tasks',
-        title: 'Pending',
-        value: String(pendingTasks),
-        description: 'Not started',
-        icon: 'Clock',
-        tone: 'rose',
       },
       {
         id: 'in-progress-tasks',
         title: 'In progress',
         value: String(inProgressTasks),
-        description: 'Currently working on',
+        description: 'Assigned tasks currently underway',
         icon: 'LoaderCircle',
         tone: 'sky',
       },
@@ -452,6 +450,14 @@ export class DashboardService {
         description: 'Tasks finished today',
         icon: 'CircleCheck',
         tone: 'emerald',
+      },
+      {
+        id: 'overdue-tasks',
+        title: 'Overdue tasks',
+        value: String(overdueTasks),
+        description: 'Unfinished tasks past their due date',
+        icon: 'CalendarOff',
+        tone: 'rose',
       },
     ];
   }

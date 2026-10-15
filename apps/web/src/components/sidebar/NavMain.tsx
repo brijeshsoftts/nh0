@@ -63,7 +63,7 @@ function NavMainItem({ item }: { item: NavItem }) {
   if (item.isSection && item.label) {
     return (
       <SidebarGroup className="p-0 first:pt-0">
-        <SidebarGroupLabel className="h-auto px-3 py-2 text-[10px] font-semibold tracking-wider text-muted-foreground/70 uppercase">
+        <SidebarGroupLabel className="h-auto px-3 py-2 text-[10px] font-semibold tracking-wider text-muted-foreground/60 uppercase">
           {item.label}
         </SidebarGroupLabel>
       </SidebarGroup>
@@ -230,7 +230,12 @@ function NavMainSubItem({ item }: { item: NavItem }) {
           render={
             <Link to={item.href!}>
               {item.icon && (
-                <item.icon className="text-muted-foreground/80 transition-transform duration-200 group-hover/menu-sub-item:scale-105 group-hover/menu-sub-item:text-foreground" />
+                <item.icon
+                  className={cn(
+                    "text-muted-foreground/80 transition-transform duration-200 group-hover/menu-sub-item:scale-105 group-hover/menu-sub-item:text-foreground",
+                    isCurrent && "text-primary"
+                  )}
+                />
               )}
               {item.title}
             </Link>

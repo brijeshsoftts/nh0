@@ -2,6 +2,7 @@ import { useQuery } from "@tanstack/react-query";
 
 import { apiClient } from "@/lib/apiClient";
 import { createCrud } from "@/lib/crud/createCrud";
+import type { ApiListResponse } from "@/types/api.types";
 import type { TaskStatus } from "@/types/enum.types";
 
 import { CreateTaskSchema } from "./schemas/createTask.schema";
@@ -65,4 +66,31 @@ export function useUpdateStatus(id: string) {
   });
 
   return useUpdateTaskStatus();
+}
+
+export function useHousekeeperTaskQueue() {
+  return useQuery({
+    queryKey: tasksCrud.keys.custom("housekeeper-dashboard", "open-tasks", 5),
+    queryFn: async () => {
+      const [pendingResponse, inProgressResponse] = await Promise.all([
+        apiClient.get<ApiListResponse<TaskItem>>("/tasks", {
+          params: { page: 1, limit: 5, status: "PENDING" },
+        }),
+        apiClient.get<ApiListResponse<TaskItem>>("/tasks", {
+          params: { page: 1, limit: 5, status: "IN_PROGRESS" },
+        }),
+      ]);
+
+      return [...pendingResponse.data.data, ...inProgressResponse.data.data]
+        .sort((left, right) => {
+          const dueDateOrder =
+            new Date(left.scheduledDate).getTime() -
+            new Date(right.scheduledDate).getTime();
+
+          if (dueDateOrder !== 0) return dueDateOrder;
+          return left.status === "PENDING" ? -1 : 1;
+        })
+        .slice(0, 5);
+    },
+  });
 }

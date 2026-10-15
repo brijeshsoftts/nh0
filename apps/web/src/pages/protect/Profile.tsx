@@ -196,9 +196,8 @@ export default function ProfilePage() {
   ].filter((document) => document.image);
 
   return (
-    <div className="space-y-6">
+    <>
       <Header
-        eyebrow="Account"
         title="Your profile"
         description="Manage your personal details and account security."
       />
@@ -444,6 +443,6 @@ export default function ProfilePage() {
           )}
         </CardContent>
       </Card>
-    </div>
+    </>
   );
 }

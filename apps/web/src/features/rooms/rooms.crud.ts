@@ -2,9 +2,9 @@ import { useQuery } from "@tanstack/react-query";
 
 import { apiClient } from "@/lib/apiClient";
 import { createCrud } from "@/lib/crud/createCrud";
-import type { ApiResponse } from "@/types/api.types";
+import type { ApiListResponse, ApiResponse } from "@/types/api.types";
 
-import type { HousekeeperRoomDetails } from "./types";
+import type { HousekeeperRoom, HousekeeperRoomDetails } from "./types";
 
 export const roomsCrud = createCrud()({
   resource: "rooms",
@@ -39,5 +39,19 @@ export function useHousekeeperRoomDetails(roomId?: string) {
       return response.data.data;
     },
     enabled: !!roomId,
+  });
+}
+
+export function useHousekeeperCleaningRooms() {
+  return useQuery({
+    queryKey: roomsCrud.keys.custom("housekeeper-dashboard", "dirty-rooms", 5),
+    queryFn: async () => {
+      const response = await apiClient.get<ApiListResponse<HousekeeperRoom>>(
+        "/rooms",
+        { params: { page: 1, limit: 5, housekeepingStatus: "DIRTY" } }
+      );
+
+      return response.data.data;
+    },
   });
 }
