@@ -45,6 +45,14 @@ export class DashboardController {
     return apiResponse({ data });
   }
 
+  @Roles('CUSTOMER')
+  @Get('next-booking')
+  @HttpCode(HttpStatus.OK)
+  async getNextBooking(@CurrentUser('id') userId: string) {
+    const data = await this.dashboardService.getNextBooking(userId);
+    return apiResponse({ data });
+  }
+
   @Roles('ADMIN', 'MANAGER')
   @Get('revenue-trend')
   @HttpCode(HttpStatus.OK)

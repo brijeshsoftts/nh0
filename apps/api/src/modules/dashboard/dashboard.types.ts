@@ -64,3 +64,11 @@ export type DashboardPayments = {
   items: DashboardPaymentItem[];
   total: number;
 };
+
+export type CustomerNextBooking = {
+  bookingReference: string;
+  status: BookingStatus;
+  checkInDate: string;
+  checkOutDate: string;
+  roomTypeName: string | null;
+};

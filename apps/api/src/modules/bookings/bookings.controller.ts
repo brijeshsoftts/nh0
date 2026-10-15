@@ -15,6 +15,7 @@ import { CurrentUser, Roles } from '../../common/decorators';
 import { AuthGuard, RoleGuard } from '../../common/guards';
 import { apiListResponse, apiResponse } from '../../common/helpers';
 import { ValidationPipe } from '../../common/pipes';
+import { UserRole } from '../../types/prisma.types';
 
 import {
   BookingAvailabilityQueryDto,
@@ -39,13 +40,19 @@ export class BookingsController {
   constructor(private readonly bookingsService: BookingsService) {}
 
   @UseGuards(AuthGuard, RoleGuard)
-  @Roles('ADMIN', 'MANAGER', 'STAFF')
+  @Roles('ADMIN', 'MANAGER', 'STAFF', 'CUSTOMER')
   @Get()
   @HttpCode(HttpStatus.OK)
   async findAll(
     @Query(new ValidationPipe(BookingsQuerySchema)) query: BookingsQueryDto,
+    @CurrentUser('id') userId: string,
+    @CurrentUser('role') role: UserRole,
   ) {
-    const { data, meta } = await this.bookingsService.findAll(query);
+    const { data, meta } = await this.bookingsService.findAll(
+      query,
+      userId,
+      role,
+    );
     return apiListResponse({ data, meta });
   }
 

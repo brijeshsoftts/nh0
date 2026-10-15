@@ -16,7 +16,12 @@ import { StatItem } from '../../types/shared.types';
 
 import { PaymentsQueryDto } from './dto/payments-query.dto';
 import { StaysQueryDto } from './dto/stays-query.dto';
-import { DashboardPayments, Stays, TaskItem } from './dashboard.types';
+import {
+  CustomerNextBooking,
+  DashboardPayments,
+  Stays,
+  TaskItem,
+} from './dashboard.types';
 
 type RevenueTrendPoint = { date: string; value: number };
 type BookingStatusCount = { status: BookingStatus; count: number };
@@ -47,6 +52,41 @@ export class DashboardService {
     }
 
     throw new ForbiddenException('Access denied');
+  }
+
+  async getNextBooking(userId: string): Promise<CustomerNextBooking | null> {
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+
+    const booking = await this.prismaService.booking.findFirst({
+      where: {
+        customerId: userId,
+        status: { in: [BookingStatus.PENDING, BookingStatus.CONFIRMED] },
+        checkInDate: { gte: today },
+      },
+      orderBy: [{ checkInDate: 'asc' }, { createdAt: 'desc' }],
+      select: {
+        bookingReference: true,
+        status: true,
+        checkInDate: true,
+        checkOutDate: true,
+        bookingRoom: {
+          select: {
+            roomType: { select: { name: true } },
+          },
+        },
+      },
+    });
+
+    if (!booking) return null;
+
+    return {
+      bookingReference: booking.bookingReference,
+      status: booking.status,
+      checkInDate: booking.checkInDate.toISOString(),
+      checkOutDate: booking.checkOutDate.toISOString(),
+      roomTypeName: booking.bookingRoom?.roomType.name ?? null,
+    };
   }
 
   async getRevenueTrend(
@@ -534,49 +574,44 @@ export class DashboardService {
     const formatAmount = (amount: number) =>
       `₹${amount.toLocaleString('en-IN')}`;
 
-    const stats: StatItem[] = [
+    return [
       {
         id: 'upcoming-bookings',
-        title: 'Upcoming bookings',
+        title: 'Upcoming Bookings',
         value: String(upcomingBookings),
         description: 'Confirmed future stays',
         icon: 'CalendarCheck',
         tone: 'gold',
       },
-    ];
-
-    if (currentStay) {
-      const roomNumber = currentStay.bookingRoom?.assignedRoom?.roomNumber;
-      stats.push({
-        id: 'current-stay',
-        title: 'Current stay',
-        value: roomNumber ? `Room ${roomNumber}` : 'Checked in',
-        description: 'Currently checked in',
-        icon: 'KeyRound',
-        tone: 'emerald',
-      });
-    }
-
-    stats.push(
       {
-        id: 'outstanding-balance',
-        title: 'Outstanding balance',
+        id: 'active-stay',
+        title: 'Active Stay',
+        value: currentStay
+          ? currentStay.bookingRoom?.assignedRoom?.roomNumber
+            ? `Room ${currentStay.bookingRoom.assignedRoom.roomNumber}`
+            : 'Checked in'
+          : '0',
+        description: currentStay ? 'Currently checked in' : 'No active stay',
+        icon: 'KeyRound',
+        tone: currentStay ? 'emerald' : 'sky',
+      },
+      {
+        id: 'pending-payment',
+        title: 'Pending Payment',
         value: formatAmount(outstandingBalance),
-        description: 'Across eligible bookings',
+        description: 'Amount due across unpaid bookings',
         icon: 'IndianRupee',
         tone: 'rose',
       },
       {
-        id: 'past-stays',
-        title: 'Past stays',
+        id: 'past-bookings',
+        title: 'Past Bookings',
         value: String(pastStays),
         description: 'Completed bookings',
-        icon: 'History',
+        icon: 'CalendarCheck',
         tone: 'sky',
       },
-    );
-
-    return stats;
+    ];
   }
 
   private async adminStats(): Promise<StatItem[]> {

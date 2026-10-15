@@ -3,4 +3,5 @@ export const dashbaordKeys = {
   revenueTrend: ["revenueTrend"] as const,
   bookingStatus: ["bookingStatus"] as const,
   stays: ["stays"] as const,
+  nextBooking: ["nextBooking"] as const,
 };

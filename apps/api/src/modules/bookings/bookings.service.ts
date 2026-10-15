@@ -12,6 +12,7 @@ import {
   InvoiceStatus,
   PaymentMethod,
   PaymentStatus,
+  Prisma,
   UserRole,
 } from '../../types/prisma.types';
 
@@ -48,9 +49,12 @@ export class BookingsService {
 
   async findAll(
     query: BookingsQueryDto,
+    userId: string,
+    role: UserRole,
   ): Promise<ListResponse<BookingListItem>> {
     const { search, status, page, limit } = query;
-    const where = {
+    const where: Prisma.BookingWhereInput = {
+      ...(role === UserRole.CUSTOMER && { customerId: userId }),
       ...(status && { status }),
       ...(search && {
         OR: [

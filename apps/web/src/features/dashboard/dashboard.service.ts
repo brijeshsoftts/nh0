@@ -7,10 +7,13 @@ import type {
 } from "./components/DonutChart";
 import type { TrendChart } from "./components/TrendChart";
 import type { Stays } from "./dashboard.types";
+import type { CustomerNextBooking } from "./dashboard.types";
 
 export const dashboardService = {
   getStats: (): Promise<StatCard[]> =>
     apiClient.get("/dashboard/stats").then((res) => res.data?.data),
+  getNextBooking: (): Promise<CustomerNextBooking | null> =>
+    apiClient.get("/dashboard/next-booking").then((res) => res.data?.data),
   getRevenueTrend: (range: string): Promise<TrendChart[]> =>
     apiClient
       .get("/dashboard/revenue-trend", { params: { range } })

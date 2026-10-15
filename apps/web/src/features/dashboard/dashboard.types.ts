@@ -1,5 +1,13 @@
 import type { BookingStatus, PaymentStatus } from "@/types/enum.types";
 
+export type CustomerNextBooking = {
+  bookingReference: string;
+  status: BookingStatus;
+  checkInDate: string;
+  checkOutDate: string;
+  roomTypeName: string | null;
+};
+
 export type ArrivalItem = {
   bookingId: string;
   bookingReference: string;
