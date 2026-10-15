@@ -30,96 +30,51 @@ export type NavItem = {
   children?: NavItem[];
 };
 
-export function NavMain({ items }: { items: NavItem[] }) {
-  const [activeParent, setActiveParent] = React.useState<string | null>(
-    items.find((i) => !i.isSection)?.title || null
-  );
-  const [activeChild, setActiveChild] = React.useState<string | null>(null);
+function matchesPath(item: NavItem, pathname: string): boolean {
+  if (item.href === pathname) {
+    return true;
+  }
 
+  return (
+    item.children?.some(
+      (child) =>
+        (!!child.href && pathname.startsWith(`${child.href}/`)) ||
+        matchesPath(child, pathname)
+    ) ?? false
+  );
+}
+
+export function NavMain({ items }: { items: NavItem[] }) {
   return (
     <>
       {items.map((item, index) => (
-        <NavMainItem
-          key={item.title || item.label || index}
-          item={item}
-          activeParent={activeParent}
-          setActiveParent={setActiveParent}
-          activeChild={activeChild}
-          setActiveChild={setActiveChild}
-        />
+        <NavMainItem key={item.title || item.label || index} item={item} />
       ))}
     </>
   );
 }
 
-function NavMainItem({
-  item,
-  activeParent,
-  setActiveParent,
-  activeChild,
-  setActiveChild,
-}: {
-  item: NavItem;
-  activeParent: string | null;
-  activeChild: string | null;
-  setActiveParent: (val: string) => void;
-  setActiveChild: (val: string | null) => void;
-}) {
+function NavMainItem({ item }: { item: NavItem }) {
   const location = useLocation();
-
   const hasChildren = !!item.children?.length;
+  const isCurrent = matchesPath(item, location.pathname);
+  const [isOpen, setIsOpen] = React.useState(false);
 
-  // Check if current URL belongs to this parent or one of its children
-  const isCurrentParent = React.useMemo(() => {
-    if (!item.title) return false;
-
-    // Parent without children
-    if (!hasChildren) {
-      return item.href === location.pathname;
-    }
-
-    // Parent with children
-    return item.children?.some((child) => {
-      if (!child.href) return false;
-
-      return (
-        location.pathname === child.href ||
-        location.pathname.startsWith(`${child.href}/`)
-      );
-    });
-  }, [item, hasChildren, location.pathname]);
-
-  // Keep your manually selected state if needed,
-  // but URL should be the source of truth for active styling.
-  const isParentActive = isCurrentParent || activeParent === item.title;
-
-  const [isOpen, setIsOpen] = React.useState(isCurrentParent);
-
-  // Open parent automatically when current URL belongs to it
-  React.useEffect(() => {
-    if (isCurrentParent) {
-      setIsOpen(true);
-      setActiveParent(item.title!);
-    }
-  }, [isCurrentParent, item.title, setActiveParent]);
-
-  // Section label
   if (item.isSection && item.label) {
     return (
       <SidebarGroup className="p-0 first:pt-0">
-        <SidebarGroupLabel className="p-0 text-xs font-medium text-sidebar-foreground uppercase">
+        <SidebarGroupLabel className="h-auto px-3 py-2 text-[10px] font-semibold tracking-wider text-muted-foreground/70 uppercase">
           {item.label}
         </SidebarGroupLabel>
       </SidebarGroup>
     );
   }
 
-  // Item with children
   if (hasChildren && item.title) {
     return (
       <SidebarGroup className="p-0">
         <SidebarMenu>
-          <Collapsible open={isOpen} onOpenChange={setIsOpen}>
+          <Collapsible open={isOpen || isCurrent} onOpenChange={setIsOpen}>
             <SidebarMenuItem>
               <CollapsibleTrigger
                 className="w-full"
@@ -129,23 +84,28 @@ function NavMainItem({
                       .toLowerCase()
                       .replace(/\s+/g, "-")}`}
                     tooltip={item.title}
-                    isActive={isParentActive}
-                    onClick={() => setActiveParent(item.title!)}
+                    isActive={isCurrent}
                     className={cn(
-                      "h-9 cursor-pointer rounded-md px-3 py-2 text-sm font-medium transition-colors",
-                      isParentActive
-                        ? "bg-primary! text-primary-foreground!"
-                        : ""
+                      "h-9 cursor-pointer rounded-lg px-3 py-2 text-sm text-muted-foreground transition-all duration-200 hover:bg-muted/60 hover:text-foreground",
+                      isCurrent &&
+                        "relative bg-primary/10! font-medium text-primary! shadow-xs before:absolute before:top-1/2 before:left-0 before:h-5 before:w-1 before:-translate-y-1/2 before:rounded-r-full before:bg-primary before:content-['']"
                     )}
                   >
-                    {item.icon && <item.icon size={16} />}
-
+                    {item.icon && (
+                      <item.icon
+                        size={16}
+                        className={cn(
+                          "text-muted-foreground/80 transition-transform duration-200 group-hover/menu-button:scale-105 group-hover/menu-button:text-foreground",
+                          isCurrent && "text-primary"
+                        )}
+                      />
+                    )}
                     <span>{item.title}</span>
-
                     <ChevronRight
                       className={cn(
                         "ml-auto transition-transform duration-200",
-                        isOpen && "rotate-90"
+                        (isOpen || isCurrent) && "rotate-90 text-primary",
+                        !isCurrent && "text-muted-foreground/80"
                       )}
                     />
                   </SidebarMenuButton>
@@ -155,15 +115,7 @@ function NavMainItem({
               <CollapsibleContent>
                 <SidebarMenuSub className="me-0 pe-0">
                   {item.children!.map((child, index) => (
-                    <NavMainSubItem
-                      key={child.title || index}
-                      item={child}
-                      activeParent={activeParent}
-                      setActiveParent={setActiveParent}
-                      activeChild={activeChild}
-                      setActiveChild={setActiveChild}
-                      parentTitle={item.title}
-                    />
+                    <NavMainSubItem key={child.title || index} item={child} />
                   ))}
                 </SidebarMenuSub>
               </CollapsibleContent>
@@ -174,7 +126,6 @@ function NavMainItem({
     );
   }
 
-  // Item without children
   if (item.title) {
     return (
       <SidebarGroup className="p-0">
@@ -185,18 +136,22 @@ function NavMainItem({
                 .toLowerCase()
                 .replace(/\s+/g, "-")}`}
               tooltip={item.title}
-              isActive={isParentActive}
-              onClick={() => {
-                setActiveParent(item.title!);
-                setActiveChild(null);
-              }}
+              isActive={isCurrent}
               className={cn(
-                "h-9 cursor-pointer rounded-md px-3 py-2 text-sm font-medium transition-colors",
-                isParentActive ? "bg-primary! text-primary-foreground!" : ""
+                "h-9 cursor-pointer rounded-lg px-3 py-2 text-sm text-muted-foreground transition-all duration-200 hover:bg-muted/60 hover:text-foreground",
+                isCurrent &&
+                  "relative bg-primary/10! font-medium text-primary! shadow-xs before:absolute before:top-1/2 before:left-0 before:h-5 before:w-1 before:-translate-y-1/2 before:rounded-r-full before:bg-primary before:content-['']"
               )}
               render={<Link to={item.href!} />}
             >
-              {item.icon && <item.icon />}
+              {item.icon && (
+                <item.icon
+                  className={cn(
+                    "text-muted-foreground/80 transition-transform duration-200 group-hover/menu-button:scale-105 group-hover/menu-button:text-foreground",
+                    isCurrent && "text-primary"
+                  )}
+                />
+              )}
               {item.title}
             </SidebarMenuButton>
           </SidebarMenuItem>
@@ -208,41 +163,42 @@ function NavMainItem({
   return null;
 }
 
-function NavMainSubItem({
-  item,
-  activeParent,
-  setActiveParent,
-  activeChild,
-  setActiveChild,
-  parentTitle,
-}: {
-  item: NavItem;
-  activeParent: string | null;
-  activeChild: string | null;
-  setActiveParent: (val: string) => void;
-  setActiveChild: (val: string | null) => void;
-  parentTitle?: string;
-}) {
+function NavMainSubItem({ item }: { item: NavItem }) {
+  const location = useLocation();
   const hasChildren = !!item.children?.length;
+  const isCurrent = matchesPath(item, location.pathname);
   const [isOpen, setIsOpen] = React.useState(false);
 
   if (hasChildren && item.title) {
     return (
       <SidebarMenuSubItem>
-        <Collapsible open={isOpen} onOpenChange={setIsOpen}>
+        <Collapsible open={isOpen || isCurrent} onOpenChange={setIsOpen}>
           <CollapsibleTrigger
             className="w-full"
             render={
               <SidebarMenuSubButton
                 id={`nav-sub-trigger-${item.title.toLowerCase().replace(/\s+/g, "-")}`}
-                className="h-9 rounded-md px-3 py-2 text-sm font-medium"
+                isActive={isCurrent}
+                className={cn(
+                  "h-9 rounded-lg px-3 py-2 text-sm font-medium text-muted-foreground transition-all duration-200 hover:bg-muted/60 hover:text-foreground",
+                  isCurrent &&
+                    "relative bg-primary/10! text-primary! shadow-xs before:absolute before:top-1/2 before:left-0 before:h-5 before:w-1 before:-translate-y-1/2 before:rounded-r-full before:bg-primary before:content-['']"
+                )}
               >
-                {item.icon && <item.icon />}
+                {item.icon && (
+                  <item.icon
+                    className={cn(
+                      "text-muted-foreground/80 transition-transform duration-200 group-hover/menu-sub-item:scale-105 group-hover/menu-sub-item:text-foreground",
+                      isCurrent && "text-primary"
+                    )}
+                  />
+                )}
                 <span>{item.title}</span>
                 <ChevronRight
                   className={cn(
                     "ml-auto transition-transform duration-200",
-                    isOpen && "rotate-90"
+                    (isOpen || isCurrent) && "rotate-90 text-primary",
+                    !isCurrent && "text-muted-foreground/80"
                   )}
                 />
               </SidebarMenuSubButton>
@@ -251,15 +207,7 @@ function NavMainSubItem({
           <CollapsibleContent>
             <SidebarMenuSub className="me-0 pe-0">
               {item.children!.map((child, index) => (
-                <NavMainSubItem
-                  key={child.title || index}
-                  item={child}
-                  activeParent={activeParent}
-                  setActiveParent={setActiveParent}
-                  activeChild={activeChild}
-                  setActiveChild={setActiveChild}
-                  parentTitle={parentTitle}
-                />
+                <NavMainSubItem key={child.title || index} item={child} />
               ))}
             </SidebarMenuSub>
           </CollapsibleContent>
@@ -274,15 +222,19 @@ function NavMainSubItem({
         <SidebarMenuSubButton
           id={`nav-sub-button-${item.title.toLowerCase().replace(/\s+/g, "-")}`}
           className={cn(
-            "w-full rounded-md transition-colors",
-            activeChild === item.title ? "bg-muted! text-foreground!" : ""
+            "w-full rounded-lg text-muted-foreground transition-all duration-200 hover:bg-muted/60 hover:text-foreground",
+            isCurrent &&
+              "relative bg-primary/10! font-medium text-primary! shadow-xs before:absolute before:top-1/2 before:left-0 before:h-5 before:w-1 before:-translate-y-1/2 before:rounded-r-full before:bg-primary before:content-['']"
           )}
-          isActive={activeChild === item.title}
-          onClick={() => {
-            setActiveParent(parentTitle || "");
-            setActiveChild(item.title!);
-          }}
-          render={<a href={item.href}>{item.title}</a>}
+          isActive={isCurrent}
+          render={
+            <Link to={item.href!}>
+              {item.icon && (
+                <item.icon className="text-muted-foreground/80 transition-transform duration-200 group-hover/menu-sub-item:scale-105 group-hover/menu-sub-item:text-foreground" />
+              )}
+              {item.title}
+            </Link>
+          }
         />
       </SidebarMenuSubItem>
     );

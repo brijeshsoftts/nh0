@@ -25,11 +25,10 @@ export const DropdownProfile = ({
   return (
     <DropdownMenu>
       <DropdownMenuTrigger
-        className={"cursor-pointer"}
+        aria-label="Open account menu"
+        className="cursor-pointer text-muted-foreground transition-colors hover:text-foreground"
         render={
-          children ? (
-            <>{children} </>
-          ) : (
+          children ?? (
             <Avatar>
               {user?.avatar?.url ? (
                 <AvatarImage src={user?.avatar?.url} alt={user?.fullName} />

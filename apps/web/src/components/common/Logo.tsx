@@ -125,7 +125,7 @@ export function Logo({ className, size = "md", iconOnly = false }: LogoProps) {
         <span className="flex flex-col">
           <span
             className={cn(
-              "font-display leading-none font-semibold tracking-[0.04em]",
+              "font-sans leading-none font-bold tracking-tight text-foreground",
               s.name
             )}
           >

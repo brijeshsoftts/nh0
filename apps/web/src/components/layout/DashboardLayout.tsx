@@ -1,4 +1,4 @@
-import { Bell } from "lucide-react";
+import { Bell, ChevronRight } from "lucide-react";
 import { useMemo } from "react";
 import { Link, Navigate, Outlet, useLocation } from "react-router-dom";
 
@@ -39,30 +39,41 @@ export function DashboardLayout() {
     <SidebarProvider>
       <AppSidebar />
       <div className="flex flex-1 flex-col">
-        <header className="sticky top-0 z-10 flex items-center justify-between border-b border-border/80 bg-muted px-4 py-3 backdrop-blur-md sm:px-8">
+        <header className="sticky top-0 z-10 flex items-center justify-between border-b border-border/80 bg-background/90 px-4 py-3 backdrop-blur-md sm:px-8">
           <div className="flex items-center gap-3">
-            <SidebarTrigger className="cursor-pointer md:hidden" />
-            {/* Breadcrumb: Overview > Dashboard */}
-            <div className="flex items-center gap-2 text-xs sm:text-sm">
-              <span className="text-muted-foreground">Overview</span>
-              <span className="text-muted-foreground/60">›</span>
+            <SidebarTrigger className="cursor-pointer text-muted-foreground transition-colors hover:bg-accent/50 hover:text-foreground md:hidden" />
+            <nav
+              aria-label="Breadcrumb"
+              className="flex items-center gap-2 text-xs sm:text-sm"
+            >
+              <Link
+                to="/dashboard"
+                className="text-muted-foreground transition-colors hover:text-foreground"
+              >
+                Overview
+              </Link>
+              <ChevronRight
+                aria-hidden="true"
+                className="size-3.5 text-muted-foreground/60"
+              />
               <span className="font-medium text-foreground capitalize">
                 {activeTab}
               </span>
-            </div>
+            </nav>
           </div>
 
-          {/* Right Header: Notification Bell & Initials Avatar AB */}
           <div className="flex items-center gap-3 sm:gap-4">
-            <Link to="/dashboard/notifications">
-              <button
-                className="relative rounded-full border border-border bg-card p-2 text-muted-foreground transition-colors hover:border-border/80 hover:text-foreground"
-                title="3 unread notifications"
-                aria-label="Notifications"
-              >
-                <Bell className="h-4 w-4" />
-                <span className="absolute top-1 right-1 h-2 w-2 rounded-full bg-primary" />
-              </button>
+            <Link
+              to="/dashboard/notifications"
+              className="relative inline-flex size-9 items-center justify-center rounded-full border border-border bg-card text-muted-foreground transition-colors hover:border-border/80 hover:text-foreground"
+              title="3 unread notifications"
+              aria-label="Notifications, 3 unread"
+            >
+              <Bell className="size-4" />
+              <span
+                aria-hidden="true"
+                className="absolute top-1 right-1 size-2 rounded-full bg-primary"
+              />
             </Link>
             <DropdownProfile />
           </div>
