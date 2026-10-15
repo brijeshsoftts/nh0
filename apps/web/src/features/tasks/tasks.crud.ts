@@ -2,6 +2,7 @@ import { useQuery } from "@tanstack/react-query";
 
 import { apiClient } from "@/lib/apiClient";
 import { createCrud } from "@/lib/crud/createCrud";
+import type { TaskStatus } from "@/types/enum.types";
 
 import { CreateTaskSchema } from "./schemas/createTask.schema";
 import { UpdateTaskSchema } from "./schemas/updateTask.schema";
@@ -51,4 +52,17 @@ export function useLookupRooms(params?: { search: string; limit: number }) {
       apiClient.get("/rooms/lookup", { params }).then((r) => r.data?.data),
     enabled: !!params,
   });
+}
+
+export function useUpdateStatus(id: string) {
+  const useUpdateTaskStatus = tasksCrud.createAction<{
+    status: TaskStatus;
+  }>({
+    name: "updateStatus",
+    mutationFn: (data) =>
+      apiClient.patch(`/tasks/${id}/status`, data).then((r) => r.data),
+    successMessage: "Task status updated",
+  });
+
+  return useUpdateTaskStatus();
 }

@@ -1,6 +1,6 @@
 import { useState } from "react";
 
-import { type ColumnDef,DataTable } from "@/components/common/DataTable";
+import { type ColumnDef, DataTable } from "@/components/common/DataTable";
 import {
   HousekeepingBadge,
   OccupancyBadge,
@@ -8,17 +8,15 @@ import {
   TaskStatusBadge,
   TaskTypeBadge,
 } from "@/components/common/EnumBadges";
-import { StatCard } from "@/components/common/StatCard";
-import type { HousekeeperRoom } from "@/features/rooms/rooms.types";
 import { TaskDetailsSheet } from "@/features/tasks/components/TaskDetailsSheet";
 
 import {
   HOUSEKEEPER_ROOMS,
-  HOUSEKEEPER_STAT,
   TASK_TYPES_STATUS,
   TASKS_STATUS,
 } from "../dashboard.mock";
 
+import { DashboardStats } from "./DashboardStats";
 import { DonutChart } from "./DonutChart";
 import { StatusBarChart } from "./StatusBarChart";
 
@@ -92,11 +90,7 @@ function TodaysTasks() {
 export function HousekeeperDashboard() {
   return (
     <>
-      <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-4">
-        {HOUSEKEEPER_STAT.map((kpi) => (
-          <StatCard key={kpi.id} {...kpi} />
-        ))}
-      </div>
+      <DashboardStats />
       <div className="grid gap-6 lg:grid-cols-2">
         <DonutChart
           data={TASKS_STATUS}

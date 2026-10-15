@@ -4,6 +4,7 @@ import {
   CheckCircle2,
   Clock,
   Ellipsis,
+  LoaderCircle,
   PlayCircle,
   UserRound,
 } from "lucide-react";
@@ -28,7 +29,7 @@ import {
 import { Skeleton } from "@/components/ui/skeleton";
 import { useAuth } from "@/hooks/useAuth";
 
-import { useDeleteTask } from "../tasks.crud";
+import { useDeleteTask, useUpdateStatus } from "../tasks.crud";
 import type { TaskItem } from "../tasks.types";
 
 import { TaskDialog } from "./TaskDialog";
@@ -39,12 +40,39 @@ type TaskCardProps = {
 
 export function TaskCard({ task }: TaskCardProps) {
   const [open, setOpen] = useState(false);
-  const deleteTask = useDeleteTask();
   const { user } = useAuth();
+  const deleteTask = useDeleteTask();
+  const updateStatus = useUpdateStatus(task.id);
   const startedAt =
     task.startedAt && formatDate(task.startedAt, "dd MMM, yyyy");
   const completedAt =
     task.completedAt && formatDate(task.completedAt, "dd MMM, yyyy");
+  const canManageTasks = user?.role === "ADMIN" || user?.role === "MANAGER";
+  const isAssignedHousekeeper =
+    user?.role === "STAFF" && user?.category === "HOUSEKEEPER";
+  const nextStatus =
+    task.status === "PENDING"
+      ? "IN_PROGRESS"
+      : task.status === "IN_PROGRESS"
+        ? "COMPLETED"
+        : null;
+  const statusActionLabel =
+    nextStatus === "IN_PROGRESS"
+      ? "Start task"
+      : nextStatus === "COMPLETED"
+        ? "Mark complete"
+        : null;
+  const canUpdateStatus =
+    nextStatus !== null &&
+    (canManageTasks ||
+      (isAssignedHousekeeper && task.assignee.id === user?.id));
+  const canEditTask = canManageTasks && task.status === "PENDING";
+  const canShowActions = canEditTask || canUpdateStatus || canManageTasks;
+
+  const handleStatusUpdate = () => {
+    if (!nextStatus || !canUpdateStatus) return;
+    updateStatus.mutate({ status: nextStatus });
+  };
 
   return (
     <>
@@ -66,33 +94,58 @@ export function TaskCard({ task }: TaskCardProps) {
             </CardDescription>
           </div>
 
-          <DropdownMenu>
-            <DropdownMenuTrigger>
-              <IconBtn
-                variant="ghost"
-                className="shrink-0"
-                aria-label="Task options"
-              >
-                <Ellipsis className="size-5" />
-              </IconBtn>
-            </DropdownMenuTrigger>
+          {canShowActions && (
+            <DropdownMenu>
+              <DropdownMenuTrigger>
+                <IconBtn
+                  variant="ghost"
+                  className="shrink-0"
+                  aria-label={`Task actions for room ${task.room.roomNumber}`}
+                >
+                  <Ellipsis className="size-5" />
+                </IconBtn>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end" className={"w-auto"}>
+                {canEditTask && (
+                  <DropdownMenuItem onClick={() => setOpen(true)}>
+                    Edit task
+                  </DropdownMenuItem>
+                )}
 
-            <DropdownMenuContent align="end">
-              <DropdownMenuItem onClick={() => setOpen(true)}>
-                Edit task
-              </DropdownMenuItem>
+                {canUpdateStatus && statusActionLabel && (
+                  <DropdownMenuItem
+                    onClick={handleStatusUpdate}
+                    disabled={updateStatus.isPending}
+                    className={"whitespace-nowrap"}
+                  >
+                    {updateStatus.isPending ? (
+                      <LoaderCircle className="size-4 animate-spin" />
+                    ) : task.status === "PENDING" ? (
+                      <PlayCircle className="size-4" />
+                    ) : (
+                      <CheckCircle2 className="size-4" />
+                    )}
+                    {updateStatus.isPending ? "Updating..." : statusActionLabel}
+                  </DropdownMenuItem>
+                )}
 
-              <DropdownMenuSeparator />
-
-              <DropdownMenuItem
-                className="text-destructive focus:text-destructive"
-                onClick={() => deleteTask.handleDelete(task.id)}
-                disabled={deleteTask.isDeleting}
-              >
-                Delete task
-              </DropdownMenuItem>
-            </DropdownMenuContent>
-          </DropdownMenu>
+                {canManageTasks && (
+                  <>
+                    {(canEditTask || canUpdateStatus) && (
+                      <DropdownMenuSeparator />
+                    )}
+                    <DropdownMenuItem
+                      className="text-destructive focus:text-destructive"
+                      onClick={() => deleteTask.handleDelete(task.id)}
+                      disabled={deleteTask.isDeleting}
+                    >
+                      {deleteTask.isDeleting ? "Deleting..." : "Delete task"}
+                    </DropdownMenuItem>
+                  </>
+                )}
+              </DropdownMenuContent>
+            </DropdownMenu>
+          )}
         </CardHeader>
 
         <CardContent className="space-y-4">
