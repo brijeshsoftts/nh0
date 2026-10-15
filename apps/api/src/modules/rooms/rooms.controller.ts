@@ -12,7 +12,7 @@ import {
   UseGuards,
 } from '@nestjs/common';
 
-import { Roles } from '../../common/decorators';
+import { CurrentUser, Roles } from '../../common/decorators';
 import { AuthGuard, RoleGuard } from '../../common/guards';
 import {
   apiListResponse,
@@ -20,6 +20,7 @@ import {
   apiResponse,
 } from '../../common/helpers';
 import { ValidationPipe } from '../../common/pipes';
+import { Category, UserRole } from '../../types/prisma.types';
 
 import { CreateRoomDto, CreateRoomSchema } from './dto/create-room.dto';
 import {
@@ -49,9 +50,28 @@ export class RoomsController {
   @HttpCode(HttpStatus.OK)
   async findAll(
     @Query(new ValidationPipe(RoomsQuerySchema)) query: RoomsQueryDto,
+    @CurrentUser('id') userId: string,
+    @CurrentUser('role') role: UserRole,
+    @CurrentUser('category') category?: Category,
   ) {
-    const { data, meta } = await this.roomsService.findAll(query);
+    const { data, meta } = await this.roomsService.findAll(
+      query,
+      userId,
+      role,
+      category,
+    );
     return apiListResponse({ data, meta });
+  }
+
+  @Roles('ADMIN', 'MANAGER', 'STAFF')
+  @Get('stats')
+  @HttpCode(HttpStatus.OK)
+  async getStats(
+    @CurrentUser('role') role: UserRole,
+    @CurrentUser('category') category?: Category,
+  ) {
+    const data = await this.roomsService.getStats(role, category);
+    return apiResponse({ data });
   }
 
   @Roles('ADMIN', 'MANAGER', 'STAFF')
@@ -68,8 +88,13 @@ export class RoomsController {
   @Roles('ADMIN', 'MANAGER', 'STAFF')
   @Get(':id')
   @HttpCode(HttpStatus.OK)
-  async findOne(@Param('id') id: string) {
-    const data = await this.roomsService.findOne(id);
+  async findOne(
+    @Param('id') id: string,
+    @CurrentUser('id') userId: string,
+    @CurrentUser('role') role: UserRole,
+    @CurrentUser('category') category?: Category,
+  ) {
+    const data = await this.roomsService.findOne(id, userId, role, category);
     return apiResponse({ data });
   }
 

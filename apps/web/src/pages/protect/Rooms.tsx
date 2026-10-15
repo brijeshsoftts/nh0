@@ -1,4 +1,5 @@
 import { NoAccess } from "@/components/common/NoAccess";
+import { HouseKeeperRooms } from "@/features/rooms/components/HouseKeeperRooms";
 import { ManagementRooms } from "@/features/rooms/components/ManagementRooms";
 import { useAuth } from "@/hooks/useAuth";
 
@@ -14,7 +15,7 @@ export default function RoomsPage() {
         return <NoAccess />;
       }
       if (user.category === "HOUSEKEEPER") {
-        return <NoAccess />;
+        return <HouseKeeperRooms />;
       }
       return <NoAccess />;
     case "CUSTOMER":

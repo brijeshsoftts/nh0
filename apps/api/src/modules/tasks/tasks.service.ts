@@ -9,6 +9,7 @@ import { PrismaService } from '../../prisma/prisma.service';
 import { ListResponse } from '../../types/api.types';
 import {
   Category,
+  HousekeepingStatus,
   Prisma,
   TaskStatus,
   UserRole,
@@ -122,7 +123,6 @@ export class TasksService {
     if (!room) {
       throw new NotFoundException(TASK_ERROR_MSG.ROOM_NOT_FOUND);
     }
-    console.log(staff);
     if (
       staff?.category !== Category.HOUSEKEEPER ||
       !staff.user.isActive ||
@@ -131,23 +131,29 @@ export class TasksService {
       throw new NotFoundException(TASK_ERROR_MSG.HOUSEKEEPER_NOT_FOUND);
     }
 
-    const task = await this.prismaService.housekeepingTask.create({
-      data: {
-        roomId: dto.roomId,
-        assignedTo: dto.assignedTo,
-        taskType: dto.taskType,
-        scheduledDate: dto.scheduledDate,
-      },
-      select: {
-        id: true,
-        taskType: true,
-        status: true,
-        scheduledDate: true,
-        startedAt: true,
-        completedAt: true,
-        room: { select: { id: true, roomNumber: true } },
-        assignee: { select: { id: true, fullName: true } },
-      },
+    const task = await this.prismaService.$transaction(async (tx) => {
+      const createdTask = await tx.housekeepingTask.create({
+        data: {
+          roomId: dto.roomId,
+          assignedTo: dto.assignedTo,
+          taskType: dto.taskType,
+          scheduledDate: dto.scheduledDate,
+        },
+        select: {
+          id: true,
+          taskType: true,
+          status: true,
+          scheduledDate: true,
+          startedAt: true,
+          completedAt: true,
+          room: { select: { id: true, roomNumber: true } },
+          assignee: { select: { id: true, fullName: true } },
+        },
+      });
+
+      await this.syncRoomHousekeepingStatus(tx, dto.roomId);
+
+      return createdTask;
     });
 
     return {
@@ -248,19 +254,6 @@ export class TasksService {
       }
     }
 
-    const currentTask = await this.prismaService.housekeepingTask.findUnique({
-      where: { id },
-      select: { status: true, assignedTo: true },
-    });
-
-    if (!currentTask) {
-      throw new NotFoundException(TASK_ERROR_MSG.NOT_FOUND);
-    }
-
-    if (role === UserRole.STAFF && currentTask.assignedTo !== userId) {
-      throw new ForbiddenException(TASK_ERROR_MSG.HOUSEKEEPER_TASK_FORBIDDEN);
-    }
-
     const previousStatus =
       status === TaskStatus.IN_PROGRESS
         ? TaskStatus.PENDING
@@ -273,53 +266,63 @@ export class TasksService {
     }
 
     const now = new Date();
-    const result = await this.prismaService.housekeepingTask.updateMany({
-      where: {
-        id,
-        status: previousStatus,
-        ...(role === UserRole.STAFF && { assignedTo: userId }),
-      },
-      data: {
-        status,
-        ...(status === TaskStatus.IN_PROGRESS && { startedAt: now }),
-        ...(status === TaskStatus.COMPLETED && { completedAt: now }),
-      },
-    });
-
-    if (result.count === 0) {
-      const task = await this.prismaService.housekeepingTask.findUnique({
+    const task = await this.prismaService.$transaction(async (tx) => {
+      const currentTask = await tx.housekeepingTask.findUnique({
         where: { id },
-        select: { assignedTo: true },
+        select: { status: true, assignedTo: true, roomId: true },
       });
 
-      if (!task) {
+      if (!currentTask) {
         throw new NotFoundException(TASK_ERROR_MSG.NOT_FOUND);
       }
 
-      if (role === UserRole.STAFF && task.assignedTo !== userId) {
+      if (role === UserRole.STAFF && currentTask.assignedTo !== userId) {
         throw new ForbiddenException(TASK_ERROR_MSG.HOUSEKEEPER_TASK_FORBIDDEN);
       }
 
-      throw new ConflictException(TASK_ERROR_MSG.STATUS_TRANSITION_INVALID);
-    }
+      if (currentTask.status !== previousStatus) {
+        throw new ConflictException(TASK_ERROR_MSG.STATUS_TRANSITION_INVALID);
+      }
 
-    const task = await this.prismaService.housekeepingTask.findUnique({
-      where: { id },
-      select: {
-        id: true,
-        taskType: true,
-        status: true,
-        scheduledDate: true,
-        startedAt: true,
-        completedAt: true,
-        room: { select: { id: true, roomNumber: true } },
-        assignee: { select: { id: true, fullName: true } },
-      },
+      const result = await tx.housekeepingTask.updateMany({
+        where: {
+          id,
+          status: previousStatus,
+          ...(role === UserRole.STAFF && { assignedTo: userId }),
+        },
+        data: {
+          status,
+          ...(status === TaskStatus.IN_PROGRESS && { startedAt: now }),
+          ...(status === TaskStatus.COMPLETED && { completedAt: now }),
+        },
+      });
+
+      if (result.count === 0) {
+        throw new ConflictException(TASK_ERROR_MSG.STATUS_TRANSITION_INVALID);
+      }
+
+      await this.syncRoomHousekeepingStatus(tx, currentTask.roomId);
+
+      const updatedTask = await tx.housekeepingTask.findUnique({
+        where: { id },
+        select: {
+          id: true,
+          taskType: true,
+          status: true,
+          scheduledDate: true,
+          startedAt: true,
+          completedAt: true,
+          room: { select: { id: true, roomNumber: true } },
+          assignee: { select: { id: true, fullName: true } },
+        },
+      });
+
+      if (!updatedTask) {
+        throw new NotFoundException(TASK_ERROR_MSG.NOT_FOUND);
+      }
+
+      return updatedTask;
     });
-
-    if (!task) {
-      throw new NotFoundException(TASK_ERROR_MSG.NOT_FOUND);
-    }
 
     return {
       ...task,
@@ -327,6 +330,33 @@ export class TasksService {
       startedAt: task.startedAt?.toISOString() ?? null,
       completedAt: task.completedAt?.toISOString() ?? null,
     };
+  }
+
+  private async syncRoomHousekeepingStatus(
+    tx: Prisma.TransactionClient,
+    roomId: string,
+  ): Promise<void> {
+    const activeTasks = await tx.housekeepingTask.findMany({
+      where: {
+        roomId,
+        status: { in: [TaskStatus.PENDING, TaskStatus.IN_PROGRESS] },
+      },
+      select: { status: true },
+    });
+
+    const housekeepingStatus = activeTasks.some(
+      (task) => task.status === TaskStatus.IN_PROGRESS,
+    )
+      ? HousekeepingStatus.CLEANING
+      : activeTasks.length > 0
+        ? HousekeepingStatus.DIRTY
+        : HousekeepingStatus.CLEAN;
+
+    await tx.room.update({
+      where: { id: roomId },
+      data: { housekeepingStatus },
+      select: { id: true },
+    });
   }
 
   async delete(id: string): Promise<void> {

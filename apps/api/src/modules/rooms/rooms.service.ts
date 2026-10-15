@@ -1,11 +1,20 @@
 import {
   ConflictException,
+  ForbiddenException,
   Injectable,
   NotFoundException,
 } from '@nestjs/common';
 
 import { PrismaService } from '../../prisma/prisma.service';
 import { ListResponse } from '../../types/api.types';
+import {
+  Category,
+  HousekeepingStatus,
+  OccupancyStatus,
+  Prisma,
+  UserRole,
+} from '../../types/prisma.types';
+import { StatItem } from '../../types/shared.types';
 
 import { CreateRoomDto } from './dto/create-room.dto';
 import { RoomsLookupQueryDto } from './dto/rooms-lookup-query.dto';
@@ -14,6 +23,7 @@ import { UpdateRoomDto } from './dto/update-room.dto';
 import { ROOM_ERROR_MSG } from './rooms.constants';
 import {
   CreateRoomResponse,
+  HousekeeperRoomDetails,
   RoomDetailsResponse,
   RoomListItemResponse,
   RoomLookupItem,
@@ -22,6 +32,226 @@ import {
 @Injectable()
 export class RoomsService {
   constructor(private readonly prismaService: PrismaService) {}
+
+  async getStats(role: UserRole, category?: Category): Promise<StatItem[]> {
+    if (role === UserRole.ADMIN || role === UserRole.MANAGER) {
+      return this.managementStats();
+    }
+
+    if (role === UserRole.STAFF && category === Category.RECEPTIONIST) {
+      return this.receptionistStats();
+    }
+
+    if (role === UserRole.STAFF && category === Category.HOUSEKEEPER) {
+      return this.housekeeperStats();
+    }
+
+    throw new ForbiddenException(ROOM_ERROR_MSG.ACCESS_DENIED);
+  }
+
+  private async managementStats(): Promise<StatItem[]> {
+    const [totalRooms, availableRooms, occupiedRooms, outOfOrderRooms] =
+      await this.prismaService.$transaction([
+        this.prismaService.room.count({ where: { isActive: true } }),
+        this.prismaService.room.count({
+          where: {
+            isActive: true,
+            occupancyStatus: OccupancyStatus.VACANT,
+            housekeepingStatus: HousekeepingStatus.CLEAN,
+          },
+        }),
+        this.prismaService.room.count({
+          where: {
+            isActive: true,
+            occupancyStatus: OccupancyStatus.OCCUPIED,
+          },
+        }),
+        this.prismaService.room.count({
+          where: {
+            isActive: true,
+            occupancyStatus: OccupancyStatus.OUT_OF_ORDER,
+          },
+        }),
+      ]);
+
+    return [
+      {
+        id: 'total-rooms',
+        title: 'Active rooms',
+        value: String(totalRooms),
+        description: 'Rooms currently in service',
+        icon: 'BedDouble',
+        link: 'rooms?isActive=true',
+        tone: 'sky',
+      },
+      {
+        id: 'available-rooms',
+        title: 'Available rooms',
+        value: String(availableRooms),
+        description: 'Vacant, clean rooms ready to book',
+        icon: 'DoorOpen',
+        link: 'rooms?isActive=true&occupancyStatus=VACANT&housekeepingStatus=CLEAN',
+        tone: 'emerald',
+      },
+      {
+        id: 'occupied-rooms',
+        title: 'Occupied rooms',
+        value: String(occupiedRooms),
+        description: 'Rooms with guests in house',
+        icon: 'Users',
+        link: 'rooms?isActive=true&occupancyStatus=OCCUPIED',
+        tone: 'gold',
+      },
+      {
+        id: 'out-of-order-rooms',
+        title: 'Out of order',
+        value: String(outOfOrderRooms),
+        description: 'Rooms unavailable for booking',
+        icon: 'Wrench',
+        link: 'rooms?isActive=true&occupancyStatus=OUT_OF_ORDER',
+        tone: 'rose',
+      },
+    ];
+  }
+
+  private async receptionistStats(): Promise<StatItem[]> {
+    const [availableRooms, reservedRooms, occupiedRooms, outOfOrderRooms] =
+      await this.prismaService.$transaction([
+        this.prismaService.room.count({
+          where: {
+            isActive: true,
+            occupancyStatus: OccupancyStatus.VACANT,
+            housekeepingStatus: HousekeepingStatus.CLEAN,
+          },
+        }),
+        this.prismaService.room.count({
+          where: {
+            isActive: true,
+            occupancyStatus: OccupancyStatus.RESERVED,
+          },
+        }),
+        this.prismaService.room.count({
+          where: {
+            isActive: true,
+            occupancyStatus: OccupancyStatus.OCCUPIED,
+          },
+        }),
+        this.prismaService.room.count({
+          where: {
+            isActive: true,
+            occupancyStatus: OccupancyStatus.OUT_OF_ORDER,
+          },
+        }),
+      ]);
+
+    return [
+      {
+        id: 'available-rooms',
+        title: 'Available rooms',
+        value: String(availableRooms),
+        description: 'Vacant, clean rooms ready to assign',
+        icon: 'DoorOpen',
+        link: 'rooms?isActive=true&occupancyStatus=VACANT&housekeepingStatus=CLEAN',
+        tone: 'emerald',
+      },
+      {
+        id: 'reserved-rooms',
+        title: 'Reserved rooms',
+        value: String(reservedRooms),
+        description: 'Rooms held for upcoming guests',
+        icon: 'CalendarCheck',
+        link: 'rooms?isActive=true&occupancyStatus=RESERVED',
+        tone: 'gold',
+      },
+      {
+        id: 'occupied-rooms',
+        title: 'Occupied rooms',
+        value: String(occupiedRooms),
+        description: 'Rooms with guests in house',
+        icon: 'Users',
+        link: 'rooms?isActive=true&occupancyStatus=OCCUPIED',
+        tone: 'sky',
+      },
+      {
+        id: 'out-of-order-rooms',
+        title: 'Out of order',
+        value: String(outOfOrderRooms),
+        description: 'Rooms unavailable for booking',
+        icon: 'Wrench',
+        link: 'rooms?isActive=true&occupancyStatus=OUT_OF_ORDER',
+        tone: 'rose',
+      },
+    ];
+  }
+
+  private async housekeeperStats(): Promise<StatItem[]> {
+    const [dirtyRooms, cleaningRooms, cleanRooms, outOfOrderRooms] =
+      await this.prismaService.$transaction([
+        this.prismaService.room.count({
+          where: {
+            isActive: true,
+            housekeepingStatus: HousekeepingStatus.DIRTY,
+          },
+        }),
+        this.prismaService.room.count({
+          where: {
+            isActive: true,
+            housekeepingStatus: HousekeepingStatus.CLEANING,
+          },
+        }),
+        this.prismaService.room.count({
+          where: {
+            isActive: true,
+            housekeepingStatus: HousekeepingStatus.CLEAN,
+          },
+        }),
+        this.prismaService.room.count({
+          where: {
+            isActive: true,
+            occupancyStatus: OccupancyStatus.OUT_OF_ORDER,
+          },
+        }),
+      ]);
+
+    return [
+      {
+        id: 'dirty-rooms',
+        title: 'Needs cleaning',
+        value: String(dirtyRooms),
+        description: 'Active rooms awaiting housekeeping',
+        icon: 'WashingMachine',
+        link: 'rooms?isActive=true&housekeepingStatus=DIRTY',
+        tone: 'rose',
+      },
+      {
+        id: 'cleaning-rooms',
+        title: 'Being cleaned',
+        value: String(cleaningRooms),
+        description: 'Housekeeping currently in progress',
+        icon: 'RefreshCw',
+        link: 'rooms?isActive=true&housekeepingStatus=CLEANING',
+        tone: 'gold',
+      },
+      {
+        id: 'clean-rooms',
+        title: 'Clean rooms',
+        value: String(cleanRooms),
+        description: 'Rooms ready for inspection or use',
+        icon: 'CheckCircle',
+        link: 'rooms?isActive=true&housekeepingStatus=CLEAN',
+        tone: 'emerald',
+      },
+      {
+        id: 'out-of-order-rooms',
+        title: 'Out of order',
+        value: String(outOfOrderRooms),
+        description: 'Rooms unavailable for housekeeping',
+        icon: 'Wrench',
+        link: 'rooms?isActive=true&occupancyStatus=OUT_OF_ORDER',
+        tone: 'rose',
+      },
+    ];
+  }
 
   async create(dto: CreateRoomDto): Promise<CreateRoomResponse> {
     const roomType = await this.prismaService.roomType.findUnique({
@@ -76,7 +306,18 @@ export class RoomsService {
 
   async findAll(
     query: RoomsQueryDto,
+    userId: string,
+    role: UserRole,
+    category?: Category,
   ): Promise<ListResponse<RoomListItemResponse>> {
+    if (
+      role === UserRole.STAFF &&
+      category !== Category.RECEPTIONIST &&
+      category !== Category.HOUSEKEEPER
+    ) {
+      throw new ForbiddenException(ROOM_ERROR_MSG.ACCESS_DENIED);
+    }
+
     const {
       page,
       limit,
@@ -86,7 +327,10 @@ export class RoomsService {
       roomType,
     } = query;
 
-    const where = {
+    const where: Prisma.RoomWhereInput = {
+      ...(role === UserRole.STAFF &&
+        category === Category.HOUSEKEEPER &&
+        this.housekeeperRoomWhere(userId)),
       ...(search && {
         OR: [
           {
@@ -182,7 +426,22 @@ export class RoomsService {
     return rooms;
   }
 
-  async findOne(id: string): Promise<RoomDetailsResponse> {
+  async findOne(
+    id: string,
+    userId: string,
+    role: UserRole,
+    category?: Category,
+  ): Promise<RoomDetailsResponse | HousekeeperRoomDetails> {
+    if (role === UserRole.STAFF) {
+      if (category === Category.HOUSEKEEPER) {
+        return this.findHousekeeperRoom(id, userId);
+      }
+
+      if (category !== Category.RECEPTIONIST) {
+        throw new ForbiddenException(ROOM_ERROR_MSG.ACCESS_DENIED);
+      }
+    }
+
     const room = await this.prismaService.room.findUnique({
       where: { id },
       select: {
@@ -230,6 +489,68 @@ export class RoomsService {
         ...room.roomType,
         image: room.roomType.images[0],
       },
+    };
+  }
+
+  private async findHousekeeperRoom(
+    id: string,
+    userId: string,
+  ): Promise<HousekeeperRoomDetails> {
+    const room = await this.prismaService.room.findFirst({
+      where: {
+        id,
+        ...this.housekeeperRoomWhere(userId),
+      },
+      select: {
+        id: true,
+        roomNumber: true,
+        floor: true,
+        name: true,
+        occupancyStatus: true,
+        housekeepingStatus: true,
+        roomType: {
+          select: {
+            id: true,
+            name: true,
+            slug: true,
+            description: true,
+            sizeSqFt: true,
+            maxGuests: true,
+            bedType: true,
+            bedCount: true,
+          },
+        },
+      },
+    });
+    if (!room) {
+      throw new NotFoundException(ROOM_ERROR_MSG.NOT_FOUND);
+    }
+
+    return {
+      id: room.id,
+      roomNumber: room.roomNumber,
+      floor: room.floor,
+      roomName: room.name,
+      occupancyStatus: room.occupancyStatus,
+      housekeepingStatus: room.housekeepingStatus,
+      roomType: {
+        id: room.roomType.id,
+        name: room.roomType.name,
+        slug: room.roomType.slug,
+        description: room.roomType.description,
+        roomSize: room.roomType.sizeSqFt,
+        maxGuests: room.roomType.maxGuests,
+        bed: {
+          type: room.roomType.bedType,
+          count: room.roomType.bedCount,
+        },
+      },
+    };
+  }
+
+  private housekeeperRoomWhere(userId: string): Prisma.RoomWhereInput {
+    return {
+      housekeepingTasks: { some: { assignedTo: userId } },
     };
   }
 

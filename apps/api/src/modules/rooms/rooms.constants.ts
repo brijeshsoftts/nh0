@@ -7,4 +7,5 @@ export const ROOM_SUCCESS_MSG = {
 export const ROOM_ERROR_MSG = {
   NOT_FOUND: 'Room not found',
   CONFLICT_ROOM_NUMBER: 'Room number already exists',
+  ACCESS_DENIED: 'Access denied',
 };

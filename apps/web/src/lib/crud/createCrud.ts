@@ -59,10 +59,10 @@ export function createCrud<TItem, LookupOutput>() {
       LookupOutput
     >(endpoint);
 
-    function useList(params?: ListParams) {
+    function useList<TItem>(params?: ListParams) {
       const { data, isLoading, isError, refetch } = useQuery({
         queryKey: keys.list(params),
-        queryFn: () => service.findAll(params),
+        queryFn: () => service.findAll<TItem>(params),
         placeholderData: (previousData) => previousData,
       });
 

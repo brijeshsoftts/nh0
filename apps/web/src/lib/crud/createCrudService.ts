@@ -13,7 +13,7 @@ export function createCrudService<TItem, TCreate, TUpdate, TLookup>(
     create: (data: TCreate): Promise<ApiMessageResponse> =>
       apiClient.post(endpoint, data).then((r) => r.data),
 
-    findAll: (params?: ListParams): Promise<ApiListResponse<TItem>> =>
+    findAll: <TItem>(params?: ListParams): Promise<ApiListResponse<TItem>> =>
       apiClient.get(endpoint, { params }).then((r) => r.data),
 
     findOne: (id: string): Promise<TItem> =>

@@ -1,4 +1,8 @@
-import { HousekeepingStatus, OccupancyStatus } from '../../types/prisma.types';
+import {
+  BedType,
+  HousekeepingStatus,
+  OccupancyStatus,
+} from '../../types/prisma.types';
 
 export type RoomBase = {
   id: string;
@@ -44,5 +48,26 @@ export type RoomDetailsResponse = {
       url: string;
       altText: string | null;
     } | null;
+  };
+};
+
+export type HousekeeperRoomDetails = {
+  id: string;
+  roomNumber: string;
+  floor: number;
+  roomName: string | null;
+  occupancyStatus: OccupancyStatus;
+  housekeepingStatus: HousekeepingStatus;
+  roomType: {
+    id: string;
+    name: string;
+    slug: string;
+    description: string | null;
+    roomSize: number | null;
+    maxGuests: number;
+    bed: {
+      type: BedType;
+      count: number;
+    };
   };
 };
