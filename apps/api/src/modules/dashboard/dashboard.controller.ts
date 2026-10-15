@@ -14,6 +14,10 @@ import { ValidationPipe } from '../../common/pipes';
 import { Category, UserRole } from '../../types/prisma.types';
 
 import {
+  BookingStatusQueryDto,
+  BookingStatusQuerySchema,
+} from './dto/booking-status-query.dto';
+import {
   PaymentsQueryDto,
   PaymentsQuerySchema,
 } from './dto/payments-query.dto';
@@ -55,8 +59,11 @@ export class DashboardController {
   @Roles('ADMIN', 'MANAGER')
   @Get('booking-status')
   @HttpCode(HttpStatus.OK)
-  async getBookingStatus() {
-    const data = await this.dashboardService.getBookingStatus();
+  async getBookingStatus(
+    @Query(new ValidationPipe(BookingStatusQuerySchema))
+    query: BookingStatusQueryDto,
+  ) {
+    const data = await this.dashboardService.getBookingStatus(query.range);
     return apiResponse({ data });
   }
 

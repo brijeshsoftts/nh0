@@ -228,9 +228,26 @@ export class DashboardService {
     };
   }
 
-  async getBookingStatus(): Promise<BookingStatusCount[]> {
+  async getBookingStatus(
+    range: 'all' | '7d' | '14d' | '28d',
+  ): Promise<BookingStatusCount[]> {
+    const where =
+      range === 'all'
+        ? undefined
+        : (() => {
+            const today = new Date();
+            today.setHours(0, 0, 0, 0);
+            const startDate = new Date(today);
+            startDate.setDate(
+              startDate.getDate() - Number.parseInt(range, 10) + 1,
+            );
+            const endDate = new Date(today);
+            endDate.setDate(endDate.getDate() + 1);
+            return { createdAt: { gte: startDate, lt: endDate } };
+          })();
     const bookingCounts = await this.prismaService.booking.groupBy({
       by: ['status'],
+      where,
       _count: { _all: true },
     });
     const countByStatus = new Map(

@@ -1,5 +1,22 @@
-import { CartesianGrid, Line, LineChart, XAxis, YAxis } from "recharts";
+import { useId } from "react";
+import {
+  Area,
+  CartesianGrid,
+  ComposedChart,
+  Line,
+  XAxis,
+  YAxis,
+} from "recharts";
 
+import { Button } from "@/components/ui/button";
+import {
+  Card,
+  CardAction,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
 import {
   type ChartConfig,
   ChartContainer,
@@ -13,6 +30,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { Skeleton } from "@/components/ui/skeleton";
 
 export interface TrendChart {
   date: string;
@@ -33,7 +51,9 @@ interface TrendChartProps {
   title?: string;
   description?: string;
   options?: Option[];
-  key?: string;
+  isLoading?: boolean;
+  isError?: boolean;
+  onRetry?: () => void;
 }
 
 export function TrendChart({
@@ -43,7 +63,11 @@ export function TrendChart({
   title,
   description,
   options,
+  isLoading = false,
+  isError = false,
+  onRetry,
 }: TrendChartProps) {
+  const gradientId = `revenue-fill-${useId().replaceAll(":", "")}`;
   const chartConfig = {
     value: {
       label: title ?? "Value",
@@ -52,89 +76,152 @@ export function TrendChart({
   } satisfies ChartConfig;
 
   return (
-    <div className="rounded-lg border bg-card lg:min-w-full">
-      {/* Header */}
-      <div className="flex items-center justify-between gap-4 p-4">
-        <div>
-          <h2 className="text-sm font-medium">{title}</h2>
-          <p className="text-xs text-muted-foreground">{description}</p>
+    <Card className="h-full w-full min-w-0 border border-border bg-card text-card-foreground">
+      <CardHeader className="flex flex-row items-start justify-between gap-4">
+        <div className="min-w-0">
+          <CardTitle>{title}</CardTitle>
+          <CardDescription>{description}</CardDescription>
         </div>
 
-        <Select
-          value={range}
-          onValueChange={(value) => onRangeChange(value as Range)}
-        >
-          <SelectTrigger className="h-8 w-27.5 text-xs">
-            <SelectValue />
-          </SelectTrigger>
-
-          <SelectContent>
-            {options?.map(({ label, value }) => (
-              <SelectItem key={value} value={value}>
-                {label}
-              </SelectItem>
-            ))}
-          </SelectContent>
-        </Select>
-      </div>
-
-      {/* Chart */}
-      <div className="px-4 pb-4">
-        <ChartContainer config={chartConfig} className="h-70 w-full min-w-0">
-          <LineChart
-            data={data}
-            margin={{
-              top: 10,
-              right: 10,
-              left: 10,
-              bottom: 0,
-            }}
+        <CardAction>
+          <Select
+            value={range}
+            onValueChange={(value) => onRangeChange(value as Range)}
           >
-            <CartesianGrid vertical={false} className="stroke-border" />
+            <SelectTrigger
+              aria-label="Revenue time range"
+              className="h-8 w-27.5 text-xs"
+            >
+              <SelectValue />
+            </SelectTrigger>
 
-            <XAxis
-              dataKey="date"
-              tickLine={false}
-              axisLine={false}
-              tickMargin={8}
-              className="text-xs"
-            />
+            <SelectContent>
+              {options?.map(({ label, value }) => (
+                <SelectItem key={value} value={value}>
+                  {label}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+        </CardAction>
+      </CardHeader>
 
-            <YAxis
-              tickLine={false}
-              axisLine={false}
-              tickMargin={8}
-              width={50}
-              tickFormatter={(value) =>
-                `₹${Number(value).toLocaleString("en-IN")}`
-              }
-              className="text-xs"
-            />
-
-            <ChartTooltip
-              cursor={false}
-              content={
-                <ChartTooltipContent
-                  formatter={(value) =>
-                    `₹${Number(value).toLocaleString("en-IN")}`
-                  }
-                />
-              }
-            />
-
-            <Line
-              type="monotone"
-              dataKey="value"
-              stroke="var(--color-value)"
-              strokeWidth={2}
-              dot={false}
-              activeDot={{
-                r: 4,
+      <CardContent>
+        {isError ? (
+          <div
+            role="alert"
+            className="flex h-70 flex-col items-center justify-center gap-3 text-center"
+          >
+            <p className="text-sm text-muted-foreground">
+              Revenue trend could not be loaded.
+            </p>
+            {onRetry && (
+              <Button
+                type="button"
+                variant="outline"
+                size="sm"
+                onClick={onRetry}
+              >
+                Try again
+              </Button>
+            )}
+          </div>
+        ) : isLoading ? (
+          <div
+            role="status"
+            aria-label="Loading revenue trend"
+            aria-busy="true"
+            className="flex h-70 flex-col justify-between py-3"
+          >
+            {Array.from({ length: 6 }, (_, index) => (
+              <Skeleton key={index} className="h-px w-full" />
+            ))}
+          </div>
+        ) : (
+          <ChartContainer config={chartConfig} className="h-70 w-full min-w-0">
+            <ComposedChart
+              data={data}
+              margin={{
+                top: 10,
+                right: 10,
+                left: 10,
+                bottom: 0,
               }}
-            />
-          </LineChart>
-        </ChartContainer>
-      </div>
-    </div>
+            >
+              <defs>
+                <linearGradient id={gradientId} x1="0" y1="0" x2="0" y2="1">
+                  <stop
+                    offset="0%"
+                    stopColor="var(--color-value)"
+                    stopOpacity={0.24}
+                  />
+                  <stop
+                    offset="100%"
+                    stopColor="var(--color-value)"
+                    stopOpacity={0.02}
+                  />
+                </linearGradient>
+              </defs>
+
+              <CartesianGrid
+                vertical={false}
+                stroke="var(--border)"
+                strokeOpacity={0.65}
+              />
+
+              <XAxis
+                dataKey="date"
+                tickMargin={8}
+                className="text-xs"
+                tickLine={{ stroke: "var(--border)" }}
+                axisLine={{ stroke: "var(--border)" }}
+              />
+
+              <YAxis
+                tickMargin={8}
+                width={50}
+                tickFormatter={(value) =>
+                  `₹${Number(value).toLocaleString("en-IN")}`
+                }
+                className="text-xs"
+                tickLine={{ stroke: "var(--border)" }}
+                axisLine={{ stroke: "var(--border)" }}
+              />
+
+              <ChartTooltip
+                cursor={false}
+                content={
+                  <ChartTooltipContent
+                    className="border border-border bg-card text-card-foreground shadow-md"
+                    formatter={(value) =>
+                      `₹${Number(value).toLocaleString("en-IN")}`
+                    }
+                  />
+                }
+              />
+
+              <Area
+                type="monotone"
+                dataKey="value"
+                stroke="none"
+                fill={`url(#${gradientId})`}
+                tooltipType="none"
+              />
+
+              <Line
+                type="monotone"
+                dataKey="value"
+                stroke="var(--color-value)"
+                strokeWidth={2}
+                dot={false}
+                activeDot={{
+                  r: 4,
+                }}
+              />
+            </ComposedChart>
+          </ChartContainer>
+        )}
+      </CardContent>
+    </Card>
   );
 }

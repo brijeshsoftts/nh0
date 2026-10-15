@@ -1,7 +1,10 @@
 import type { StatCard } from "@/components/common/StatCard";
 import { apiClient } from "@/lib/apiClient";
 
-import type { DonutChartData } from "./components/DonutChart";
+import type {
+  BookingStatusRange,
+  DonutChartData,
+} from "./components/DonutChart";
 import type { TrendChart } from "./components/TrendChart";
 import type { Stays } from "./dashboard.types";
 
@@ -12,8 +15,10 @@ export const dashboardService = {
     apiClient
       .get("/dashboard/revenue-trend", { params: { range } })
       .then((res) => res.data.data),
-  getBookingStatus: (): Promise<DonutChartData[]> =>
-    apiClient.get("/dashboard/booking-status").then((res) => res.data?.data),
+  getBookingStatus: (range: BookingStatusRange): Promise<DonutChartData[]> =>
+    apiClient
+      .get("/dashboard/booking-status", { params: { range } })
+      .then((res) => res.data?.data),
   getStays: (): Promise<Stays> =>
     apiClient.get("/dashboard/stays").then((res) => res.data?.data),
 };

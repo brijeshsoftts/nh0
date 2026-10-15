@@ -14,7 +14,7 @@ import { useDashbaordStays } from "../hooks/useDashbaordStays";
 import { useDashbaordBookingStatus } from "../hooks/useDashboardBookingStatus";
 
 import { DashboardStats } from "./DashboardStats";
-import { DonutChart } from "./DonutChart";
+import { type BookingStatusRange, DonutChart } from "./DonutChart";
 import { type Range, TrendChart } from "./TrendChart";
 
 function Arrivals({ arrivals }: { arrivals: Stays["arrivals"] }) {
@@ -132,20 +132,16 @@ function Departures({ departures }: { departures: Stays["departures"] }) {
 
 function RevenueTrend() {
   const [range, setRange] = useState<Range>("7d");
-  const { data, isLoading, isError } = useDashbaordRevenueTrend(range);
-
-  if (isLoading) {
-    return <>Loading</>;
-  }
-  if (isError || !data) {
-    return <>Error</>;
-  }
+  const { data, isLoading, isError, refetch } = useDashbaordRevenueTrend(range);
 
   return (
     <TrendChart
-      data={data}
+      data={data ?? []}
       range={range}
       onRangeChange={setRange}
+      isLoading={isLoading}
+      isError={isError || (!isLoading && !data)}
+      onRetry={refetch}
       title="Revenue trend"
       description="Successful payments collected per day."
       options={[
@@ -167,18 +163,18 @@ function RevenueTrend() {
 }
 
 function BookingStatus() {
-  const { data, isLoading, isError } = useDashbaordBookingStatus();
-
-  if (isLoading) {
-    return <>Loading</>;
-  }
-  if (isError || !data) {
-    return <>Error</>;
-  }
+  const [range, setRange] = useState<BookingStatusRange>("all");
+  const { data, isLoading, isError, refetch } =
+    useDashbaordBookingStatus(range);
 
   return (
     <DonutChart
-      data={data}
+      data={data ?? []}
+      range={range}
+      onRangeChange={setRange}
+      isLoading={isLoading}
+      isError={isError || (!isLoading && !data)}
+      onRetry={refetch}
       title="Booking status distribution"
       description="Booking counts grouped by current status."
       centerLabel="Total"
