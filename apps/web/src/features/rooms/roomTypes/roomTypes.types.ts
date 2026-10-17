@@ -9,6 +9,7 @@ export type RoomType = {
   id: string;
   name: string;
   slug: string;
+  description?: string | null;
   primaryImage?: {
     url: string;
     altText?: string;

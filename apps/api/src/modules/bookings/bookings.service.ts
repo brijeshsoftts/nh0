@@ -15,11 +15,17 @@ import {
   Prisma,
   UserRole,
 } from '../../types/prisma.types';
+import { StatItem } from '../../types/shared.types';
 
 import { BookingAvailabilityQueryDto } from './dto/available-rooms-query.dto';
 import { BookingsQueryDto } from './dto/bookings-query.dto';
 import { CreateBookingDto } from './dto/create-booking.dto';
-import { BookingDetails, BookingListItem } from './bookings.types';
+import {
+  BookingDetails,
+  BookingListItem,
+  CustomerBooking,
+  CustomerBookingDetails,
+} from './bookings.types';
 
 export type BookingTotalsInput = {
   roomPricePerNight: number;
@@ -47,15 +53,80 @@ export function calculateBookingTotals({
 export class BookingsService {
   constructor(private readonly prismaService: PrismaService) {}
 
+  async getStats(userId: string, role: UserRole): Promise<StatItem[]> {
+    const where: Prisma.BookingWhereInput = {
+      ...(role === UserRole.CUSTOMER && { customerId: userId }),
+    };
+    const statusGroups = await this.prismaService.booking.groupBy({
+      by: ['status'],
+      where,
+      _count: { _all: true },
+    });
+    const countFor = (status: BookingStatus) =>
+      statusGroups.find((group) => group.status === status)?._count._all ?? 0;
+    const checkedIn = countFor(BookingStatus.CHECKED_IN);
+    const checkedOut = countFor(BookingStatus.CHECKED_OUT);
+    const total = statusGroups.reduce(
+      (count, group) => count + group._count._all,
+      0,
+    );
+
+    return [
+      {
+        id: 'total-bookings',
+        title: 'Total Bookings',
+        value: total.toLocaleString(),
+        description: 'All bookings',
+        icon: 'CalendarCheck',
+        link: 'bookings',
+        tone: 'sky',
+      },
+      {
+        id: 'pending-bookings',
+        title: 'Pending',
+        value: countFor(BookingStatus.PENDING).toLocaleString(),
+        description: 'Awaiting confirmation',
+        icon: 'Clock3',
+        link: 'bookings?status=pending',
+        tone: 'gold',
+      },
+      {
+        id: 'confirmed-bookings',
+        title: 'Confirmed',
+        value: countFor(BookingStatus.CONFIRMED).toLocaleString(),
+        description: 'Ready for arrival',
+        icon: 'CheckCircle',
+        link: 'bookings?status=confirmed',
+        tone: 'emerald',
+      },
+      {
+        id: 'checked-in-out-bookings',
+        title: 'Checked In / Out',
+        value: `${checkedIn.toLocaleString()} / ${checkedOut.toLocaleString()}`,
+        description: 'Checked in / checked out',
+        icon: 'DoorOpen',
+        link: 'bookings',
+        tone: 'teal',
+      },
+    ];
+  }
+
   async findAll(
     query: BookingsQueryDto,
     userId: string,
     role: UserRole,
-  ): Promise<ListResponse<BookingListItem>> {
-    const { search, status, page, limit } = query;
+  ): Promise<ListResponse<BookingListItem | CustomerBooking>> {
+    const { search, status, paymentMethod, page, limit } = query;
     const where: Prisma.BookingWhereInput = {
       ...(role === UserRole.CUSTOMER && { customerId: userId }),
       ...(status && { status }),
+      ...(paymentMethod && {
+        invoice: {
+          is: {
+            payments: { some: { paymentMethod } },
+          },
+        },
+      }),
       ...(search && {
         OR: [
           {
@@ -127,8 +198,23 @@ export class BookingsService {
       this.prismaService.booking.count({ where }),
     ]);
 
-    return {
-      data: bookings.map((booking) => ({
+    const data = bookings.map((booking) => {
+      if (role === UserRole.CUSTOMER) {
+        const roomNumber = booking.bookingRoom?.assignedRoom?.roomNumber;
+
+        return {
+          id: booking.id,
+          bookingNumber: booking.bookingReference,
+          roomType: booking.bookingRoom?.roomType.name ?? '',
+          ...(roomNumber ? { roomNumber } : {}),
+          checkIn: booking.checkInDate.toISOString(),
+          checkOut: booking.checkOutDate.toISOString(),
+          totalAmount: booking.totalAmount,
+          status: booking.status,
+        } satisfies CustomerBooking;
+      }
+
+      return {
         ...booking,
         bookingRoom: booking.bookingRoom
           ? {
@@ -140,7 +226,11 @@ export class BookingsService {
         checkInDate: booking.checkInDate.toISOString(),
         checkOutDate: booking.checkOutDate.toISOString(),
         bookedAt: booking.bookedAt.toISOString(),
-      })),
+      } satisfies BookingListItem;
+    });
+
+    return {
+      data,
       meta: { page, limit, total },
     };
   }
@@ -209,7 +299,64 @@ export class BookingsService {
     });
   }
 
-  async findOne(id: string): Promise<BookingDetails> {
+  async findOne(
+    id: string,
+    userId: string,
+    role: UserRole,
+  ): Promise<BookingDetails | CustomerBookingDetails> {
+    if (role === UserRole.CUSTOMER) {
+      const customerBooking = await this.prismaService.booking.findUnique({
+        where: { id, customerId: userId },
+        select: {
+          id: true,
+          bookingReference: true,
+          status: true,
+          checkInDate: true,
+          checkOutDate: true,
+          bookedAt: true,
+          bookingRoom: {
+            select: {
+              assignedRoom: { select: { roomNumber: true } },
+              roomType: { select: { name: true } },
+            },
+          },
+          bookingGuests: { select: { age: true } },
+        },
+      });
+
+      if (!customerBooking) {
+        throw new NotFoundException('Booking not found');
+      }
+
+      const duration = Math.max(
+        0,
+        Math.ceil(
+          (customerBooking.checkOutDate.getTime() -
+            customerBooking.checkInDate.getTime()) /
+            86400000,
+        ),
+      );
+      const roomNumber = customerBooking.bookingRoom?.assignedRoom?.roomNumber;
+
+      return {
+        id: customerBooking.id,
+        bookingNumber: customerBooking.bookingReference,
+        status: customerBooking.status,
+        roomType: customerBooking.bookingRoom?.roomType.name ?? '',
+        ...(roomNumber && { roomNumber }),
+        checkIn: customerBooking.checkInDate.toISOString(),
+        checkOut: customerBooking.checkOutDate.toISOString(),
+        duration,
+        adults: customerBooking.bookingGuests.filter(
+          (guest) => guest.age === null || guest.age >= 18,
+        ).length,
+        children: customerBooking.bookingGuests.filter(
+          (guest) => guest.age !== null && guest.age < 18,
+        ).length,
+        bookedOn: customerBooking.bookedAt.toISOString(),
+      };
+    }
+
     const booking = await this.prismaService.booking.findUnique({
       where: { id },
       select: {

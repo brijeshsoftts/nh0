@@ -30,6 +30,7 @@ export type RoomType = {
   id: string;
   name: string;
   slug: string;
+  description: string | null;
   primaryImage: {
     url: string;
     altText: string | null;
@@ -112,3 +113,16 @@ export type RoomTypeDetails = {
   createdAt: Date;
   updatedAt: Date;
 };
+
+export interface BrowseRoom {
+  id: string;
+  slug: string;
+  name: string;
+  image: string;
+  bedConfiguration: string;
+  maxOccupancy: number;
+  availableRooms: number;
+  pricePerNight: number;
+  currency?: string;
+  description?: string;
+}

@@ -18,7 +18,12 @@ import { StatItem } from '../../types/shared.types';
 import { InvoicesQueryDto } from './dto/invoices-query.dto';
 import { UpdateInvoiceDto } from './dto/update-invoice.dto';
 import { INVOICES_ERROR_MSG } from './invoices.constants';
-import { InvoiceDetails, InvoiceItem, UpdateInvoice } from './invoices.types';
+import {
+  CustomerInvoice,
+  InvoiceDetails,
+  InvoiceItem,
+  UpdateInvoice,
+} from './invoices.types';
 
 const INVOICE_LIST_SELECT = {
   id: true,
@@ -26,7 +31,7 @@ const INVOICE_LIST_SELECT = {
   totalAmount: true,
   status: true,
   issuedAt: true,
-  booking: { select: { bookingReference: true } },
+  booking: { select: { bookingReference: true, checkOutDate: true } },
   customer: { select: { fullName: true } },
   payments: {
     where: { paymentStatus: PaymentStatus.COMPLETED },
@@ -174,7 +179,7 @@ export class InvoicesService {
     query: InvoicesQueryDto,
     userId: string,
     role: UserRole,
-  ): Promise<ListResponse<InvoiceItem>> {
+  ): Promise<ListResponse<InvoiceItem | CustomerInvoice>> {
     const { search, status, page, limit } = query;
     const where: Prisma.InvoiceWhereInput = {
       ...(role === UserRole.CUSTOMER && { customerId: userId }),
@@ -210,7 +215,11 @@ export class InvoicesService {
     ]);
 
     return {
-      data: invoices.map((invoice) => this.mapListItem(invoice)),
+      data: invoices.map((invoice) =>
+        role === UserRole.CUSTOMER
+          ? this.mapCustomerInvoice(invoice)
+          : this.mapListItem(invoice),
+      ),
       meta: { page, limit, total },
     };
   }
@@ -354,6 +363,24 @@ export class InvoicesService {
       balanceDue: Math.max(0, invoice.totalAmount - paidAmount),
       status: invoice.status,
       issuedAt: invoice.issuedAt.toISOString(),
+    };
+  }
+
+  private mapCustomerInvoice(invoice: InvoiceListRecord): CustomerInvoice {
+    const paidAmount = invoice.payments.reduce(
+      (total, payment) => total + payment.amount,
+      0,
+    );
+
+    return {
+      id: invoice.id,
+      invoiceNumber: invoice.invoiceNumber,
+      invoiceDate: invoice.issuedAt.toISOString().slice(0, 10),
+      bookingReference: invoice.booking.bookingReference,
+      totalAmount: invoice.totalAmount,
+      balanceDue: Math.max(0, invoice.totalAmount - paidAmount),
+      dueDate: invoice.booking.checkOutDate.toISOString().slice(0, 10),
+      status: invoice.status,
     };
   }
 

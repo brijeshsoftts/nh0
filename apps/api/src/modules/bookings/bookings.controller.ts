@@ -57,6 +57,18 @@ export class BookingsController {
   }
 
   @UseGuards(AuthGuard, RoleGuard)
+  @Roles('ADMIN', 'MANAGER', 'STAFF', 'CUSTOMER')
+  @Get('stats')
+  @HttpCode(HttpStatus.OK)
+  async getStats(
+    @CurrentUser('id') userId: string,
+    @CurrentUser('role') role: UserRole,
+  ) {
+    const data = await this.bookingsService.getStats(userId, role);
+    return apiResponse({ data });
+  }
+
+  @UseGuards(AuthGuard, RoleGuard)
   @Roles('ADMIN', 'MANAGER', 'STAFF')
   @Patch(':id/status')
   @HttpCode(HttpStatus.OK)
@@ -80,11 +92,15 @@ export class BookingsController {
   }
 
   @UseGuards(AuthGuard, RoleGuard)
-  @Roles('ADMIN', 'MANAGER', 'STAFF')
+  @Roles('ADMIN', 'MANAGER', 'STAFF', 'CUSTOMER')
   @Get(':id')
   @HttpCode(HttpStatus.OK)
-  async findOne(@Param('id') id: string) {
-    const data = await this.bookingsService.findOne(id);
+  async findOne(
+    @Param('id') id: string,
+    @CurrentUser('id') userId: string,
+    @CurrentUser('role') role: UserRole,
+  ) {
+    const data = await this.bookingsService.findOne(id, userId, role);
     return apiResponse({ data });
   }
 

@@ -1,4 +1,5 @@
 import { NoAccess } from "@/components/common/NoAccess";
+import { CustomerBookings } from "@/features/bookings/components/CustomerBookings";
 import { ManagementBooking } from "@/features/bookings/components/ManagementBooking";
 import { useAuth } from "@/hooks/useAuth";
 
@@ -14,7 +15,7 @@ export default function BookingsPage() {
       }
       return <NoAccess />;
     case "CUSTOMER":
-      return <NoAccess />;
+      return <CustomerBookings />;
     default:
       return <NoAccess />;
   }

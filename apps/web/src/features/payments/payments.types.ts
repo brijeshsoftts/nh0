@@ -14,3 +14,13 @@ export type PaymentItem = {
   recordedByName: string | null;
   createdAt: string;
 };
+
+export interface CustomerPayment {
+  id: string;
+  date: string;
+  invoiceNumber: string;
+  transactionId: string;
+  amount: number;
+  paymentMethod: PaymentMethod;
+  status: PaymentStatus;
+}

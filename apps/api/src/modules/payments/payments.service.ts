@@ -19,7 +19,7 @@ import { StatItem } from '../../types/shared.types';
 import { CreatePaymentDto } from './dto/create-payment.dto';
 import { PaymentsQueryDto } from './dto/payments-query.dto';
 import { PAYMENTS_ERROR_MSG } from './payments.constants';
-import { CreatePayment, PaymentItem } from './payments.types';
+import { CreatePayment, CustomerPayment, PaymentItem } from './payments.types';
 
 const PAYMENT_SELECT = {
   id: true,
@@ -109,11 +109,11 @@ export class PaymentsService {
     query: PaymentsQueryDto,
     userId: string,
     role: UserRole,
-  ): Promise<ListResponse<PaymentItem>> {
-    const { page, limit, search, paymentStatus, paymentMethod } = query;
+  ): Promise<ListResponse<PaymentItem | CustomerPayment>> {
+    const { page, limit, search, status, paymentMethod } = query;
     const where: Prisma.PaymentWhereInput = {
       ...(role === UserRole.CUSTOMER && { customerId: userId }),
-      ...(paymentStatus && { paymentStatus }),
+      ...(status && { paymentStatus: status }),
       ...(paymentMethod && { paymentMethod }),
       ...(search && {
         OR: [
@@ -150,7 +150,11 @@ export class PaymentsService {
     ]);
 
     return {
-      data: payments.map((payment) => this.mapPayment(payment)),
+      data: payments.map((payment) =>
+        role === UserRole.CUSTOMER
+          ? this.mapCustomerPayment(payment)
+          : this.mapPayment(payment),
+      ),
       meta: { page, limit, total },
     };
   }
@@ -352,6 +356,18 @@ export class PaymentsService {
       paidAt: payment.paidAt?.toISOString() ?? null,
       recordedByName: payment.recorder?.fullName ?? null,
       createdAt: payment.createdAt.toISOString(),
+    };
+  }
+
+  private mapCustomerPayment(payment: PaymentRecord): CustomerPayment {
+    return {
+      id: payment.id,
+      date: (payment.paidAt ?? payment.createdAt).toISOString(),
+      invoiceNumber: payment.invoice.invoiceNumber,
+      ...(payment.transactionId && { transactionId: payment.transactionId }),
+      amount: payment.amount,
+      paymentMethod: payment.paymentMethod,
+      status: payment.paymentStatus,
     };
   }
 

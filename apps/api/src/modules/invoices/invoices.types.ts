@@ -69,3 +69,14 @@ export type UpdateInvoice = {
   discountAmount: number;
   totalAmount: number;
 };
+
+export interface CustomerInvoice {
+  id: string;
+  invoiceNumber: string;
+  invoiceDate: string;
+  bookingReference: string;
+  totalAmount: number;
+  balanceDue: number;
+  dueDate: string;
+  status: InvoiceStatus;
+}

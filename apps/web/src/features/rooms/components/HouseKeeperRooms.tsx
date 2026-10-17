@@ -5,8 +5,8 @@ import {
 } from "@/components/common/EnumBadges";
 import { useListParams } from "@/hooks/useListParams";
 
+import type { HousekeeperRoom } from "../room.types";
 import { useRooms } from "../rooms.crud";
-import type { HousekeeperRoom } from "../types";
 
 import { HouseKeeperRoomDetails } from "./HouseKeeperRoomDetails";
 import { RoomsStats } from "./RoomsStats";

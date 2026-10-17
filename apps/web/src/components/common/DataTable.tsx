@@ -180,11 +180,11 @@ export function DataTable<T extends Record<string, any>>({
 
             {/* Filters */}
             {filters.length > 0 && (
-              <div className="flex w-full flex-wrap items-center gap-2 sm:w-auto">
+              <div className="flex w-full items-center gap-2 sm:w-auto">
                 {filters.map((filter) => (
                   <Select
                     key={filter.key}
-                    value={filterValues[filter.key] || "All"}
+                    value={filterValues[filter.key] || "All " + filter.label}
                     onValueChange={(value) =>
                       handleFilterSelect(filter.key, value)
                     }

@@ -1,6 +1,6 @@
 import { NoAccess } from "@/components/common/NoAccess";
+import { CustomerInvoices } from "@/features/invoices/components/CustomerInvoices";
 import { ManagementInvoices } from "@/features/invoices/components/ManagementInvoices";
-import { CustomerPayments } from "@/features/payments/components/CustomerPayments";
 import { useAuth } from "@/hooks/useAuth";
 
 export default function InvoicesPage() {
@@ -15,7 +15,7 @@ export default function InvoicesPage() {
       }
       return <NoAccess />;
     case "CUSTOMER":
-      return <CustomerPayments />;
+      return <CustomerInvoices />;
     default:
       return <NoAccess />;
   }

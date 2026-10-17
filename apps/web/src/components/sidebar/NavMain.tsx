@@ -48,13 +48,17 @@ export function NavMain({ items }: { items: NavItem[] }) {
   return (
     <>
       {items.map((item, index) => (
-        <NavMainItem key={item.title || item.label || index} item={item} />
+        <NavMainItem
+          key={item.title || item.label || index}
+          item={item}
+          id={index}
+        />
       ))}
     </>
   );
 }
 
-function NavMainItem({ item }: { item: NavItem }) {
+function NavMainItem({ item }: { item: NavItem; id: number }) {
   const location = useLocation();
   const hasChildren = !!item.children?.length;
   const isCurrent = matchesPath(item, location.pathname);
@@ -63,7 +67,7 @@ function NavMainItem({ item }: { item: NavItem }) {
   if (item.isSection && item.label) {
     return (
       <SidebarGroup className="p-0 first:pt-0">
-        <SidebarGroupLabel className="h-auto px-3 py-2 text-[10px] font-semibold tracking-wider text-muted-foreground/60 uppercase">
+        <SidebarGroupLabel className="h-auto px-3 py-2 text-xs tracking-wider text-muted-foreground">
           {item.label}
         </SidebarGroupLabel>
       </SidebarGroup>
@@ -72,7 +76,7 @@ function NavMainItem({ item }: { item: NavItem }) {
 
   if (hasChildren && item.title) {
     return (
-      <SidebarGroup className="p-0">
+      <SidebarGroup>
         <SidebarMenu>
           <Collapsible open={isOpen || isCurrent} onOpenChange={setIsOpen}>
             <SidebarMenuItem>
@@ -138,17 +142,17 @@ function NavMainItem({ item }: { item: NavItem }) {
               tooltip={item.title}
               isActive={isCurrent}
               className={cn(
-                "h-9 cursor-pointer rounded-lg px-3 py-2 text-sm text-muted-foreground transition-all duration-200 hover:bg-muted/60 hover:text-foreground",
+                "h-10 cursor-pointer rounded-sm px-3 text-sm text-foreground transition-all duration-200 hover:bg-primary/50 hover:text-foreground",
                 isCurrent &&
-                  "relative bg-primary/10! font-medium text-primary! shadow-xs before:absolute before:top-1/2 before:left-0 before:h-5 before:w-1 before:-translate-y-1/2 before:rounded-r-full before:bg-primary before:content-['']"
+                  "relative bg-primary! font-medium text-background! shadow-xs before:absolute before:top-1/2 before:left-0 before:h-5 before:w-1 before:-translate-y-1/2 before:rounded-r-full before:bg-primary before:content-['']"
               )}
               render={<Link to={item.href!} />}
             >
               {item.icon && (
                 <item.icon
                   className={cn(
-                    "text-muted-foreground/80 transition-transform duration-200 group-hover/menu-button:scale-105 group-hover/menu-button:text-foreground",
-                    isCurrent && "text-primary"
+                    "text-foreground transition-transform duration-200 group-hover/menu-button:scale-105 group-hover/menu-button:text-foreground",
+                    isCurrent && "text-background!"
                   )}
                 />
               )}

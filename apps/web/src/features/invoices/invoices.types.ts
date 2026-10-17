@@ -61,3 +61,14 @@ export type InvoiceDetails = {
   paidAmount: number;
   balanceDue: number;
 };
+
+export interface CustomerInvoice {
+  id: string;
+  invoiceNumber: string;
+  invoiceDate: string;
+  bookingReference: string;
+  totalAmount: number;
+  balanceDue: number;
+  dueDate: string;
+  status: InvoiceStatus;
+}

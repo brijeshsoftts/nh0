@@ -4,7 +4,8 @@ import { apiClient } from "@/lib/apiClient";
 import { createCrud } from "@/lib/crud/createCrud";
 import type { ApiListResponse, ApiResponse } from "@/types/api.types";
 
-import type { HousekeeperRoom, HousekeeperRoomDetails } from "./types";
+import type { BrowseRoom } from "./components/BrowseRoomCard";
+import type { HousekeeperRoom, HousekeeperRoomDetails } from "./room.types";
 
 export const roomsCrud = createCrud()({
   resource: "rooms",
@@ -53,5 +54,15 @@ export function useHousekeeperCleaningRooms() {
 
       return response.data.data;
     },
+  });
+}
+
+export function useBrowseRooms(params: unknown) {
+  return useQuery({
+    queryKey: roomsCrud.keys.custom("browse-rooms", params),
+    queryFn: () =>
+      apiClient
+        .get<ApiListResponse<BrowseRoom>>("/room-types", { params })
+        .then((res) => res.data),
   });
 }

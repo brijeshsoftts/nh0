@@ -10,11 +10,17 @@ import { uploadFile } from '../../config';
 import { Prisma } from '../../generated/prisma/client';
 import { PrismaService } from '../../prisma/prisma.service';
 import { ListResponse } from '../../types/api.types';
+import { BookingStatus, UserRole } from '../../types/prisma.types';
 
 import { CreateRoomTypeDto } from './dto/create-room-type.dto';
 import { RoomTypeQueryDto } from './dto/room-type-query.dto';
 import { ROOM_TYPE_ERROR_MSG } from './room-types.constants';
-import { CreateRoomType, RoomType, RoomTypeDetails } from './room-types.types';
+import {
+  BrowseRoom,
+  CreateRoomType,
+  RoomType,
+  RoomTypeDetails,
+} from './room-types.types';
 
 @Injectable()
 export class RoomTypesService {
@@ -100,31 +106,26 @@ export class RoomTypesService {
     });
   }
 
-  async findAll(query: RoomTypeQueryDto): Promise<ListResponse<RoomType>> {
-    const { search, isActive, maxGuests, page, limit } = query;
+  async findAll(
+    query: RoomTypeQueryDto,
+    role: UserRole,
+  ): Promise<ListResponse<RoomType | BrowseRoom>> {
+    if (role === UserRole.CUSTOMER) {
+      return this.browse(query);
+    }
 
-    const where: Prisma.RoomTypeWhereInput = {
-      isActive: isActive,
-      ...(search && {
-        OR: [
-          { name: { contains: search, mode: 'insensitive' } },
-          { slug: { contains: search, mode: 'insensitive' } },
-          { description: { contains: search, mode: 'insensitive' } },
-        ],
-      }),
-      ...(maxGuests && {
-        maxGuests: {
-          gte: maxGuests,
-        },
-      }),
-    };
+    const { page, limit } = query;
+    const where = this.buildRoomTypeWhere(query, role);
 
     const [roomTypes, total] = await this.prismaService.$transaction([
       this.prismaService.roomType.findMany({
         where,
+        skip: (page - 1) * limit,
+        take: limit,
         select: {
           id: true,
           name: true,
+          description: true,
           maxGuests: true,
           basePrice: true,
           slug: true,
@@ -168,6 +169,7 @@ export class RoomTypesService {
         id: roomType.id,
         name: roomType.name,
         slug: roomType.slug,
+        description: roomType.description,
         primaryImage: roomType.images[0],
         basePrice: roomType.basePrice,
         currency: roomType.currency,
@@ -189,6 +191,154 @@ export class RoomTypesService {
         limit,
         total,
       },
+    };
+  }
+
+  async browse(query: RoomTypeQueryDto): Promise<ListResponse<BrowseRoom>> {
+    const { page, limit } = query;
+    const activeBookingWhere = this.buildActiveBookingWhere(query);
+    const where = this.buildRoomTypeWhere(query, UserRole.CUSTOMER);
+
+    const [roomTypes, total] = await this.prismaService.$transaction([
+      this.prismaService.roomType.findMany({
+        where,
+        skip: (page - 1) * limit,
+        take: limit,
+        orderBy: { basePrice: 'asc' },
+        select: {
+          id: true,
+          name: true,
+          slug: true,
+          description: true,
+          maxGuests: true,
+          basePrice: true,
+          currency: true,
+          bedType: true,
+          bedCount: true,
+          images: {
+            where: { isPrimary: true },
+            take: 1,
+            select: { url: true },
+          },
+          rooms: {
+            where: { isActive: true },
+            select: {
+              id: true,
+              bookingRooms: {
+                where: { booking: activeBookingWhere },
+                select: { id: true },
+              },
+            },
+          },
+        },
+      }),
+      this.prismaService.roomType.count({ where }),
+    ]);
+
+    return {
+      data: roomTypes.map((roomType) => {
+        const bedType = roomType.bedType
+          .toLowerCase()
+          .replaceAll('_', ' ')
+          .replace(/\b\w/g, (character) => character.toUpperCase());
+
+        return {
+          id: roomType.id,
+          slug: roomType.slug,
+          name: roomType.name,
+          image: roomType.images[0]?.url ?? '',
+          bedConfiguration: `${roomType.bedCount} ${bedType} bed${roomType.bedCount === 1 ? '' : 's'}`,
+          maxOccupancy: roomType.maxGuests,
+          availableRooms: roomType.rooms.filter(
+            (room) => room.bookingRooms.length === 0,
+          ).length,
+          pricePerNight: roomType.basePrice,
+          currency: roomType.currency,
+          ...(roomType.description && { description: roomType.description }),
+        };
+      }),
+      meta: { page, limit, total },
+    };
+  }
+
+  private buildRoomTypeWhere(
+    query: RoomTypeQueryDto,
+    role: UserRole,
+  ): Prisma.RoomTypeWhereInput {
+    const {
+      search,
+      isActive,
+      maxGuests,
+      adults,
+      children,
+      slug,
+      minPrice,
+      maxPrice,
+      isAvailable,
+    } = query;
+    const minimumCapacity = Math.max(
+      maxGuests ?? 0,
+      (adults ?? 0) + (children ?? 0),
+    );
+    const activeBookingWhere = this.buildActiveBookingWhere(query);
+    const availableRoomWhere: Prisma.RoomWhereInput = {
+      isActive: true,
+      NOT: {
+        bookingRooms: {
+          some: { booking: activeBookingWhere },
+        },
+      },
+    };
+
+    return {
+      isActive: role === UserRole.CUSTOMER ? true : isActive,
+      ...(search && {
+        OR: [
+          { name: { contains: search, mode: 'insensitive' } },
+          { slug: { contains: search, mode: 'insensitive' } },
+          { description: { contains: search, mode: 'insensitive' } },
+        ],
+      }),
+      ...(slug && { slug }),
+      ...((maxGuests !== undefined ||
+        adults !== undefined ||
+        children !== undefined) && {
+        maxGuests: { gte: minimumCapacity },
+      }),
+      ...((minPrice !== undefined || maxPrice !== undefined) && {
+        basePrice: {
+          ...(minPrice !== undefined && { gte: minPrice }),
+          ...(maxPrice !== undefined && { lte: maxPrice }),
+        },
+      }),
+      ...(isAvailable !== undefined && {
+        rooms: isAvailable
+          ? { some: availableRoomWhere }
+          : { none: availableRoomWhere },
+      }),
+    };
+  }
+
+  private buildActiveBookingWhere(
+    query: RoomTypeQueryDto,
+  ): Prisma.BookingWhereInput {
+    const startDate = query.checkInDate
+      ? new Date(query.checkInDate)
+      : new Date();
+    const endDate = query.checkOutDate
+      ? new Date(query.checkOutDate)
+      : startDate;
+
+    return {
+      status: {
+        in: [
+          BookingStatus.PENDING,
+          BookingStatus.CONFIRMED,
+          BookingStatus.CHECKED_IN,
+        ],
+      },
+      checkInDate: { lt: endDate },
+      checkOutDate: { gt: startDate },
     };
   }
 

@@ -14,10 +14,11 @@ import {
 import { AnyFilesInterceptor } from '@nestjs/platform-express';
 
 import { MAX_FILE_SIZE, MAX_FILES } from '../../common/constants';
-import { Roles } from '../../common/decorators';
+import { CurrentUser, Roles } from '../../common/decorators';
 import { AuthGuard, RoleGuard } from '../../common/guards';
 import { apiListResponse, apiResponse } from '../../common/helpers';
 import { fileValidationPipe, ValidationPipe } from '../../common/pipes';
+import { UserRole } from '../../types/prisma.types';
 
 import {
   CreateRoomTypeDto,
@@ -49,13 +50,14 @@ export class RoomTypesController {
     return apiResponse({ data, message: ROOM_TYPE_SUCCESS_MSG.CREATED });
   }
 
-  @Roles('ADMIN', 'MANAGER', 'STAFF')
+  @Roles('ADMIN', 'MANAGER', 'STAFF', 'CUSTOMER')
   @Get()
   @HttpCode(HttpStatus.OK)
   async findAll(
     @Query(new ValidationPipe(RoomTypeQuerySchema)) query: RoomTypeQueryDto,
+    @CurrentUser('role') role: UserRole,
   ) {
-    const { data, meta } = await this.roomTypesService.findAll(query);
+    const { data, meta } = await this.roomTypesService.findAll(query, role);
     return apiListResponse({ data, meta });
   }
 

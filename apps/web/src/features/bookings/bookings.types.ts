@@ -259,3 +259,29 @@ export type CreateBookingResult = {
   amount: number;
   paymentMessage: string;
 };
+
+// CUSTOMER TYPES
+export interface CustomerBooking {
+  id: string;
+  bookingNumber: string;
+  roomType: string;
+  roomNumber?: string;
+  checkIn: string;
+  checkOut: string;
+  totalAmount: number;
+  status: BookingStatus;
+}
+
+export interface CustomerBookingDetails {
+  id: string;
+  bookingNumber: string;
+  status: BookingStatus;
+  roomType: string;
+  roomNumber?: string;
+  checkIn: string;
+  checkOut: string;
+  duration: number;
+  adults: number;
+  children: number;
+  bookedOn: string;
+}

@@ -24,3 +24,13 @@ export type CreatePayment = {
   paymentStatus: PaymentStatus;
   paidAt: string | null;
 };
+
+export interface CustomerPayment {
+  id: string;
+  date: string;
+  invoiceNumber: string;
+  transactionId?: string;
+  amount: number;
+  paymentMethod: PaymentMethod;
+  status: PaymentStatus;
+}
