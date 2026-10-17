@@ -64,60 +64,60 @@ function Stats() {
   );
 }
 
-function BookingsTable() {
-  const columns: ColumnDef<CustomerBooking>[] = [
-    {
-      key: "bookingNumber",
-      header: "Booking #",
-      className: "min-w-36",
-      cell: (booking) => (
-        <span className="font-medium">{booking.bookingNumber}</span>
-      ),
-    },
-    {
-      key: "roomType",
-      header: "Room Type",
-      cell: (booking) => booking.roomType,
-    },
-    {
-      key: "roomNumber",
-      header: "Room Number",
-      cell: (booking) => booking.roomNumber || "—",
-    },
-    {
-      key: "checkIn",
-      header: "Check-in",
-      cell: (booking) =>
-        booking.checkIn ? formatDate(booking.checkIn, "dd MMM, yyyy") : "—",
-    },
-    {
-      key: "checkOut",
-      header: "Check-out",
-      cell: (booking) =>
-        booking.checkOut ? formatDate(booking.checkOut, "dd MMM, yyyy") : "—",
-    },
-    {
-      key: "totalAmount",
-      header: "Total Amount",
-      align: "right",
-      cell: (booking) => (
-        <span className="font-semibold tabular-nums">
-          {formatPrice(booking.totalAmount)}
-        </span>
-      ),
-    },
-    {
-      key: "status",
-      header: "Status",
-      cell: (booking) => <BookingBadge value={booking.status} />,
-    },
-    {
-      key: "actions",
-      header: "Actions",
-      cell: (booking) => <ActionDropdownMenu booking={booking} />,
-    },
-  ];
+export const columns: ColumnDef<CustomerBooking>[] = [
+  {
+    key: "bookingNumber",
+    header: "Booking #",
+    className: "min-w-36",
+    cell: (booking) => (
+      <span className="font-medium">{booking.bookingNumber}</span>
+    ),
+  },
+  {
+    key: "roomType",
+    header: "Room Type",
+    cell: (booking) => booking.roomType,
+  },
+  {
+    key: "roomNumber",
+    header: "Room Number",
+    cell: (booking) => booking.roomNumber || "—",
+  },
+  {
+    key: "checkIn",
+    header: "Check-in",
+    cell: (booking) =>
+      booking.checkIn ? formatDate(booking.checkIn, "dd MMM, yyyy") : "—",
+  },
+  {
+    key: "checkOut",
+    header: "Check-out",
+    cell: (booking) =>
+      booking.checkOut ? formatDate(booking.checkOut, "dd MMM, yyyy") : "—",
+  },
+  {
+    key: "totalAmount",
+    header: "Total Amount",
+    align: "right",
+    cell: (booking) => (
+      <span className="font-semibold tabular-nums">
+        {formatPrice(booking.totalAmount)}
+      </span>
+    ),
+  },
+  {
+    key: "status",
+    header: "Status",
+    cell: (booking) => <BookingBadge value={booking.status} />,
+  },
+  {
+    key: "actions",
+    header: "Actions",
+    cell: (booking) => <ActionDropdownMenu booking={booking} />,
+  },
+];
 
+function BookingsTable() {
   const { searchInput, setSearch, setPage, params } = useListParams();
   const { items, pagination, isLoading, isError, refetch } =
     useBookings<CustomerBooking>({

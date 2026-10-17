@@ -10,7 +10,7 @@ import {
 } from "lucide-react";
 import { Link } from "react-router-dom";
 
-import { type ColumnDef, DataTable } from "@/components/common/DataTable";
+import { DataTable } from "@/components/common/DataTable";
 import { BookingBadge } from "@/components/common/EnumBadges";
 import {
   Card,
@@ -20,22 +20,12 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
-import type { BookingListItem } from "@/features/bookings/bookings.types";
-import { useBookings } from "@/features/bookings/hooks/useBookings";
+import { useBookings } from "@/features/bookings/bookings.crud";
+import { columns } from "@/features/bookings/components/CustomerBookings";
 
 import { useNextBooking } from "../hooks/useNextBooking";
 
 import { DashboardStats } from "./DashboardStats";
-
-function formatDate(value: string) {
-  const [year, month, day] = value.slice(0, 10).split("-").map(Number);
-
-  return new Intl.DateTimeFormat("en-IN", {
-    day: "2-digit",
-    month: "short",
-    year: "numeric",
-  }).format(new Date(year, month - 1, day));
-}
 
 function NextBookingCard() {
   const { data: booking, isLoading, isError, refetch } = useNextBooking();
@@ -126,40 +116,6 @@ function NextBookingCard() {
   );
 }
 
-const recentBookingColumns: ColumnDef<BookingListItem>[] = [
-  {
-    key: "bookingReference",
-    header: "Booking",
-    className: "min-w-36",
-    cell: (booking) => (
-      <span className="font-mono text-sm font-medium">
-        {booking.bookingReference}
-      </span>
-    ),
-  },
-  {
-    key: "stayDates",
-    header: "Stay dates",
-    className: "min-w-44",
-    cell: (booking) => (
-      <span>
-        {formatDate(booking.checkInDate)} – {formatDate(booking.checkOutDate)}
-      </span>
-    ),
-  },
-  {
-    key: "roomType",
-    header: "Room type",
-    className: "min-w-36",
-    cell: (booking) => booking.bookingRoom?.roomType.name ?? "Not assigned",
-  },
-  {
-    key: "status",
-    header: "Status",
-    cell: (booking) => <BookingBadge value={booking.status} />,
-  },
-];
-
 function RecentBookings() {
   const { items, isLoading, isError, refetch } = useBookings({
     page: 1,
@@ -171,7 +127,7 @@ function RecentBookings() {
       title="Recent bookings"
       description="Your five most recent bookings."
       data={items}
-      columns={recentBookingColumns}
+      columns={columns}
       showSearch={false}
       showPagination={false}
       isLoading={isLoading}

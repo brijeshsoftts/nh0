@@ -1,12 +1,8 @@
 import { createCrud } from "@/lib/crud/createCrud";
 
-import type {
-  BookingListItem,
-  CustomerBooking,
-  CustomerBookingDetails,
-} from "./bookings.types";
+import type { BookingListItem, CustomerBooking } from "./bookings.types";
 
-type Booking = CustomerBooking | CustomerBookingDetails | BookingListItem;
+type Booking = CustomerBooking | BookingListItem;
 
 export const bookingsCrud = createCrud<Booking, undefined>()({
   resource: "bookings",
