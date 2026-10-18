@@ -22,9 +22,12 @@ export type SelectOption = {
   name: string;
 };
 
-type SelectFieldProps<T extends FieldValues> = {
+type SelectFieldProps<
+  T extends FieldValues,
+  TTransformedValues extends FieldValues = T,
+> = {
   name: Path<T>;
-  control: Control<T>;
+  control: Control<T, unknown, TTransformedValues>;
   label: string;
   placeholder?: string;
   options: SelectOption[];
@@ -34,7 +37,10 @@ type SelectFieldProps<T extends FieldValues> = {
   defaultValue?: string;
 };
 
-export function SelectField<T extends FieldValues>({
+export function SelectField<
+  T extends FieldValues,
+  TTransformedValues extends FieldValues = T,
+>({
   name,
   control,
   label,
@@ -43,43 +49,50 @@ export function SelectField<T extends FieldValues>({
   error,
   disabled,
   className,
-  defaultValue = "",
-}: SelectFieldProps<T>) {
+}: SelectFieldProps<T, TTransformedValues>) {
   const id = useId();
 
   return (
     <div className="space-y-1">
       <div className="space-y-1">
         <Label htmlFor={id}>{label}</Label>
-
         <Controller
           name={name}
           control={control}
-          render={({ field }) => (
-            <Select
-              value={field.value}
-              onValueChange={field.onChange}
-              disabled={disabled}
-              defaultValue={defaultValue}
-            >
-              <SelectTrigger
-                id={id}
-                className="h-10! w-full"
-                aria-invalid={!!error}
-                aria-describedby={error ? `${id}-error` : undefined}
-              >
-                <SelectValue placeholder={placeholder} className={"h-10!"} />
-              </SelectTrigger>
+          render={({ field }) => {
+            const selectedOption = options.find(
+              (option) => option.id === field.value
+            );
 
-              <SelectContent className={cn("h-10", className)}>
-                {options.map((option) => (
-                  <SelectItem key={option.id} value={option.id}>
-                    {formatString(option.name)}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-          )}
+            return (
+              <Select
+                value={field.value}
+                onValueChange={field.onChange}
+                disabled={disabled}
+              >
+                <SelectTrigger
+                  id={id}
+                  className="h-10! w-full"
+                  aria-invalid={!!error}
+                  aria-describedby={error ? `${id}-error` : undefined}
+                >
+                  <SelectValue placeholder={placeholder}>
+                    {selectedOption
+                      ? formatString(selectedOption.name)
+                      : undefined}
+                  </SelectValue>
+                </SelectTrigger>
+
+                <SelectContent className={cn("h-10", className)}>
+                  {options.map((option) => (
+                    <SelectItem key={option.id} value={option.id}>
+                      {formatString(option.name)}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            );
+          }}
         />
       </div>
 

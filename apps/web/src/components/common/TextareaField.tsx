@@ -29,8 +29,8 @@ export function TextareaField({
   const id = useId();
 
   return (
-    <div className="space-y-1">
-      <div className="space-y-0.5">
+    <div className="space-y-2">
+      <div className="space-y-2">
         <Label htmlFor={id}>{label}</Label>
 
         <Textarea

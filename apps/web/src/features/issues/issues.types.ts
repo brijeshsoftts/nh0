@@ -25,3 +25,13 @@ export type IssueItem = {
   };
   reportedAt: string;
 };
+
+// CUSTOMER TYPES
+export interface CustomerIssue {
+  id: string;
+  subject: string;
+  category: IssueCategory;
+  reportedOn: string;
+  status: IssueStatus;
+  lastUpdated: string;
+}
