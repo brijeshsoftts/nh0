@@ -1,5 +1,4 @@
 import { NoAccess } from "@/components/common/NoAccess";
-import { CustomerRooms } from "@/features/rooms/components/CustomerRooms";
 import { HouseKeeperRooms } from "@/features/rooms/components/HouseKeeperRooms";
 import { ManagementRooms } from "@/features/rooms/components/ManagementRooms";
 import { useAuth } from "@/hooks/useAuth";
@@ -19,8 +18,6 @@ export default function RoomsPage() {
         return <HouseKeeperRooms />;
       }
       return <NoAccess />;
-    case "CUSTOMER":
-      return <CustomerRooms />;
     default:
       return <NoAccess />;
   }

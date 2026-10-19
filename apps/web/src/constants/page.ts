@@ -215,16 +215,6 @@ export const CUSTOMER_PAGES: NavItem[] = [
     href: "/dashboard",
   },
   {
-    title: "Browse Rooms",
-    icon: BedDouble,
-    href: "/dashboard/rooms",
-  },
-  {
-    title: "New Booking",
-    icon: CalendarPlus,
-    href: "/dashboard/bookings/new",
-  },
-  {
     title: "My Bookings",
     icon: CalendarCheck,
     href: "/dashboard/bookings",
