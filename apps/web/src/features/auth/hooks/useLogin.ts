@@ -22,13 +22,15 @@ export function useLogin() {
 }
 
 export function useLoginFacade() {
-  const { mutate, isPending, isSuccess } = useLogin();
+  const mutation = useLogin();
+  const { mutate, isPending, isSuccess, error } = mutation;
 
   const {
     handleSubmit,
     register,
     formState: { errors },
     getValues,
+    reset,
   } = useForm<Login>({
     resolver: zodResolver(LoginSchema),
   });
@@ -37,9 +39,12 @@ export function useLoginFacade() {
     submit: (data: Login) => mutate(data),
     isPending,
     isSuccess,
+    error,
     register,
     handleSubmit,
     errors,
     getValues,
+    reset,
+    resetMutation: mutation.reset,
   };
 }

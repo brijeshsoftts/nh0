@@ -1,0 +1,18 @@
+import z from "zod";
+
+export const RegisterSchema = z
+  .object({
+    fullName: z
+      .string()
+      .trim()
+      .min(2, "Full name must be at least 2 characters")
+      .max(100, "Full name must be 100 characters or fewer"),
+    email: z.email("Enter a valid email address"),
+    password: z
+      .string()
+      .min(8, "Password must be at least 8 characters")
+      .max(128, "Password must be 128 characters or fewer"),
+  })
+  .strict();
+
+export type Register = z.infer<typeof RegisterSchema>;
