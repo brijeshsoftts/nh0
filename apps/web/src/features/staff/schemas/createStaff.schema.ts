@@ -1,5 +1,7 @@
 import { z } from "zod";
 
+import { imageSchema } from "@/features/customers/schema/createCustomer.schema";
+
 export const CreateStaffSchema = z
   .object({
     fullName: z
@@ -16,6 +18,8 @@ export const CreateStaffSchema = z
     fatherName: z.string().trim().min(2).max(100),
     motherName: z.string().trim().min(2).max(100),
     idProofNumber: z.string().trim().min(1).max(100),
+    idProofImage: imageSchema,
+    signatureImage: imageSchema,
     qualification: z.string().trim().min(1).max(200),
     experience: z.string().trim().min(1).max(100),
     category: z.enum(["RECEPTIONIST", "HOUSEKEEPER"]),

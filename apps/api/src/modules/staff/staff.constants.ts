@@ -11,4 +11,5 @@ export const STAFF_ERROR_MSG = {
   EMAIL_CONFLICT: 'Email already in use.',
   LAST_ACTIVE_ADMIN: 'The last active admin account cannot be deactivated.',
   STATUS_CHANGED: 'Staff status changed before this update could be applied.',
+  DOCUMENTS_REQUIRED: 'ID proof and signature are required.',
 } as const;

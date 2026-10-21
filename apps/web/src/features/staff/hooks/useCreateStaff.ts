@@ -62,7 +62,7 @@ export function useCreateStaffFacade() {
     register,
     control,
     handleSubmit,
-    errors: errors,
+    errors,
     getValues,
     reset: () => {
       resetMutation();

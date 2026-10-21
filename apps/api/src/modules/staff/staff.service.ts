@@ -1,10 +1,12 @@
 import {
+  BadRequestException,
   ConflictException,
   Injectable,
   NotFoundException,
 } from '@nestjs/common';
 
 import { hashPassword } from '../../common/helpers';
+import { uploadFile } from '../../config';
 import { PrismaService } from '../../prisma/prisma.service';
 import { ListResponse } from '../../types/api.types';
 import {
@@ -28,6 +30,11 @@ import {
   StaffLookupItem,
   UpdateStaffResponse,
 } from './staff.types';
+
+export type StaffFiles = {
+  idProof?: { buffer: Buffer; originalname: string };
+  signature?: { buffer: Buffer; originalname: string };
+};
 
 const ACTIVE_TASK_STATUSES = [TaskStatus.PENDING, TaskStatus.IN_PROGRESS];
 
@@ -57,6 +64,8 @@ const STAFF_DETAILS_SELECT = {
   fatherName: true,
   motherName: true,
   idProofNumber: true,
+  idProofImage: true,
+  signatureImage: true,
   qualification: true,
   experience: true,
   category: true,
@@ -251,10 +260,19 @@ export class StaffService {
     return this.mapDetails(staff);
   }
 
-  async create(dto: CreateStaffDto): Promise<CreateStaff> {
-    const passwordHash = await hashPassword('Admin@1234');
+  async create(files: StaffFiles, dto: CreateStaffDto): Promise<CreateStaff> {
+    if (!files.idProof?.[0] || !files.signature?.[0]) {
+      throw new BadRequestException(STAFF_ERROR_MSG.DOCUMENTS_REQUIRED);
+    }
 
     try {
+      const [idProof, signature] = await Promise.all([
+        uploadFile(files.idProof[0]),
+        uploadFile(files.signature[0]),
+      ]);
+
+      const passwordHash = await hashPassword('Admin@1234');
+
       const user = await this.prismaService.user.create({
         data: {
           fullName: dto.fullName.trim(),
@@ -272,6 +290,12 @@ export class StaffService {
               category: dto.category,
               emergencyContact: dto.emergencyContact,
               address: dto.address,
+              idProofImage: {
+                create: { url: idProof.url, altText: idProof.name },
+              },
+              signatureImage: {
+                create: { url: signature.url, altText: signature.name },
+              },
             },
           },
         },
@@ -303,7 +327,11 @@ export class StaffService {
     }
   }
 
-  async update(id: string, dto: UpdateStaffDto): Promise<UpdateStaffResponse> {
+  async update(
+    id: string,
+    dto: UpdateStaffDto,
+    files: StaffFiles = {},
+  ): Promise<UpdateStaffResponse> {
     const existingStaff = await this.prismaService.staff.findFirst({
       where: { id, user: { is: { softDeletedAt: null } } },
       select: { id: true, userId: true },
@@ -315,7 +343,27 @@ export class StaffService {
 
     const email = dto.email?.trim().toLowerCase();
     try {
+      const [idProof, signature] = await Promise.all([
+        files.idProof?.[0] ? uploadFile(files.idProof[0]) : undefined,
+        files.signature?.[0] ? uploadFile(files.signature[0]) : undefined,
+      ]);
+
       const updated = await this.prismaService.$transaction(async (tx) => {
+        const [idProofImage, signatureImage] = await Promise.all([
+          idProof
+            ? tx.image.create({
+                data: { url: idProof.url, altText: idProof.name },
+                select: { id: true },
+              })
+            : undefined,
+          signature
+            ? tx.image.create({
+                data: { url: signature.url, altText: signature.name },
+                select: { id: true },
+              })
+            : undefined,
+        ]);
+
         const [user, staff] = await Promise.all([
           tx.user.update({
             where: { id: existingStaff.userId },
@@ -357,6 +405,12 @@ export class StaffService {
                 emergencyContact: dto.emergencyContact,
               }),
               ...(dto.address !== undefined && { address: dto.address }),
+              ...(idProofImage && {
+                idProofImage: { connect: { id: idProofImage.id } },
+              }),
+              ...(signatureImage && {
+                signatureImage: { connect: { id: signatureImage.id } },
+              }),
             },
             select: { id: true, category: true },
           }),
@@ -491,6 +545,15 @@ export class StaffService {
       fatherName: staff.fatherName,
       motherName: staff.motherName,
       idProofNumber: staff.idProofNumber,
+      idProofImage: staff.idProofImage
+        ? { url: staff.idProofImage.url, altText: staff.idProofImage.altText }
+        : null,
+      signatureImage: staff.signatureImage
+        ? {
+            url: staff.signatureImage.url,
+            altText: staff.signatureImage.altText,
+          }
+        : null,
       qualification: staff.qualification,
       experience: staff.experience,
       emergencyContact: staff.emergencyContact,

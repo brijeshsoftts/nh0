@@ -4,6 +4,7 @@ import {
   Clock,
   FileText,
   GraduationCap,
+  Image,
   Mail,
   MapPin,
   Phone,
@@ -244,14 +245,46 @@ export function ViewStaffDetails({
                     value={staff?.experience}
                   />
 
-                  <DetailItem
-                    icon={FileText}
-                    label="ID proof number"
-                    value={staff?.idProofNumber}
-                    mono
-                  />
-                </div>
-              </section>
+<DetailItem
+                      icon={FileText}
+                      label="ID proof number"
+                      value={staff?.idProofNumber}
+                      mono
+                    />
+                    {staff?.idProofImage && (
+                      <DetailItem
+                        icon={Image}
+                        label="ID proof image"
+                        value={
+                          <a
+                            href={staff.idProofImage.url}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                          >
+                            {staff.idProofImage.altText || staff.idProofImage.url}
+                          </a>
+                        }
+                        mono
+                      />
+                    )}
+                    {staff?.signatureImage && (
+                      <DetailItem
+                        icon={Image}
+                        label="Signature image"
+                        value={
+                          <a
+                            href={staff.signatureImage.url}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                          >
+                            {staff.signatureImage.altText || staff.signatureImage.url}
+                          </a>
+                        }
+                        mono
+                      />
+                    )}
+                  </div>
+                </section>
 
               <Separator />
 

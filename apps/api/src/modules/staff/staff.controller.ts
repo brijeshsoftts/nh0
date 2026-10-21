@@ -1,4 +1,5 @@
 import {
+  BadRequestException,
   Body,
   Controller,
   Delete,
@@ -9,9 +10,13 @@ import {
   Patch,
   Post,
   Query,
+  UploadedFiles,
   UseGuards,
+  UseInterceptors,
 } from '@nestjs/common';
+import { FileFieldsInterceptor } from '@nestjs/platform-express';
 
+import { MAX_FILE_SIZE, MAX_FILES } from '../../common/constants';
 import { Roles } from '../../common/decorators';
 import { AuthGuard, RoleGuard } from '../../common/guards';
 import {
@@ -19,7 +24,7 @@ import {
   apiMessageResponse,
   apiResponse,
 } from '../../common/helpers';
-import { ValidationPipe } from '../../common/pipes';
+import { fileValidationPipe, ValidationPipe } from '../../common/pipes';
 
 import { CreateStaffDto, CreateStaffSchema } from './dto/create-staff.dto';
 import {
@@ -32,7 +37,7 @@ import {
   UpdateStaffStatusDto,
   UpdateStaffStatusSchema,
 } from './dto/update-staff-status.dto';
-import { STAFF_SUCCESS_MSG } from './staff.constants';
+import { STAFF_ERROR_MSG, STAFF_SUCCESS_MSG } from './staff.constants';
 import { StaffService } from './staff.service';
 
 @UseGuards(AuthGuard, RoleGuard)
@@ -78,24 +83,47 @@ export class StaffController {
   }
 
   @Roles('ADMIN', 'MANAGER')
+  @UseInterceptors(
+    FileFieldsInterceptor(
+      [
+        { name: 'idProof', maxCount: 1 },
+        { name: 'signature', maxCount: 1 },
+      ],
+      fileValidationPipe(MAX_FILE_SIZE, MAX_FILES),
+    ),
+  )
   @Post()
   @HttpCode(HttpStatus.CREATED)
   async create(
     @Body(new ValidationPipe(CreateStaffSchema)) body: CreateStaffDto,
+    @UploadedFiles() files,
   ) {
-    const data = await this.staffService.create(body);
-    return apiResponse({ data, message: STAFF_SUCCESS_MSG.CREATED });
+    if (!files?.idProof?.[0] || !files?.signature?.[0]) {
+      throw new BadRequestException(STAFF_ERROR_MSG.DOCUMENTS_REQUIRED);
+    }
+    await this.staffService.create(files, body);
+    return apiMessageResponse(STAFF_SUCCESS_MSG.CREATED);
   }
 
   @Roles('ADMIN', 'MANAGER')
+  @UseInterceptors(
+    FileFieldsInterceptor(
+      [
+        { name: 'idProof', maxCount: 1 },
+        { name: 'signature', maxCount: 1 },
+      ],
+      fileValidationPipe(MAX_FILE_SIZE, MAX_FILES),
+    ),
+  )
   @Patch(':id')
   @HttpCode(HttpStatus.OK)
   async update(
     @Param('id') id: string,
     @Body(new ValidationPipe(UpdateStaffSchema)) body: UpdateStaffDto,
+    @UploadedFiles() files,
   ) {
-    const data = await this.staffService.update(id, body);
-    return apiResponse({ data, message: STAFF_SUCCESS_MSG.UPDATED });
+    await this.staffService.update(id, body, files);
+    return apiMessageResponse(STAFF_SUCCESS_MSG.UPDATED);
   }
 
   @Roles('ADMIN', 'MANAGER')

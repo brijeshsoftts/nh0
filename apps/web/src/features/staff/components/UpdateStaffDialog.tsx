@@ -16,6 +16,7 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { Spinner } from "@/components/ui/spinner";
+import { CustomerDocumentField } from "@/features/customers/components/CustomerDocumentField";
 
 import { useStaffDetails } from "../hooks/useStaffDetails";
 import { useUpdateStaffFacade } from "../hooks/useUpdateStaff";
@@ -175,6 +176,20 @@ export function UpdateStaffDialog({
                   {...register("idProofNumber", {
                     value: staff?.idProofNumber,
                   })}
+                />
+                <CustomerDocumentField
+                  control={control}
+                  name="idProofImage"
+                  label="ID proof image"
+                  error={errors.idProofImage?.message}
+                  disabled={isPending}
+                />
+                <CustomerDocumentField
+                  control={control}
+                  name="signatureImage"
+                  label="Signature image"
+                  error={errors.signatureImage?.message}
+                  disabled={isPending}
                 />
                 <InputField
                   label="Qualification"

@@ -16,6 +16,7 @@ import {
   DialogTrigger,
 } from "@/components/ui/dialog";
 import { Spinner } from "@/components/ui/spinner";
+import { CustomerDocumentField } from "@/features/customers/components/CustomerDocumentField";
 
 import { useCreateStaffFacade } from "../hooks/useCreateStaff";
 
@@ -45,6 +46,8 @@ export function CreateStaffDialog({ children }: { children: React.ReactNode }) {
       })();
     }
   }, [isSuccess, isOpen, reset]);
+
+  console.log(errors);
 
   return (
     <Dialog open={isOpen} onOpenChange={setIsOpen}>
@@ -158,6 +161,22 @@ export function CreateStaffDialog({ children }: { children: React.ReactNode }) {
                   error={errors.idProofNumber?.message}
                   disabled={isPending}
                   {...register("idProofNumber")}
+                />
+                <CustomerDocumentField
+                  control={control}
+                  name="idProofImage"
+                  label="ID proof image"
+                  error={errors.idProofImage?.message}
+                  disabled={isPending}
+                  required={true}
+                />
+                <CustomerDocumentField
+                  control={control}
+                  name="signatureImage"
+                  label="Signature image"
+                  error={errors.signatureImage?.message}
+                  disabled={isPending}
+                  required={true}
                 />
                 <InputField
                   label="Qualification"

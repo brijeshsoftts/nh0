@@ -4,7 +4,8 @@ const MAX_IMAGE_SIZE = 5 * 1024 * 1024;
 const CUSTOMER_IMAGE_TYPES = ["image/jpeg", "image/jpg", "image/png"];
 
 const requiredString = (message: string) => z.string().trim().min(1, message);
-const customerImageSchema = z
+
+export const imageSchema = z
   .instanceof(File, { message: "Select an image file" })
   .refine((file) => CUSTOMER_IMAGE_TYPES.includes(file.type), {
     message: "Only JPG and PNG images are allowed",
@@ -26,8 +27,8 @@ export const CreateCustomerSchema = z
       "Address must be 500 characters or less"
     ),
     idProofNumber: requiredString("ID proof number is required"),
-    idProofImage: customerImageSchema,
-    signatureImage: customerImageSchema,
+    idProofImage: imageSchema,
+    signatureImage: imageSchema,
   })
   .strict();
 

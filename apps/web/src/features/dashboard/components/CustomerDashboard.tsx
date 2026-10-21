@@ -1,3 +1,4 @@
+import { formatDate } from "date-fns";
 import {
   BedDouble,
   CalendarCheck,
@@ -73,8 +74,8 @@ function NextBookingCard() {
               <div className="min-w-0">
                 <p className="text-xs text-muted-foreground">Stay dates</p>
                 <p className="text-sm font-medium">
-                  {formatDate(booking.checkInDate)} –{" "}
-                  {formatDate(booking.checkOutDate)}
+                  {formatDate(booking.checkInDate, "dd MMM, yyyy")}{" "}
+                  {formatDate(booking.checkOutDate, "dd MMM, yyyy")}
                 </p>
               </div>
             </div>

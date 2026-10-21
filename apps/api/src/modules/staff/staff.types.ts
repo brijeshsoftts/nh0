@@ -37,6 +37,8 @@ export type StaffDetails = {
   fatherName: string;
   motherName: string;
   idProofNumber: string;
+  idProofImage: { url: string; altText: string | null } | null;
+  signatureImage: { url: string; altText: string | null } | null;
   qualification: string;
   experience: string;
   emergencyContact: string;

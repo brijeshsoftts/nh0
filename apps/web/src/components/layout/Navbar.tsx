@@ -1,9 +1,17 @@
 import { AnimatePresence, motion } from "framer-motion";
-import { CalendarDays, ChevronRight, Menu, User, X } from "lucide-react";
+import {
+  CalendarDays,
+  ChevronRight,
+  Layout,
+  Menu,
+  User,
+  X,
+} from "lucide-react";
 import { useEffect, useState } from "react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 
 import { AuthDialogs } from "@/features/public/components/AuthDialogs";
+import { useAuth } from "@/hooks/useAuth";
 
 import { Button } from "../ui/button";
 
@@ -24,6 +32,7 @@ export function Navbar() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const location = useLocation();
   const navigate = useNavigate();
+  const { isAuthenticated } = useAuth();
   const resetToken = new URLSearchParams(location.search).get("token");
   const isResetPasswordPath =
     location.pathname === "/reset-passowrd" ||
@@ -106,17 +115,27 @@ export function Navbar() {
 
           {/* RIGHT: Book Now & Sign In */}
           <div className="hidden items-center space-x-4 md:flex">
-            <Button
-              variant={"ghost"}
-              className={"h-10 rounded-none"}
-              onClick={() => {
-                setMobileMenuOpen(false);
-                setAuthDialogOpen(true);
-              }}
-            >
-              <User className="h-4 w-4 text-gold" />
-              Sign In
-            </Button>
+            {isAuthenticated ? (
+              <Link to="/dashboard">
+                <Button variant={"ghost"} className={"h-10 rounded-none"}>
+                  <Layout className="h-4 w-4" />
+                  Dashboard
+                </Button>
+              </Link>
+            ) : (
+              <Button
+                variant={"ghost"}
+                className={"h-10 rounded-none"}
+                onClick={() => {
+                  setMobileMenuOpen(false);
+                  setAuthDialogOpen(true);
+                }}
+              >
+                <User className="h-4 w-4 text-gold" />
+                Sign In
+              </Button>
+            )}
+
             <Link to="/rooms">
               <Button
                 className={"h-10 rounded-none"}
@@ -177,17 +196,29 @@ export function Navbar() {
             </div>
 
             <div className="flex flex-col space-y-4 border-t border-border/60 pt-6">
-              <Button
-                variant={"outline"}
-                className={"h-10 rounded-none"}
-                onClick={() => {
-                  setMobileMenuOpen(false);
-                  setAuthDialogOpen(true);
-                }}
-              >
-                <User className="h-4 w-4 text-gold" />
-                Sign In
-              </Button>
+              {isAuthenticated ? (
+                <Link to="/dashboard">
+                  <Button
+                    variant={"ghost"}
+                    className={"h-10 w-full rounded-none"}
+                  >
+                    <Layout className="h-4 w-4" />
+                    Dashboard
+                  </Button>
+                </Link>
+              ) : (
+                <Button
+                  variant={"ghost"}
+                  className={"h-10 rounded-none"}
+                  onClick={() => {
+                    setMobileMenuOpen(false);
+                    setAuthDialogOpen(true);
+                  }}
+                >
+                  <User className="h-4 w-4 text-gold" />
+                  Sign In
+                </Button>
+              )}
               <Link to="/rooms">
                 <Button
                   className={"h-10 w-full rounded-none"}
