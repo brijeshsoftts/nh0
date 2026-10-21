@@ -28,6 +28,8 @@ export const router = createBrowserRouter([
       { path: "about", element: <AboutPage /> },
       { path: "contact", element: <ContactPage /> },
       { path: "rooms", element: <RoomsPage /> },
+      { path: "reset-passowrd", element: <LandingPage /> },
+      { path: "reset-password", element: <LandingPage /> },
       {
         path: "/login",
         element: <Navigate to="/" replace state={{ openAuth: true }} />,

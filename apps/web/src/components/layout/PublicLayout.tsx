@@ -11,7 +11,7 @@ export function PublicLayout() {
   return (
     <div className="flex min-h-svh flex-col bg-background font-sans text-foreground antialiased">
       <Navbar />
-      <main className={cn("flex-1", !isHome && "pt-16 md:pt-20")}>
+      <main className={cn("flex-1", !isHome && "")}>
         <Outlet />
       </main>
       <Footer />

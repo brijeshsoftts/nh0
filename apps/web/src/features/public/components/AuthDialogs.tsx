@@ -24,11 +24,17 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Spinner } from "@/components/ui/spinner";
 import { useLoginFacade } from "@/features/auth/hooks/useLogin";
+import {
+  useForgotPassword,
+  useResetPassword,
+} from "@/features/auth/hooks/usePasswordRecovery";
 import { useRegisterFacade } from "@/features/auth/hooks/useRegister";
 
 type AuthDialogsProps = {
   open: boolean;
   onOpenChange: (open: boolean) => void;
+  initialView?: "login" | "reset";
+  resetToken?: string | null;
 };
 
 function safeLoginError(error: unknown) {
@@ -59,11 +65,25 @@ function safeRegistrationError(error: unknown) {
   return "We could not create your account. Please check your connection and try again.";
 }
 
-export function AuthDialogs({ open, onOpenChange }: AuthDialogsProps) {
+export function AuthDialogs({
+  open,
+  onOpenChange,
+  initialView = "login",
+  resetToken,
+}: AuthDialogsProps) {
   const id = useId();
   const reduceMotion = useReducedMotion() ?? false;
   const [showPassword, setShowPassword] = useState(false);
-  const [view, setView] = useState<"login" | "register">("login");
+  const [view, setView] = useState<"login" | "register" | "forgot" | "reset">(
+    initialView
+  );
+  const [recoveryEmail, setRecoveryEmail] = useState("");
+  const [resetPassword, setResetPassword] = useState("");
+  const [confirmResetPassword, setConfirmResetPassword] = useState("");
+  const [recoveryMessage, setRecoveryMessage] = useState("");
+  const [resetFormError, setResetFormError] = useState("");
+  const forgotPasswordMutation = useForgotPassword();
+  const resetPasswordMutation = useResetPassword();
   const {
     handleSubmit,
     submit,
@@ -91,7 +111,11 @@ export function AuthDialogs({ open, onOpenChange }: AuthDialogsProps) {
     setView("login");
   });
 
-  const isSubmitting = isPending || isRegisterPending;
+  const isSubmitting =
+    isPending ||
+    isRegisterPending ||
+    forgotPasswordMutation.isPending ||
+    resetPasswordMutation.isPending;
 
   const handleOpenChange = (nextOpen: boolean) => {
     if (!nextOpen && isSubmitting) return;
@@ -99,11 +123,17 @@ export function AuthDialogs({ open, onOpenChange }: AuthDialogsProps) {
 
     if (!nextOpen) {
       setShowPassword(false);
-      setView("login");
+      setView(initialView === "reset" ? "reset" : "login");
+      setResetPassword("");
+      setConfirmResetPassword("");
+      setRecoveryMessage("");
+      setResetFormError("");
       resetRegistration();
       reset({ email: getValues("email"), password: "" });
       resetMutation();
       resetRegistrationMutation();
+      forgotPasswordMutation.reset();
+      resetPasswordMutation.reset();
     }
   };
 
@@ -131,6 +161,76 @@ export function AuthDialogs({ open, onOpenChange }: AuthDialogsProps) {
     resetMutation();
     resetRegistrationMutation();
     setView("register");
+  };
+
+  const openForgotPassword = () => {
+    setRecoveryEmail(getValues("email"));
+    setRecoveryMessage("");
+    forgotPasswordMutation.reset();
+    setShowPassword(false);
+    setView("forgot");
+  };
+
+  const returnToLogin = () => {
+    setShowPassword(false);
+    setResetPassword("");
+    setConfirmResetPassword("");
+    setResetFormError("");
+    resetPasswordMutation.reset();
+    setView("login");
+  };
+
+  const handleForgotPasswordSubmit = async (
+    event: React.FormEvent<HTMLFormElement>
+  ) => {
+    event.preventDefault();
+    setRecoveryMessage("");
+
+    try {
+      const response = await forgotPasswordMutation.mutateAsync({
+        email: recoveryEmail.trim(),
+      });
+      setRecoveryMessage(response.message);
+    } catch {
+      // The shared mutation handler displays the safe request error.
+    }
+  };
+
+  const handleResetPasswordSubmit = async (
+    event: React.FormEvent<HTMLFormElement>
+  ) => {
+    event.preventDefault();
+    setResetFormError("");
+
+    if (!resetToken) {
+      setResetFormError("This password reset link is missing its token.");
+      return;
+    }
+
+    if (resetPassword !== confirmResetPassword) {
+      setResetFormError("Passwords do not match.");
+      return;
+    }
+
+    try {
+      await resetPasswordMutation.mutateAsync({
+        token: resetToken,
+        password: resetPassword,
+      });
+      setResetPassword("");
+      setConfirmResetPassword("");
+      setView("login");
+    } catch (error) {
+      if (error instanceof AxiosError && error.response?.status === 401) {
+        setResetFormError(
+          "This password reset link is invalid or expired. Request a new one and try again."
+        );
+      } else {
+        setResetFormError(
+          "We could not reset your password. Please try again."
+        );
+      }
+    }
   };
 
   return (
@@ -165,12 +265,22 @@ export function AuthDialogs({ open, onOpenChange }: AuthDialogsProps) {
             </p>
             <div className="space-y-2">
               <DialogTitle className="font-heading text-3xl leading-tight font-normal tracking-[-0.03em] sm:text-[34px]">
-                {view === "login" ? "Welcome back." : "Create an account."}
+                {view === "login"
+                  ? "Welcome back."
+                  : view === "register"
+                    ? "Create an account."
+                    : view === "forgot"
+                      ? "Reset your password."
+                      : "Choose a new password."}
               </DialogTitle>
               <DialogDescription className="max-w-sm text-sm leading-6 text-muted-foreground">
                 {view === "login"
                   ? "Sign in to continue to your Nivara account."
-                  : "Set up a customer account to manage your Nivara stays."}
+                  : view === "register"
+                    ? "Set up a customer account to manage your Nivara stays."
+                    : view === "forgot"
+                      ? "Enter your account email to request a password reset link."
+                      : "Enter and confirm your new password to continue."}
               </DialogDescription>
             </div>
           </DialogHeader>
@@ -221,12 +331,23 @@ export function AuthDialogs({ open, onOpenChange }: AuthDialogsProps) {
                 </div>
 
                 <div className="space-y-2">
-                  <Label
-                    htmlFor={`${id}-password`}
-                    className="text-xs font-medium tracking-[0.12em] text-foreground uppercase"
-                  >
-                    Password
-                  </Label>
+                  <div className="flex items-center justify-between gap-3">
+                    <Label
+                      htmlFor={`${id}-password`}
+                      className="text-xs font-medium tracking-[0.12em] text-foreground uppercase"
+                    >
+                      Password
+                    </Label>
+                    <Button
+                      type="button"
+                      variant={"link"}
+                      disabled={isSubmitting}
+                      onClick={openForgotPassword}
+                      className={"my-0 h-fit py-0"}
+                    >
+                      Forgot password?
+                    </Button>
+                  </div>
                   <div className="relative">
                     <LockKeyhole
                       className="pointer-events-none absolute top-1/2 left-3.5 size-4 -translate-y-1/2 text-muted-foreground"
@@ -313,7 +434,7 @@ export function AuthDialogs({ open, onOpenChange }: AuthDialogsProps) {
                 </button>
               </p>
             </>
-          ) : (
+          ) : view === "register" ? (
             <form
               noValidate
               onSubmit={handleRegisterSubmit(submitRegistration)}
@@ -462,6 +583,171 @@ export function AuthDialogs({ open, onOpenChange }: AuthDialogsProps) {
                 disabled={isSubmitting}
                 onClick={openLogin}
                 className="mx-auto inline-flex min-h-11 items-center justify-center gap-2 text-xs font-medium text-muted-foreground transition-colors hover:text-foreground focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring disabled:pointer-events-none disabled:opacity-50"
+              >
+                <ArrowLeft className="size-3.5" aria-hidden="true" />
+                Return to sign in
+              </button>
+            </form>
+          ) : view === "forgot" ? (
+            <form className="space-y-5" onSubmit={handleForgotPasswordSubmit}>
+              <div className="space-y-2">
+                <Label
+                  htmlFor={`${id}-recovery-email`}
+                  className="text-xs font-medium tracking-[0.12em] text-foreground uppercase"
+                >
+                  Email address
+                </Label>
+                <Input
+                  id={`${id}-recovery-email`}
+                  type="email"
+                  placeholder="name@example.com"
+                  autoComplete="email"
+                  value={recoveryEmail}
+                  onChange={(event) => setRecoveryEmail(event.target.value)}
+                  disabled={forgotPasswordMutation.isPending}
+                  className="h-12 rounded-none border-input bg-card text-sm focus-visible:ring-2 focus-visible:ring-ring/20"
+                  required
+                  aria-describedby={
+                    recoveryMessage ? `${id}-recovery-status` : undefined
+                  }
+                />
+              </div>
+              {recoveryMessage ? (
+                <p
+                  id={`${id}-recovery-status`}
+                  role="status"
+                  className="border-l-2 border-gold pl-4 text-xs leading-5 text-muted-foreground"
+                >
+                  {recoveryMessage}
+                </p>
+              ) : null}
+              <Button
+                type="submit"
+                disabled={forgotPasswordMutation.isPending}
+                className="h-12 w-full justify-center gap-2 rounded-none text-xs font-medium tracking-[0.12em] uppercase sm:text-sm"
+              >
+                {forgotPasswordMutation.isPending ? (
+                  <>
+                    <Spinner className="size-4" />
+                    Sending request
+                  </>
+                ) : (
+                  <>
+                    Send reset link
+                    <ArrowRight className="size-4" aria-hidden="true" />
+                  </>
+                )}
+              </Button>
+              <button
+                type="button"
+                onClick={returnToLogin}
+                className="mx-auto inline-flex min-h-11 items-center justify-center gap-2 text-xs font-medium text-muted-foreground transition-colors hover:text-foreground focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring"
+              >
+                <ArrowLeft className="size-3.5" aria-hidden="true" />
+                Return to sign in
+              </button>
+            </form>
+          ) : (
+            <form className="space-y-5" onSubmit={handleResetPasswordSubmit}>
+              {!resetToken ? (
+                <p role="alert" className="text-sm leading-6 text-destructive">
+                  This password reset link is missing its token. Please request
+                  a new link.
+                </p>
+              ) : null}
+              <div className="space-y-2">
+                <Label
+                  htmlFor={`${id}-new-password`}
+                  className="text-xs font-medium tracking-[0.12em] text-foreground uppercase"
+                >
+                  New password
+                </Label>
+                <Input
+                  id={`${id}-new-password`}
+                  type={showPassword ? "text" : "password"}
+                  placeholder="Enter a new password"
+                  autoComplete="new-password"
+                  value={resetPassword}
+                  onChange={(event) => setResetPassword(event.target.value)}
+                  disabled={resetPasswordMutation.isPending || !resetToken}
+                  className="h-12 rounded-none border-input bg-card text-sm focus-visible:ring-2 focus-visible:ring-ring/20"
+                  minLength={8}
+                  maxLength={128}
+                  required
+                />
+              </div>
+              <div className="space-y-2">
+                <Label
+                  htmlFor={`${id}-confirm-password`}
+                  className="text-xs font-medium tracking-[0.12em] text-foreground uppercase"
+                >
+                  Confirm password
+                </Label>
+                <div className="relative">
+                  <Input
+                    id={`${id}-confirm-password`}
+                    type={showPassword ? "text" : "password"}
+                    placeholder="Re-enter your new password"
+                    autoComplete="new-password"
+                    value={confirmResetPassword}
+                    onChange={(event) =>
+                      setConfirmResetPassword(event.target.value)
+                    }
+                    disabled={resetPasswordMutation.isPending || !resetToken}
+                    className="h-12 rounded-none border-input bg-card pr-12 text-sm focus-visible:ring-2 focus-visible:ring-ring/20"
+                    minLength={8}
+                    maxLength={128}
+                    required
+                  />
+                  <button
+                    type="button"
+                    onClick={() => setShowPassword((visible) => !visible)}
+                    aria-label={
+                      showPassword ? "Hide passwords" : "Show passwords"
+                    }
+                    aria-pressed={showPassword}
+                    className="absolute top-1/2 right-1 grid size-10 -translate-y-1/2 place-items-center rounded-none text-muted-foreground transition-colors hover:text-foreground focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-ring"
+                  >
+                    {showPassword ? (
+                      <EyeOff className="size-4" aria-hidden="true" />
+                    ) : (
+                      <Eye className="size-4" aria-hidden="true" />
+                    )}
+                  </button>
+                </div>
+                {confirmResetPassword &&
+                resetPassword !== confirmResetPassword ? (
+                  <p role="alert" className="text-xs text-destructive">
+                    Passwords do not match.
+                  </p>
+                ) : null}
+              </div>
+              {resetFormError ? (
+                <p role="alert" className="text-sm leading-5 text-destructive">
+                  {resetFormError}
+                </p>
+              ) : null}
+              <Button
+                type="submit"
+                disabled={resetPasswordMutation.isPending || !resetToken}
+                className="h-12 w-full justify-center gap-2 rounded-none text-xs font-medium tracking-[0.12em] uppercase sm:text-sm"
+              >
+                {resetPasswordMutation.isPending ? (
+                  <>
+                    <Spinner className="size-4" />
+                    Updating password
+                  </>
+                ) : (
+                  <>
+                    Save new password
+                    <ArrowRight className="size-4" aria-hidden="true" />
+                  </>
+                )}
+              </Button>
+              <button
+                type="button"
+                onClick={returnToLogin}
+                className="mx-auto inline-flex min-h-11 items-center justify-center gap-2 text-xs font-medium text-muted-foreground transition-colors hover:text-foreground focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring"
               >
                 <ArrowLeft className="size-3.5" aria-hidden="true" />
                 Return to sign in
