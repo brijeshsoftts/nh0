@@ -1,4 +1,5 @@
 import {
+  ConflictException,
   ForbiddenException,
   Injectable,
   UnauthorizedException,
@@ -11,7 +12,7 @@ import {
   clearCookies,
   comparePassword,
   generateRandomStr,
-  // hashPassword,
+  hashPassword,
   hashRandomStr,
   setCookies,
 } from '../../common/helpers';
@@ -20,6 +21,7 @@ import { PrismaService } from '../../prisma/prisma.service';
 import { Category, UserRole } from '../../types/prisma.types';
 
 import { LoginDto } from './dto/login.dto';
+import { RegisterDto } from './dto/register.dto';
 import { AUTH_ERROR_MSG } from './auth.constants';
 import { JwtPayload } from './auth.types';
 
@@ -41,6 +43,34 @@ export class AuthService {
     //   });
     // })();
   }
+
+  async register(dto: RegisterDto): Promise<void> {
+    const passwordHash = await hashPassword(dto.password);
+
+    try {
+      await this.prismaService.user.create({
+        data: {
+          fullName: dto.fullName,
+          email: dto.email,
+          phone: '',
+          passwordHash,
+          role: UserRole.CUSTOMER,
+        },
+        select: { id: true },
+      });
+    } catch (error) {
+      if (
+        typeof error === 'object' &&
+        error !== null &&
+        'code' in error &&
+        error.code === 'P2002'
+      ) {
+        throw new ConflictException(AUTH_ERROR_MSG.CONFLICT_EMAIL);
+      }
+      throw error;
+    }
+  }
+
   async login(dto: LoginDto, res: Response): Promise<void> {
     const user = await this.prismaService.user.findFirst({
       where: {

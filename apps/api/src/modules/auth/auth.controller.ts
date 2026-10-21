@@ -16,12 +16,20 @@ import { apiMessageResponse } from '../../common/helpers';
 import { ValidationPipe } from '../../common/pipes';
 
 import { LoginDto, LoginSchema } from './dto/login.dto';
+import { RegisterDto, RegisterSchema } from './dto/register.dto';
 import { AUTH_SUCCESS_MSG } from './auth.constants';
 import { AuthService } from './auth.service';
 
 @Controller('auth')
 export class AuthController {
   constructor(private readonly authService: AuthService) {}
+
+  @Post('register')
+  @HttpCode(HttpStatus.CREATED)
+  async register(@Body(new ValidationPipe(RegisterSchema)) body: RegisterDto) {
+    await this.authService.register(body);
+    return apiMessageResponse(AUTH_SUCCESS_MSG.REGISTER);
+  }
 
   @Post('login')
   @HttpCode(HttpStatus.OK)
