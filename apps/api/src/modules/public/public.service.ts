@@ -155,6 +155,13 @@ export class PublicService {
 
     const totalGuests = adults + children;
 
+    const checkIn = checkInDate
+      ? new Date(`${checkInDate}T00:00:00.000Z`)
+      : undefined;
+    const checkOut = checkOutDate
+      ? new Date(`${checkOutDate}T00:00:00.000Z`)
+      : undefined;
+
     const where = {
       isActive: true,
       maxGuests: {
@@ -203,13 +210,13 @@ export class PublicService {
                         BookingStatus.CHECKED_IN,
                       ],
                     },
-                    ...(checkInDate &&
-                      checkOutDate && {
+                    ...(checkIn &&
+                      checkOut && {
                         checkInDate: {
-                          lt: checkOutDate,
+                          lt: checkIn,
                         },
                         checkOutDate: {
-                          gt: checkInDate,
+                          gt: checkOut,
                         },
                       }),
                   },

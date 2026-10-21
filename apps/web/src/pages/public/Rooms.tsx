@@ -30,7 +30,7 @@ function getQueryDate(
   return params.get(currentName) ?? params.get(legacyName) ?? undefined;
 }
 
-function toRoomCard(room: {
+export function toRoomCard(room: {
   id: string;
   name: string;
   slug: string;
@@ -128,6 +128,7 @@ export default function RoomsPage() {
     1,
     Math.ceil((pagination?.total ?? 0) / PAGE_SIZE)
   );
+
   const pageNumbers = Array.from(
     { length: Math.min(5, totalPages) },
     (_, index) => {
@@ -246,6 +247,7 @@ export default function RoomsPage() {
                     room={room}
                     onViewDetails={() => setSelectedRoomSlug(room.slug)}
                     className="h-full"
+                    onBook={() => {}}
                   />
                 ))}
               </div>

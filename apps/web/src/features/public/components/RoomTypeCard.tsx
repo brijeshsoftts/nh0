@@ -58,7 +58,7 @@ function formatMoney(amount: number, currency: string) {
       maximumFractionDigits: 0,
     }).format(amount);
   } catch {
-    return `${currency} ${amount.toLocaleString("en-IN")}`;
+    return ` ${amount.toLocaleString("en-IN")}`;
   }
 }
 
@@ -296,8 +296,8 @@ export function RoomTypeCard({
               </p>
             </div>
 
-            <div className="flex shrink-0 flex-col items-end gap-2">
-              {onBook ? (
+            <div className="flex shrink-0 items-end gap-2">
+              {onBook && available && (
                 <button
                   type="button"
                   disabled={!available}
@@ -313,20 +313,19 @@ export function RoomTypeCard({
                     />
                   )}
                 </button>
-              ) : (
-                <button
-                  type="button"
-                  onClick={() => onViewDetails?.(room)}
-                  className="inline-flex h-10 items-center justify-center gap-2 border border-border bg-transparent px-3 text-[11px] font-medium text-foreground transition-colors hover:border-ring hover:bg-accent hover:text-accent-foreground focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring sm:px-4"
-                >
-                  Explore room
-                  <ArrowUpRight
-                    className="size-3.5"
-                    strokeWidth={1.5}
-                    aria-hidden="true"
-                  />
-                </button>
               )}
+              <button
+                type="button"
+                onClick={() => onViewDetails?.(room)}
+                className="inline-flex h-10 items-center justify-center gap-2 border border-border bg-transparent px-3 text-[11px] font-medium text-foreground transition-colors hover:border-ring hover:bg-accent hover:text-accent-foreground focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring sm:px-4"
+              >
+                View
+                <ArrowUpRight
+                  className="size-3.5"
+                  strokeWidth={1.5}
+                  aria-hidden="true"
+                />
+              </button>
             </div>
           </div>
         </div>

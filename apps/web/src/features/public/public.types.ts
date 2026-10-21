@@ -52,10 +52,10 @@ export type AvailableRoomListItem = {
 export type AvailableRoomsParams = {
   checkInDate?: string;
   checkOutDate?: string;
-  adults: number;
-  children: number;
-  page: number;
-  limit: number;
+  adults?: number;
+  children?: number;
+  page?: number;
+  limit?: number;
 };
 
 export type AvailableRoomDetails = {
@@ -82,7 +82,7 @@ export type AvailableRoomDetails = {
   amenities: {
     id: string;
     name: string;
-    icon: string | null;
+    icon?: string;
   }[];
   availability: { isAvailable: boolean };
 };
