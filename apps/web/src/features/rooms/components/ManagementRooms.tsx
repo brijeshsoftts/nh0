@@ -8,7 +8,6 @@ import {
   StatusBadge,
 } from "@/components/common/EnumBadges";
 import { IconBtn } from "@/components/common/IconBtn";
-import { StatCard } from "@/components/common/StatCard";
 import { Button } from "@/components/ui/button";
 import {
   DropdownMenu,
@@ -26,10 +25,11 @@ import { UpdateRoomDialog } from "../rooms/components/UpdateRoomDialog";
 import { ViewRoomDialog } from "../rooms/components/ViewRoomDialog";
 import { useDeleteRoom } from "../rooms/hooks/useDeleteRoom";
 import { useRooms } from "../rooms/hooks/useRooms";
-import { ROOMS_STAT } from "../rooms/rooms.mock";
 import type { Room } from "../rooms/rooms.types";
 import { CreateRoomTypeDialog } from "../roomTypes/components/CreateRoomTypeDialog";
 import { RoomTypeGrid } from "../roomTypes/components/RoomTypeGrid";
+
+import { RoomsStats } from "./RoomsStats";
 
 const tabs = [
   {
@@ -164,11 +164,7 @@ function RoomTable() {
 export function ManagementRooms() {
   return (
     <>
-      <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-4">
-        {ROOMS_STAT?.map((kpi) => (
-          <StatCard key={kpi.id} {...kpi} />
-        ))}
-      </div>
+      <RoomsStats />
       <div className="flex flex-wrap items-center gap-4 rounded-none border border-muted bg-card p-6">
         <CreateRoomDialog>
           <Button className="h-10 rounded-none">
