@@ -60,7 +60,7 @@ export function Pagination({ pagination, onPageChange }: PaginationProps) {
         </Button>
         {/* Page indicator */}
         <div
-          className="flex h-9 min-w-22.5 items-center justify-center rounded-md border border-border bg-muted/30 px-3 text-xs font-medium text-foreground select-none"
+          className="flex h-9 min-w-22.5 items-center justify-center rounded-none border border-border bg-muted/30 px-3 text-xs font-medium text-foreground select-none"
           aria-label={`Page ${currentPage} of ${totalPages}`}
         >
           <span>Page {currentPage}</span>

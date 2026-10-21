@@ -19,7 +19,7 @@ export default function CustomersPage() {
                 id="btn-add-customer"
                 variant="default"
                 size="sm"
-                className="h-9 gap-1.5 rounded-full bg-foreground px-4 text-xs font-medium text-background hover:bg-foreground/90"
+                className="h-10 gap-1.5 rounded-none px-4 text-xs font-medium"
               >
                 <Plus className="h-3.5 w-3.5" />
                 <span>New Customer</span>

@@ -19,10 +19,10 @@ interface RoomTypeSearchProps {
 function RoomTypeSearch({
   value,
   onChange,
-  placeholder = "Search amenities...",
+  placeholder = "Search room types...",
 }: RoomTypeSearchProps) {
   return (
-    <div className="flex flex-col items-center justify-between gap-6 rounded-none border bg-card px-6 py-4 sm:flex-row">
+    <div className="flex flex-col items-center justify-between gap-6 rounded-none border bg-card p-4 sm:flex-row">
       <div className="relative w-full max-w-md">
         <Search className="pointer-events-none absolute top-1/2 left-3 size-4 -translate-y-1/2 text-muted-foreground" />
         <Input
