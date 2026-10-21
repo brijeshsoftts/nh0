@@ -76,8 +76,8 @@ export function TrendChart({
   } satisfies ChartConfig;
 
   return (
-    <Card className="h-full w-full min-w-0 border border-border bg-card text-card-foreground">
-      <CardHeader className="flex flex-row items-start justify-between gap-4">
+    <Card className="h-full w-full min-w-0 rounded-none border border-border bg-card text-card-foreground">
+      <CardHeader className="flex flex-row items-start justify-between gap-4 rounded-none">
         <div className="min-w-0">
           <CardTitle>{title}</CardTitle>
           <CardDescription>{description}</CardDescription>
@@ -90,14 +90,14 @@ export function TrendChart({
           >
             <SelectTrigger
               aria-label="Revenue time range"
-              className="h-8 w-27.5 text-xs"
+              className="h-8 w-27.5 rounded-none text-xs"
             >
               <SelectValue />
             </SelectTrigger>
 
-            <SelectContent>
+            <SelectContent className="rounded-none">
               {options?.map(({ label, value }) => (
-                <SelectItem key={value} value={value}>
+                <SelectItem key={value} value={value} className="rounded-none">
                   {label}
                 </SelectItem>
               ))}
@@ -121,6 +121,7 @@ export function TrendChart({
                 variant="outline"
                 size="sm"
                 onClick={onRetry}
+                className="rounded-none"
               >
                 Try again
               </Button>
@@ -192,7 +193,7 @@ export function TrendChart({
                 cursor={false}
                 content={
                   <ChartTooltipContent
-                    className="border border-border bg-card text-card-foreground shadow-md"
+                    className="rounded-none border border-border bg-card text-card-foreground shadow-md"
                     formatter={(value) =>
                       `₹${Number(value).toLocaleString("en-IN")}`
                     }

@@ -151,7 +151,7 @@ export function DataTable<T extends Record<string, any>>({
 
   return (
     <div className="grid">
-      <div className="w-full overflow-hidden rounded-md border border-border bg-card text-card-foreground shadow-sm">
+      <div className="w-full overflow-hidden rounded-none border border-border bg-card text-card-foreground shadow-sm">
         {/* Header Controls */}
         <div className="flex flex-col justify-between gap-4 border-b border-border p-4 sm:px-6 sm:py-4 lg:flex-row lg:items-center">
           <div>
@@ -173,7 +173,7 @@ export function DataTable<T extends Record<string, any>>({
                   value={searchQuery}
                   onChange={(e) => handleSearch(e.target.value)}
                   placeholder={searchPlaceholder}
-                  className="w-full pl-9 text-xs whitespace-nowrap text-foreground transition-colors focus:ring-1 focus:ring-ring focus:outline-none"
+                  className="w-full rounded-none pl-9 text-xs whitespace-nowrap text-foreground transition-colors focus:ring-1 focus:ring-ring focus:outline-none"
                 />
               </div>
             )}
@@ -189,14 +189,17 @@ export function DataTable<T extends Record<string, any>>({
                       handleFilterSelect(filter.key, value)
                     }
                   >
-                    <SelectTrigger className="h-10 min-w-35 border-border/70 bg-background shadow-none transition-colors hover:bg-muted/50">
+                    <SelectTrigger className="h-10 min-w-35 rounded-none border-border/70 bg-background shadow-none transition-colors hover:bg-muted/50">
                       <SelectValue placeholder={filter.placeholder} />
                     </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value={"All"}>All {filter.label}</SelectItem>
+                    <SelectContent className="rounded-none">
+                      <SelectItem className="rounded-none" value={"All"}>
+                        All {filter.label}
+                      </SelectItem>
                       {filter.options.map((option) => (
                         <SelectItem
                           key={option.value.toString()}
+                          className="rounded-none"
                           value={option.value.toString()}
                         >
                           {option.label.charAt(0).toUpperCase() +
@@ -260,6 +263,7 @@ export function DataTable<T extends Record<string, any>>({
                           type="button"
                           onClick={refetch}
                           variant="destructive"
+                          className="rounded-none"
                         >
                           Try Again
                         </Button>
@@ -326,7 +330,7 @@ export function DataTable<T extends Record<string, any>>({
                 type="button"
                 onClick={() => handlePage(Math.max(currentPage - 1, 1))}
                 disabled={currentPage <= 1}
-                className="rounded-md border border-input bg-background px-3 py-1 text-foreground transition-colors hover:bg-accent disabled:pointer-events-none disabled:opacity-50"
+                className="rounded-none border border-input bg-background px-3 py-1 text-foreground transition-colors hover:bg-accent disabled:pointer-events-none disabled:opacity-50"
               >
                 Previous
               </button>
@@ -354,7 +358,7 @@ export function DataTable<T extends Record<string, any>>({
                         key={page}
                         type="button"
                         onClick={() => handlePage(page)}
-                        className={`flex h-7 w-7 items-center justify-center rounded-md font-medium transition-colors ${
+                        className={`flex h-7 w-7 items-center justify-center rounded-none font-medium transition-colors ${
                           currentPage === page
                             ? "bg-primary text-primary-foreground"
                             : "border border-input bg-background text-foreground hover:bg-accent"
@@ -380,7 +384,7 @@ export function DataTable<T extends Record<string, any>>({
                   handlePage(Math.min(currentPage + 1, totalPages))
                 }
                 disabled={currentPage >= totalPages}
-                className="rounded-md border border-input bg-background px-3 py-1 text-foreground transition-colors hover:bg-accent disabled:pointer-events-none disabled:opacity-50"
+                className="rounded-none border border-input bg-background px-3 py-1 text-foreground transition-colors hover:bg-accent disabled:pointer-events-none disabled:opacity-50"
               >
                 Next
               </button>

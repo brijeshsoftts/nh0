@@ -43,7 +43,7 @@ export function StatusBarChart({
   }));
 
   return (
-    <div className="w-full min-w-0 rounded-lg border bg-card">
+    <div className="w-full min-w-0 rounded-none border bg-card">
       {/* Header */}
       {(title || description) && (
         <div className="p-4">
@@ -71,6 +71,7 @@ export function StatusBarChart({
                 variant="outline"
                 size="sm"
                 onClick={onRetry}
+                className="rounded-none"
               >
                 Try again
               </Button>

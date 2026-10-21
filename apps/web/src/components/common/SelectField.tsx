@@ -72,7 +72,7 @@ export function SelectField<
               >
                 <SelectTrigger
                   id={id}
-                  className="h-10! w-full"
+                  className="h-10! w-full rounded-none"
                   aria-invalid={!!error}
                   aria-describedby={error ? `${id}-error` : undefined}
                 >
@@ -83,9 +83,13 @@ export function SelectField<
                   </SelectValue>
                 </SelectTrigger>
 
-                <SelectContent className={cn("h-10", className)}>
+                <SelectContent className={cn("h-10 rounded-none", className)}>
                   {options.map((option) => (
-                    <SelectItem key={option.id} value={option.id}>
+                    <SelectItem
+                      key={option.id}
+                      value={option.id}
+                      className="rounded-none"
+                    >
                       {formatString(option.name)}
                     </SelectItem>
                   ))}

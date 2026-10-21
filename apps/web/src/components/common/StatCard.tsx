@@ -163,11 +163,11 @@ export function StatCard({
     >
       <Link
         to={link ? `/dashboard/${link}` : "#"}
-        className="block rounded-lg outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background"
+        className="block rounded-none outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background"
       >
         <Card
           className={cn(
-            "relative overflow-hidden rounded-lg shadow-none transition-shadow duration-300 hover:shadow-md",
+            "relative overflow-hidden rounded-none shadow-none transition-shadow duration-300 hover:shadow-md",
             t.card
           )}
         >
@@ -177,7 +177,7 @@ export function StatCard({
             <CardTitle className="text-sm font-medium tracking-normal text-muted-foreground">
               {title}
             </CardTitle>
-            <span className={cn("rounded-md p-1.5", t.chip)}>
+            <span className={cn("rounded-none p-1.5", t.chip)}>
               <Icon className="size-4" />
             </span>
           </CardHeader>
@@ -206,10 +206,10 @@ export function StatCardLoading() {
       aria-label="Loading customer statistics"
     >
       {Array.from({ length: 4 }, (_, index) => (
-        <div key={index} className="space-y-4 rounded-lg border bg-card p-6">
+        <div key={index} className="space-y-4 rounded-none border bg-card p-6">
           <div className="flex items-center justify-between">
             <Skeleton className="h-4 w-28" />
-            <Skeleton className="size-8 rounded-md" />
+            <Skeleton className="size-8 rounded-none" />
           </div>
           <Skeleton className="h-8 w-20" />
           <Skeleton className="h-3 w-36" />
@@ -223,7 +223,7 @@ export function StatCardError({ refetch }: { refetch: () => void }) {
   return (
     <div
       role="alert"
-      className="flex items-center justify-between rounded-lg border border-destructive/30 bg-destructive/5 p-4 text-sm"
+      className="flex items-center justify-between rounded-none border border-destructive/30 bg-destructive/5 p-4 text-sm"
     >
       <span>Could not load customer statistics.</span>
       <button

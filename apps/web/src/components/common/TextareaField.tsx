@@ -40,7 +40,7 @@ export function TextareaField({
           aria-invalid={!!error}
           aria-describedby={error ? `${id}-error` : undefined}
           disabled={disabled}
-          className={cn("h-20 resize-none", className)}
+          className={cn("h-20 resize-none rounded-none", className)}
           {...props}
         />
       </div>

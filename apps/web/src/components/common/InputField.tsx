@@ -41,7 +41,7 @@ export function InputField({
           aria-invalid={!!error}
           aria-describedby={error ? `${id}-error` : undefined}
           disabled={disabled}
-          className={cn("h-10", className)}
+          className={cn("h-10 rounded-none", className)}
           {...props}
         />
       </div>

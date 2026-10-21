@@ -110,8 +110,8 @@ export function DonutChart({
   const total = data.reduce((sum, item) => sum + Number(item.count ?? 0), 0);
 
   return (
-    <Card className="w-full min-w-0 border border-border bg-card text-card-foreground">
-      <CardHeader className="flex flex-row items-start justify-between gap-4">
+    <Card className="w-full min-w-0 rounded-none border border-border bg-card text-card-foreground">
+      <CardHeader className="flex flex-row items-start justify-between gap-4 rounded-none">
         <div className="min-w-0">
           <CardTitle>{title}</CardTitle>
           <CardDescription>{description}</CardDescription>
@@ -126,14 +126,14 @@ export function DonutChart({
           >
             <SelectTrigger
               aria-label="Booking status time range"
-              className="h-8 w-27.5 text-xs"
+              className="h-8 w-27.5 rounded-none text-xs"
             >
               <SelectValue />
             </SelectTrigger>
 
-            <SelectContent>
+            <SelectContent className="rounded-none">
               {options.map(({ label, value }) => (
-                <SelectItem key={value} value={value}>
+                <SelectItem key={value} value={value} className="rounded-none">
                   {label}
                 </SelectItem>
               ))}
@@ -157,6 +157,7 @@ export function DonutChart({
                 variant="outline"
                 size="sm"
                 onClick={onRetry}
+                className="rounded-none"
               >
                 Try again
               </Button>
@@ -196,7 +197,7 @@ export function DonutChart({
                   cursor={false}
                   content={
                     <ChartTooltipContent
-                      className="border border-border bg-card text-card-foreground shadow-md"
+                      className="rounded-none border border-border bg-card text-card-foreground shadow-md"
                       hideLabel
                       formatter={(value, _, item) => {
                         const percentage =
