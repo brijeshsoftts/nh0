@@ -32,7 +32,7 @@ export function RoomTypeCard({ roomType }: RoomTypeCardProps) {
 
   const remainingAmenities =
     roomType.amenities.length - visibleAmenities.length;
-
+  const extraAmenities = Math.max(0, roomType.amenities.length - 3);
   const formattedPrice = new Intl.NumberFormat("en-US", {
     style: "currency",
     currency: roomType.currency,
@@ -51,7 +51,7 @@ export function RoomTypeCard({ roomType }: RoomTypeCardProps) {
         }}
         className="h-full"
       >
-        <Card className="group flex h-full flex-col overflow-hidden border-border/60 bg-card p-0 shadow-sm transition-shadow duration-300 hover:shadow-xl">
+        <Card className="group flex h-full flex-col overflow-hidden rounded-none border-border/60 bg-card p-0 shadow-sm transition-shadow duration-300 hover:shadow-xl">
           {/* ───────────────── Image ───────────────── */}
           <div className="relative aspect-16/10 overflow-hidden bg-muted">
             {roomType.primaryImage?.url ? (
@@ -92,15 +92,15 @@ export function RoomTypeCard({ roomType }: RoomTypeCardProps) {
                 variant="secondary"
                 className="rounded-full border border-white/20 bg-background/85 px-2.5 py-1 text-xs font-medium shadow-sm backdrop-blur-md"
               >
-                <DoorOpen className="mr-1.5 size-3.5" />
+                <DoorOpen className="size-3.5" />
                 {roomType.numberOfRooms}
-                {roomType.numberOfRooms === 1 ? "room" : "rooms"}
+                {roomType.numberOfRooms === 1 ? " room" : " rooms"}
               </Badge>
             </div>
           </div>
 
           {/* ───────────────── Content ───────────────── */}
-          <CardContent className="flex flex-1 flex-col p-5">
+          <CardContent className="flex flex-1 flex-col p-4">
             {/* Name + Price */}
             <div className="flex items-start justify-between gap-4">
               <div className="min-w-0">
@@ -123,7 +123,7 @@ export function RoomTypeCard({ roomType }: RoomTypeCardProps) {
             </div>
 
             {/* Occupancy */}
-            <div className="mt-5 grid grid-cols-3 divide-x rounded-xl border border-border/60 bg-muted/30 py-3">
+            <div className="mt-5 grid grid-cols-3 divide-x rounded-none border border-border/60 bg-muted/30 py-3">
               <InfoItem
                 icon={Users}
                 label="Guests"
@@ -145,7 +145,7 @@ export function RoomTypeCard({ roomType }: RoomTypeCardProps) {
 
             {/* Bed information */}
             <div className="mt-4 flex items-center gap-3">
-              <div className="flex size-9 shrink-0 items-center justify-center rounded-lg border border-border/60 bg-muted/40">
+              <div className="flex size-9 shrink-0 items-center justify-center rounded-full border border-border/60 bg-muted/40">
                 <BedDouble className="size-4 text-muted-foreground" />
               </div>
 
@@ -166,27 +166,32 @@ export function RoomTypeCard({ roomType }: RoomTypeCardProps) {
             {/* Amenities */}
             {roomType.amenities.length > 0 && (
               <>
-                <Separator className="my-5 bg-border/60" />
+                <Separator className="my-4 bg-border/60" />
 
                 <div>
-                  <p className="mb-2.5 text-xs font-medium text-muted-foreground">
+                  <p className="mb-2 text-xs font-medium text-muted-foreground">
                     Amenities
                   </p>
 
                   <div className="flex flex-wrap gap-1.5">
-                    {visibleAmenities.map((amenity) => (
-                      <Badge
-                        key={`${amenity.name}-${amenity.icon}`}
-                        variant="secondary"
-                        className="rounded-md bg-muted/60 px-2 py-1 text-xs font-normal"
-                      >
-                        {amenity.icon && (
-                          <span className="mr-1.5">{amenity.icon}</span>
-                        )}
+                    {visibleAmenities.length > 0 && (
+                      <div className="flex flex-wrap items-center gap-2">
+                        {visibleAmenities.map((amenity, index) => (
+                          <span
+                            key={`${amenity.name}-${index}`}
+                            className="border border-border bg-secondary px-2.5 py-1.5 text-[10px] text-secondary-foreground"
+                          >
+                            {amenity.name}
+                          </span>
+                        ))}
 
-                        {amenity.name}
-                      </Badge>
-                    ))}
+                        {extraAmenities > 0 && (
+                          <span className="px-1 text-[10px] text-muted-foreground">
+                            +{extraAmenities} more
+                          </span>
+                        )}
+                      </div>
+                    )}
 
                     {remainingAmenities > 0 && (
                       <Badge
@@ -208,7 +213,7 @@ export function RoomTypeCard({ roomType }: RoomTypeCardProps) {
               type="button"
               variant="outline"
               size="sm"
-              className="h-9 gap-2"
+              className="gap-2 rounded-none"
             >
               <Pencil className="size-3.5" />
               Edit
@@ -217,7 +222,7 @@ export function RoomTypeCard({ roomType }: RoomTypeCardProps) {
               type="button"
               variant="outline"
               size="sm"
-              className="h-9 gap-2"
+              className="gap-2 rounded-none"
               onClick={() => setOpen(true)}
             >
               <Eye className="size-3.5" />
@@ -227,7 +232,7 @@ export function RoomTypeCard({ roomType }: RoomTypeCardProps) {
               type="button"
               variant="outline"
               size="sm"
-              className="h-9 gap-2"
+              className="gap-2 rounded-none"
             >
               Book Now
             </Button>
@@ -236,7 +241,7 @@ export function RoomTypeCard({ roomType }: RoomTypeCardProps) {
               type="button"
               variant="outline"
               size="sm"
-              className="h-9 gap-2 text-destructive hover:bg-destructive/10 hover:text-destructive"
+              className="gap-2 rounded-none"
             >
               <Trash2 className="size-3.5" />
               Delete
