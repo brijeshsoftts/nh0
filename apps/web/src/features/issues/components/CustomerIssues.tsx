@@ -34,7 +34,11 @@ function IssuesTable() {
     {
       key: "status",
       header: "Status",
-      cell: (row) => <IssueStatusBadge value={row.status} />,
+      cell: (row) => (
+        <span className="**:data-[slot=badge]:rounded-none">
+          <IssueStatusBadge value={row.status} />
+        </span>
+      ),
     },
     {
       key: "reportedOn",
@@ -90,12 +94,16 @@ function ActionDropdownMenu({ issue }: { issue: CustomerIssue }) {
           <IconBtn
             size="sm"
             variant="ghost"
+            shape="square"
             aria-label={`Actions for ${issue.id}`}
           >
             <EllipsisVertical />
           </IconBtn>
         </DropdownMenuTrigger>
-        <DropdownMenuContent align="end">
+        <DropdownMenuContent
+          align="end"
+          className="rounded-none **:data-[slot=dropdown-menu-item]:rounded-none"
+        >
           <DropdownMenuItem>
             <Eye />
             View

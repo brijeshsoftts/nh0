@@ -173,7 +173,7 @@ export function DonutChart({
             <div
               className={`mx-auto grid aspect-square ${height} place-items-center`}
             >
-              <div className="grid size-48 place-items-center rounded-full border-14 border-muted">
+              <div className="grid size-48 place-items-center rounded-none border-14 border-muted">
                 <Skeleton className="h-5 w-14" />
               </div>
             </div>
@@ -269,7 +269,7 @@ export function DonutChart({
                   >
                     <div className="flex min-w-0 items-center gap-2">
                       <span
-                        className="size-2 shrink-0 rounded-full"
+                        className="size-2 shrink-0 rounded-none"
                         style={{
                           backgroundColor: `var(--color-${key})`,
                         }}

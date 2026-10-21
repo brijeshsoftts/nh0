@@ -108,7 +108,11 @@ export const columns: ColumnDef<CustomerBooking>[] = [
   {
     key: "status",
     header: "Status",
-    cell: (booking) => <BookingBadge value={booking.status} />,
+    cell: (booking) => (
+      <span className="**:data-[slot=badge]:rounded-none">
+        <BookingBadge value={booking.status} />
+      </span>
+    ),
   },
   {
     key: "actions",
@@ -157,12 +161,16 @@ function ActionDropdownMenu({ booking }: { booking: CustomerBooking }) {
           <IconBtn
             size="sm"
             variant="ghost"
+            shape="square"
             aria-label={`Actions for ${booking.id}`}
           >
             <EllipsisVertical />
           </IconBtn>
         </DropdownMenuTrigger>
-        <DropdownMenuContent align="end">
+        <DropdownMenuContent
+          align="end"
+          className="rounded-none **:data-[slot=dropdown-menu-item]:rounded-none"
+        >
           <DropdownMenuItem onClick={() => setDetailsOpen(true)}>
             <Eye />
             View
@@ -215,7 +223,7 @@ function BookingDetailsDialog({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-120 gap-0">
+      <DialogContent className="max-w-120 gap-0 rounded-none">
         <DialogHeader className="text-left">
           <DialogTitle className="text-lg break-all">
             {booking?.bookingNumber ?? "Booking details"}
@@ -237,6 +245,7 @@ function BookingDetailsDialog({
             <Button
               type="button"
               variant="outline"
+              className="rounded-none"
               onClick={() => void refetch()}
             >
               Try again
@@ -246,7 +255,9 @@ function BookingDetailsDialog({
           <div className="my-4 max-h-100 space-y-5 overflow-y-auto">
             <div className="flex flex-wrap items-center justify-between gap-3 border-y py-3">
               <span className="text-sm text-muted-foreground">Status</span>
-              <BookingBadge value={booking.status} />
+              <span className="**:data-[slot=badge]:rounded-none">
+                <BookingBadge value={booking.status} />
+              </span>
             </div>
 
             <section
@@ -320,6 +331,7 @@ function BookingDetailsDialog({
           <Button
             type="button"
             variant="outline"
+            className="rounded-none"
             onClick={() => onOpenChange(false)}
           >
             Close

@@ -102,7 +102,11 @@ function InvoicesTable() {
     {
       key: "status",
       header: "Status",
-      cell: (invoice) => <InvoiceBadge value={invoice.status} />,
+      cell: (invoice) => (
+        <span className="**:data-[slot=badge]:rounded-none">
+          <InvoiceBadge value={invoice.status} />
+        </span>
+      ),
     },
 
     {
@@ -148,12 +152,16 @@ function ActionDropdownMenu({ invoice }: { invoice: CustomerInvoice }) {
           <IconBtn
             size="sm"
             variant="ghost"
+            shape="square"
             aria-label={`Actions for ${invoice.id}`}
           >
             <EllipsisVertical />
           </IconBtn>
         </DropdownMenuTrigger>
-        <DropdownMenuContent align="end">
+        <DropdownMenuContent
+          align="end"
+          className="rounded-none **:data-[slot=dropdown-menu-item]:rounded-none"
+        >
           <DropdownMenuItem>
             <Eye />
             View

@@ -33,13 +33,21 @@ const columns: ColumnDef<HousekeeperRoom>[] = [
     key: "occupancyStatus",
     header: "Occupancy",
     className: "min-w-32",
-    cell: (room) => <OccupancyBadge value={room.occupancyStatus} />,
+    cell: (room) => (
+      <span className="**:data-[slot=badge]:rounded-none">
+        <OccupancyBadge value={room.occupancyStatus} />
+      </span>
+    ),
   },
   {
     key: "housekeepingStatus",
     header: "Housekeeping Status",
     className: "min-w-44",
-    cell: (room) => <HousekeepingBadge value={room.housekeepingStatus} />,
+    cell: (room) => (
+      <span className="**:data-[slot=badge]:rounded-none">
+        <HousekeepingBadge value={room.housekeepingStatus} />
+      </span>
+    ),
   },
   {
     key: "actions",

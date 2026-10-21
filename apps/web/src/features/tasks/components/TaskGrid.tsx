@@ -14,7 +14,7 @@ export function TaskGrid() {
   const { items, pagination, isLoading, isError, refetch } = useTasks(params);
 
   return (
-    <div className="w-full overflow-hidden rounded-md border border-border bg-card text-card-foreground shadow-sm">
+    <div className="w-full overflow-hidden rounded-none border border-border bg-card text-card-foreground shadow-sm">
       <div className="flex flex-col justify-between gap-4 border-b border-border p-4 sm:px-6 sm:py-4 lg:flex-row lg:items-center">
         <div>
           <h2 className="text-sm font-semibold text-foreground">Tasks</h2>
@@ -31,7 +31,7 @@ export function TaskGrid() {
             onChange={(event) => setSearch(event.target.value)}
             placeholder="Search tasks..."
             aria-label="Search tasks"
-            className="h-9 pl-9 text-sm"
+            className="h-9 rounded-none pl-9 text-sm"
           />
         </div>
       </div>
@@ -44,13 +44,14 @@ export function TaskGrid() {
           <Button
             type="button"
             variant="outline"
+            className="rounded-none"
             onClick={() => void refetch()}
           >
             Try again
           </Button>
         </div>
       ) : isLoading ? (
-        <div className="grid grid-cols-1 gap-6 p-4 sm:grid-cols-2 sm:p-6 lg:grid-cols-4">
+        <div className="grid grid-cols-1 gap-6 p-4 **:rounded-none sm:grid-cols-2 sm:p-6 lg:grid-cols-4">
           {Array.from({ length: 8 }, (_, index) => (
             <TaskCardSkeleton key={index} />
           ))}
@@ -60,19 +61,21 @@ export function TaskGrid() {
           {searchInput ? "No tasks match your search." : "No tasks found."}
         </p>
       ) : (
-        <div className="grid grid-cols-1 gap-6 p-4 sm:grid-cols-2 sm:p-6 lg:grid-cols-4">
+        <div className="grid grid-cols-1 gap-6 p-4 **:rounded-none sm:grid-cols-2 sm:p-6 lg:grid-cols-4">
           {items.map((task) => (
             <TaskCard key={task.id} task={task} />
           ))}
         </div>
       )}
 
-      <Pagination
-        pagination={
-          pagination ? { ...pagination, page: params.page || 1 } : undefined
-        }
-        onPageChange={setPage}
-      />
+      <div className="**:rounded-none">
+        <Pagination
+          pagination={
+            pagination ? { ...pagination, page: params.page || 1 } : undefined
+          }
+          onPageChange={setPage}
+        />
+      </div>
     </div>
   );
 }

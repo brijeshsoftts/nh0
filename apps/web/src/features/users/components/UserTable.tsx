@@ -41,10 +41,10 @@ export function UserTable() {
             <img
               src={user.avatar.url}
               alt={user.avatar.altText ?? user.fullName}
-              className="size-9 rounded-full border border-border object-cover"
+              className="size-9 rounded-none border border-border object-cover"
             />
           ) : (
-            <span className="grid size-9 place-items-center rounded-full bg-muted text-xs font-semibold text-muted-foreground">
+            <span className="grid size-9 place-items-center rounded-none bg-muted text-xs font-semibold text-muted-foreground">
               {user.fullName
                 .split(" ")
                 .filter(Boolean)
@@ -62,13 +62,21 @@ export function UserTable() {
     {
       key: "role",
       header: "Role",
-      cell: (user) => <EnumBadge value={user.role} />,
+      cell: (user) => (
+        <span className="**:data-[slot=badge]:rounded-none">
+          <EnumBadge value={user.role} />
+        </span>
+      ),
     },
 
     {
       key: "isActive",
       header: "Status",
-      cell: (user) => <StatusBadge value={user.isActive} />,
+      cell: (user) => (
+        <span className="**:data-[slot=badge]:rounded-none">
+          <StatusBadge value={user.isActive} />
+        </span>
+      ),
     },
     {
       key: "action",
@@ -120,13 +128,17 @@ function ActionDropdownMenu({ user }: { user: User }) {
             type="button"
             variant="ghost"
             size="icon-sm"
+            className="rounded-none"
             aria-label={`Actions for ${user.fullName}`}
           >
             <EllipsisVertical className="size-4" />
           </Button>
         </DropdownMenuTrigger>
 
-        <DropdownMenuContent align="end">
+        <DropdownMenuContent
+          align="end"
+          className="rounded-none **:data-[slot=dropdown-menu-item]:rounded-none"
+        >
           <DropdownMenuItem onClick={() => setIsViewOpen(true)}>
             <Eye className="mr-2 size-4" />
             View

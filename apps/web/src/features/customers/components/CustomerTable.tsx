@@ -32,12 +32,12 @@ const columns: ColumnDef<Customer>[] = [
           <img
             src={customer.profile.url}
             alt={customer.profile.altText ?? customer.name}
-            className="size-9 rounded-full border object-cover"
+            className="size-9 rounded-none border object-cover"
           />
         ) : (
           <span
             aria-hidden="true"
-            className="grid size-9 shrink-0 place-items-center rounded-full bg-muted text-xs font-semibold text-muted-foreground"
+            className="grid size-9 shrink-0 place-items-center rounded-none bg-muted text-xs font-semibold text-muted-foreground"
           >
             {customer.name
               .split(" ")
@@ -63,7 +63,10 @@ const columns: ColumnDef<Customer>[] = [
     key: "activeBooking",
     header: "Current booking",
     cell: (customer) => (
-      <Badge variant={customer.activeBooking ? "secondary" : "outline"}>
+      <Badge
+        variant={customer.activeBooking ? "secondary" : "outline"}
+        className="rounded-none"
+      >
         {customer.activeBooking ? "Active" : "None"}
       </Badge>
     ),
@@ -82,7 +85,11 @@ const columns: ColumnDef<Customer>[] = [
   {
     key: "isActive",
     header: "Status",
-    cell: (customer) => <StatusBadge value={customer.isActive} />,
+    cell: (customer) => (
+      <span className="**:data-[slot=badge]:rounded-none">
+        <StatusBadge value={customer.isActive} />
+      </span>
+    ),
   },
   {
     key: "actions",
@@ -150,13 +157,17 @@ function ActionDropdownMenu({ customer }: { customer: Customer }) {
           <IconBtn
             size="sm"
             variant="ghost"
+            shape="square"
             aria-label={`Actions for ${customer.name}`}
           >
             <EllipsisVertical />
           </IconBtn>
         </DropdownMenuTrigger>
 
-        <DropdownMenuContent align="end">
+        <DropdownMenuContent
+          align="end"
+          className="rounded-none **:data-[slot=dropdown-menu-item]:rounded-none"
+        >
           <DropdownMenuItem onClick={() => setIsViewModal(true)}>
             View
           </DropdownMenuItem>

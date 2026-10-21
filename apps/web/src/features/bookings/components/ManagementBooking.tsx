@@ -142,13 +142,19 @@ export function ManagementBooking() {
       header: "Invoice",
       cell: (booking) =>
         booking.invoice?.status && (
-          <InvoiceBadge value={booking.invoice.status} />
+          <span className="**:data-[slot=badge]:rounded-none">
+            <InvoiceBadge value={booking.invoice.status} />
+          </span>
         ),
     },
     {
       key: "status",
       header: "Status",
-      cell: (booking) => <BookingBadge value={booking.status} />,
+      cell: (booking) => (
+        <span className="**:data-[slot=badge]:rounded-none">
+          <BookingBadge value={booking.status} />
+        </span>
+      ),
     },
     {
       key: "actions",
@@ -160,7 +166,7 @@ export function ManagementBooking() {
 
   return (
     <main className="space-y-6">
-      <header className="flex flex-col gap-5 rounded-xl border bg-card p-5 shadow-sm sm:flex-row sm:items-end sm:justify-between sm:p-7">
+      <header className="flex flex-col gap-5 rounded-none border bg-card p-5 shadow-sm sm:flex-row sm:items-end sm:justify-between sm:p-7">
         <div className="max-w-2xl">
           <div className="mb-3 flex items-center gap-2 text-xs font-semibold tracking-[0.16em] text-muted-foreground uppercase">
             <CalendarDays className="size-4 text-primary" />
@@ -173,7 +179,7 @@ export function ManagementBooking() {
             Find reservations, check stay details, and keep arrivals moving.
           </p>
         </div>
-        <Button className="shrink-0">
+        <Button className="shrink-0 rounded-none">
           <Link to="/dashboard/bookings/new">
             <Plus className="size-4" />
             New booking
@@ -233,13 +239,17 @@ function BookingRowActions({ booking }: { booking: BookingListItem }) {
             <IconBtn
               size="sm"
               variant="ghost"
+              shape="square"
               aria-label={`Actions for ${booking.bookingReference}`}
             />
           }
         >
           <EllipsisVertical />
         </DropdownMenuTrigger>
-        <DropdownMenuContent align="end">
+        <DropdownMenuContent
+          align="end"
+          className="rounded-none **:data-[slot=dropdown-menu-item]:rounded-none"
+        >
           <DropdownMenuItem onClick={() => setIsDetailsOpen(true)}>
             <Eye />
             View booking

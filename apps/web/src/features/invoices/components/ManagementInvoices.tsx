@@ -132,7 +132,11 @@ function InvoicesTable() {
     {
       key: "status",
       header: "Status",
-      cell: (invoice) => <InvoiceBadge value={invoice.status} />,
+      cell: (invoice) => (
+        <span className="**:data-[slot=badge]:rounded-none">
+          <InvoiceBadge value={invoice.status} />
+        </span>
+      ),
     },
     {
       key: "issuedAt",
@@ -184,13 +188,17 @@ function ActionDropdownMenu({ invoice }: { invoice: InvoiceItem }) {
           <IconBtn
             size="sm"
             variant="ghost"
+            shape="square"
             aria-label={`Actions for ${invoice.invoiceNumber}`}
           >
             <EllipsisVertical />
           </IconBtn>
         </DropdownMenuTrigger>
 
-        <DropdownMenuContent align="end">
+        <DropdownMenuContent
+          align="end"
+          className="rounded-none **:data-[slot=dropdown-menu-item]:rounded-none"
+        >
           <DropdownMenuItem onClick={() => setIsViewModal(true)}>
             View
           </DropdownMenuItem>

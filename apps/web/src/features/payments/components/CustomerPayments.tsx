@@ -62,7 +62,11 @@ function PaymentsTable() {
     {
       key: "paymentMethod",
       header: "Payment Method",
-      cell: (payment) => <PaymentMethodBadge value={payment.paymentMethod} />,
+      cell: (payment) => (
+        <span className="**:data-[slot=badge]:rounded-none">
+          <PaymentMethodBadge value={payment.paymentMethod} />
+        </span>
+      ),
     },
     {
       key: "amount",
@@ -77,7 +81,11 @@ function PaymentsTable() {
     {
       key: "status",
       header: "Status",
-      cell: (payment) => <PaymentStatusBadge value={payment.status} />,
+      cell: (payment) => (
+        <span className="**:data-[slot=badge]:rounded-none">
+          <PaymentStatusBadge value={payment.status} />
+        </span>
+      ),
     },
     {
       key: "transactionId",
@@ -132,12 +140,16 @@ function ActionDropdownMenu({ payment }: { payment: CustomerPayment }) {
           <IconBtn
             size="sm"
             variant="ghost"
+            shape="square"
             aria-label={`Actions for ${payment.id}`}
           >
             <EllipsisVertical />
           </IconBtn>
         </DropdownMenuTrigger>
-        <DropdownMenuContent align="end">
+        <DropdownMenuContent
+          align="end"
+          className="rounded-none **:data-[slot=dropdown-menu-item]:rounded-none"
+        >
           <DropdownMenuItem>
             <Eye />
             View

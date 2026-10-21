@@ -61,35 +61,30 @@ const tabs = [
   },
 ];
 
-export const TabList = () => {
+export function TabsLine() {
+  const [activeTab, setActiveTab] = useState(tabs[0].value);
   return (
-    <div>
-      <Tabs defaultValue="explore" className="gap-6">
-        <TabsList className="justify-start rounded-none border-b bg-transparent p-0">
-          {tabs.map((tab) => (
-            <TabsTrigger
-              key={tab.value}
-              value={tab.value}
-              className="bg-transparent! shadow-none! data-active:-mb-0.75 data-active:rounded-b-none data-active:border-b-2 data-active:border-border data-active:border-b-background!"
-            >
-              {tab.name}
-            </TabsTrigger>
-          ))}
-        </TabsList>
-
+    <Tabs defaultValue="rooms" className="w-full">
+      <TabsList variant="line" className="mb-4 rounded-none bg-muted">
         {tabs.map((tab) => (
-          <TabsContent
+          <TabsTrigger
             key={tab.value}
             value={tab.value}
-            className={"grid gap-6"}
+            className={`rounded-none p-4 ${activeTab === tab.value ? "bg-primary! text-primary-foreground!" : ""}`}
+            onClick={() => setActiveTab(tab.value)}
           >
-            {tab.content}
-          </TabsContent>
+            {tab.name}
+          </TabsTrigger>
         ))}
-      </Tabs>
-    </div>
+      </TabsList>
+      {tabs.map((tab) => (
+        <TabsContent key={tab.value} value={tab.value}>
+          {tab.content}
+        </TabsContent>
+      ))}
+    </Tabs>
   );
-};
+}
 
 function RoomTable() {
   const columns: ColumnDef<Room>[] = [
@@ -113,17 +108,29 @@ function RoomTable() {
     {
       key: "occupancy",
       header: "Occupancy",
-      cell: (item) => <OccupancyBadge value={item.occupancyStatus} />,
+      cell: (item) => (
+        <span className="**:data-[slot=badge]:rounded-none">
+          <OccupancyBadge value={item.occupancyStatus} />
+        </span>
+      ),
     },
     {
       key: "housekeeping",
       header: "Housekeeping",
-      cell: (item) => <HousekeepingBadge value={item.housekeepingStatus} />,
+      cell: (item) => (
+        <span className="**:data-[slot=badge]:rounded-none">
+          <HousekeepingBadge value={item.housekeepingStatus} />
+        </span>
+      ),
     },
     {
       key: "isActive",
       header: "Status",
-      cell: (item) => <StatusBadge value={item.isActive} />,
+      cell: (item) => (
+        <span className="**:data-[slot=badge]:rounded-none">
+          <StatusBadge value={item.isActive} />
+        </span>
+      ),
     },
     {
       header: "Action",
@@ -162,27 +169,27 @@ export function ManagementRooms() {
           <StatCard key={kpi.id} {...kpi} />
         ))}
       </div>
-      <div className="flex items-center gap-6 rounded-md border border-muted bg-card p-6">
+      <div className="flex flex-wrap items-center gap-4 rounded-none border border-muted bg-card p-6">
         <CreateRoomDialog>
-          <Button>
+          <Button className="h-10 rounded-none">
             <Plus className="size-4" />
             New Room
           </Button>
         </CreateRoomDialog>
         <CreateRoomTypeDialog>
-          <Button>
+          <Button className="h-10 rounded-none" variant={"outline"}>
             <Plus className="size-4" />
             New Room Type
           </Button>
         </CreateRoomTypeDialog>
         <NewAmenityModal>
-          <Button>
+          <Button className="h-10 rounded-none" variant={"secondary"}>
             <Plus className="size-4" />
             New Amenity
           </Button>
         </NewAmenityModal>
       </div>
-      <TabList />
+      <TabsLine />
     </>
   );
 }
@@ -196,12 +203,15 @@ function RoomActionDropdownMenu({ room }: { room: Room }) {
     <>
       <DropdownMenu>
         <DropdownMenuTrigger>
-          <IconBtn size={"sm"} variant={"ghost"}>
+          <IconBtn size={"sm"} variant={"ghost"} shape="square">
             <EllipsisVertical />
           </IconBtn>
         </DropdownMenuTrigger>
 
-        <DropdownMenuContent align="end">
+        <DropdownMenuContent
+          align="end"
+          className="rounded-none **:data-[slot=dropdown-menu-item]:rounded-none"
+        >
           <DropdownMenuItem
             onClick={() => setIsViewModal(true)}
             disabled={isDeleting}

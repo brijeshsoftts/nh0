@@ -116,12 +116,20 @@ function PaymentsTable() {
     {
       key: "paymentMethod",
       header: "Payment Method",
-      cell: (payment) => <PaymentMethodBadge value={payment.paymentMethod} />,
+      cell: (payment) => (
+        <span className="**:data-[slot=badge]:rounded-none">
+          <PaymentMethodBadge value={payment.paymentMethod} />
+        </span>
+      ),
     },
     {
       key: "paymentStatus",
       header: "Status",
-      cell: (payment) => <PaymentStatusBadge value={payment.paymentStatus} />,
+      cell: (payment) => (
+        <span className="**:data-[slot=badge]:rounded-none">
+          <PaymentStatusBadge value={payment.paymentStatus} />
+        </span>
+      ),
     },
     {
       key: "paidAt",
@@ -179,13 +187,17 @@ function ActionDropdownMenu({ payment }: { payment: PaymentItem }) {
           <IconBtn
             size="sm"
             variant="ghost"
+            shape="square"
             aria-label={`Actions for ${payment.paymentReference}`}
           >
             <EllipsisVertical />
           </IconBtn>
         </DropdownMenuTrigger>
 
-        <DropdownMenuContent align="end">
+        <DropdownMenuContent
+          align="end"
+          className="rounded-none **:data-[slot=dropdown-menu-item]:rounded-none"
+        >
           <DropdownMenuItem onClick={() => setIsViewModal(true)}>
             View
           </DropdownMenuItem>

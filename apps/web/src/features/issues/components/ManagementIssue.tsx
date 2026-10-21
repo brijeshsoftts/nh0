@@ -98,12 +98,20 @@ function IssueTable() {
     {
       key: "priority",
       header: "Priority",
-      cell: (row) => <IssuePriorityBadge value={row.priority} />,
+      cell: (row) => (
+        <span className="**:data-[slot=badge]:rounded-none">
+          <IssuePriorityBadge value={row.priority} />
+        </span>
+      ),
     },
     {
       key: "status",
       header: "Status",
-      cell: (row) => <IssueStatusBadge value={row.status} />,
+      cell: (row) => (
+        <span className="**:data-[slot=badge]:rounded-none">
+          <IssueStatusBadge value={row.status} />
+        </span>
+      ),
     },
     {
       key: "reportedAt",

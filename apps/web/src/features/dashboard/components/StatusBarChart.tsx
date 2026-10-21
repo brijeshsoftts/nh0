@@ -130,7 +130,7 @@ export function StatusBarChart({
 
               <Bar
                 dataKey={String("count")}
-                radius={[0, 4, 4, 0]}
+                radius={[0, 0, 0, 0]}
                 maxBarSize={32}
               />
             </BarChart>
