@@ -14,11 +14,6 @@ import { useState } from "react";
 import { type ColumnDef, DataTable } from "@/components/common/DataTable";
 import { BookingBadge } from "@/components/common/EnumBadges";
 import { IconBtn } from "@/components/common/IconBtn";
-import {
-  StatCard,
-  StatCardError,
-  StatCardLoading,
-} from "@/components/common/StatCard";
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
@@ -37,32 +32,9 @@ import {
 import { useListParams } from "@/hooks/useListParams";
 import { formatPrice } from "@/lib/format";
 
-import {
-  useBookingDetails,
-  useBookings,
-  useBookingsStats,
-} from "../bookings.crud";
+import { useBookingDetails, useBookings } from "../bookings.crud";
 import type { CustomerBooking } from "../bookings.types";
-
-function Stats() {
-  const { data, isLoading, isError, refetch } = useBookingsStats();
-
-  if (isLoading) {
-    return <StatCardLoading />;
-  }
-
-  if (isError || !data) {
-    return <StatCardError refetch={refetch} />;
-  }
-
-  return (
-    <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-4">
-      {data?.map((kpi) => (
-        <StatCard key={kpi.id} {...kpi} />
-      ))}
-    </div>
-  );
-}
+import { BookingsStats } from "./BookingsStats";
 
 export const columns: ColumnDef<CustomerBooking>[] = [
   {
@@ -345,7 +317,7 @@ function BookingDetailsDialog({
 export function CustomerBookings() {
   return (
     <>
-      <Stats />
+      <BookingsStats />
       <BookingsTable />
     </>
   );

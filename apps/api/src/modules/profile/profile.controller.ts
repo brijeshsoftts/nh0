@@ -1,17 +1,23 @@
 import {
+  BadRequestException,
   Body,
   Controller,
+  Delete,
   Get,
   HttpCode,
   HttpStatus,
   Patch,
+  UploadedFile,
   UseGuards,
+  UseInterceptors,
 } from '@nestjs/common';
+import { FileInterceptor } from '@nestjs/platform-express';
 
+import { MAX_FILE_SIZE } from '../../common/constants';
 import { CurrentUser } from '../../common/decorators';
 import { AuthGuard, RoleGuard } from '../../common/guards';
 import { apiMessageResponse, apiResponse } from '../../common/helpers';
-import { ValidationPipe } from '../../common/pipes';
+import { fileValidationPipe, ValidationPipe } from '../../common/pipes';
 
 import {
   ChangePasswordDto,
@@ -21,8 +27,9 @@ import {
   UpdateProfileDto,
   UpdateProfileSchema,
 } from './dto/update-profile.dto';
-import { PROFILE_SUCCESS_MSG } from './profile.constants';
+import { PROFILE_ERROR_MSG, PROFILE_SUCCESS_MSG } from './profile.constants';
 import { ProfileService } from './profile.service';
+import type { ProfileUploadFile } from './profile.types';
 
 @UseGuards(AuthGuard, RoleGuard)
 @Controller('profile')
@@ -51,6 +58,29 @@ export class ProfileController {
   ) {
     const data = await this.profileService.updateMe(userId, body);
     return apiResponse({ data, message: PROFILE_SUCCESS_MSG.UPDATED });
+  }
+
+  @Patch('avatar')
+  @UseInterceptors(
+    FileInterceptor('avatar', fileValidationPipe(MAX_FILE_SIZE, 1)),
+  )
+  @HttpCode(HttpStatus.OK)
+  async updateAvatar(
+    @CurrentUser('id') userId: string,
+    @UploadedFile() file?: ProfileUploadFile,
+  ) {
+    if (!file) {
+      throw new BadRequestException(PROFILE_ERROR_MSG.IMAGE_REQUIRED);
+    }
+    const data = await this.profileService.updateAvatar(userId, file);
+    return apiResponse({ data, message: PROFILE_SUCCESS_MSG.AVATAR_UPDATED });
+  }
+
+  @Delete('avatar')
+  @HttpCode(HttpStatus.OK)
+  async removeAvatar(@CurrentUser('id') userId: string) {
+    const data = await this.profileService.removeAvatar(userId);
+    return apiResponse({ data, message: PROFILE_SUCCESS_MSG.AVATAR_REMOVED });
   }
 
   @Patch('change-password')

@@ -10,6 +10,11 @@ export const COOKIE_EXPIRATION = {
 
 export const ROLES_KEY = 'roles';
 
-export const ALLOWED_MIME_TYPES = ['image/jpeg', 'image/png', 'image/jpg'];
+export const ALLOWED_MIME_TYPES = [
+  'image/jpeg',
+  'image/png',
+  'image/jpg',
+  'image/webp',
+];
 export const MAX_FILE_SIZE = 5 * 1024 * 1024;
 export const MAX_FILES = 8;

@@ -6,13 +6,14 @@ import {
 } from '@nestjs/common';
 
 import { comparePassword, hashPassword } from '../../common/helpers';
+import { uploadFile } from '../../config';
 import { PrismaService } from '../../prisma/prisma.service';
 import { Prisma } from '../../types/prisma.types';
 
 import { ChangePasswordDto } from './dto/change-password.dto';
 import { UpdateProfileDto } from './dto/update-profile.dto';
 import { PROFILE_ERROR_MSG } from './profile.constants';
-import { Profile, ProfileDetails } from './profile.types';
+import { Profile, ProfileDetails, ProfileUploadFile } from './profile.types';
 
 const PROFILE_SELECT = {
   id: true,
@@ -166,6 +167,81 @@ export class ProfileService {
       where: { id: userId },
       data: { passwordHash },
     });
+  }
+
+  async updateAvatar(
+    userId: string,
+    file: ProfileUploadFile,
+  ): Promise<Profile> {
+    const existingUser = await this.prismaService.user.findFirst({
+      where: { id: userId, softDeletedAt: null },
+      select: { id: true, fullName: true, profileId: true },
+    });
+
+    if (!existingUser) {
+      throw new NotFoundException(PROFILE_ERROR_MSG.NOT_FOUND);
+    }
+
+    const uploaded = await uploadFile(file);
+
+    const user = await this.prismaService.$transaction(async (tx) => {
+      const image = await tx.image.create({
+        data: {
+          url: uploaded.url,
+          altText: `${existingUser.fullName} avatar`,
+        },
+        select: { id: true },
+      });
+
+      const updated = await tx.user.update({
+        where: { id: userId },
+        data: { profileId: image.id },
+        select: PROFILE_SELECT,
+      });
+
+      if (existingUser.profileId) {
+        await tx.image
+          .delete({
+            where: { id: existingUser.profileId },
+          })
+          .catch(() => {});
+      }
+
+      return updated;
+    });
+
+    return this.mapProfile(user);
+  }
+
+  async removeAvatar(userId: string): Promise<Profile> {
+    const existingUser = await this.prismaService.user.findFirst({
+      where: { id: userId, softDeletedAt: null },
+      select: { id: true, profileId: true },
+    });
+
+    if (!existingUser) {
+      throw new NotFoundException(PROFILE_ERROR_MSG.NOT_FOUND);
+    }
+
+    const user = await this.prismaService.$transaction(async (tx) => {
+      const updated = await tx.user.update({
+        where: { id: userId },
+        data: { profileId: null },
+        select: PROFILE_SELECT,
+      });
+
+      if (existingUser.profileId) {
+        await tx.image
+          .delete({
+            where: { id: existingUser.profileId },
+          })
+          .catch(() => {});
+      }
+
+      return updated;
+    });
+
+    return this.mapProfile(user);
   }
 
   private mapProfile(user: ProfileRecord | ProfileDetailsRecord): Profile {

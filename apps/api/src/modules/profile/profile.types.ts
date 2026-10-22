@@ -17,6 +17,11 @@ export type Profile = {
   lastLoginAt: string | null;
 };
 
+export type ProfileUploadFile = {
+  buffer: Buffer;
+  originalname: string;
+};
+
 export type ProfileDetails = Profile & {
   idProofNumber: string | null;
   experience: string | null;

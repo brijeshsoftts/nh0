@@ -63,6 +63,43 @@ export function useUpdateProfile() {
   });
 }
 
+export function useUpdateAvatar() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationKey: profile.keys.custom("avatar", "update"),
+    mutationFn: (file: File) => {
+      const formData = new FormData();
+      formData.append("avatar", file);
+      return apiClient.patch("/profile/avatar", formData).then((r) => r.data);
+    },
+    onSuccess: (response) => {
+      toast.success(
+        response?.message || "Profile image updated successfully."
+      );
+      void queryClient.invalidateQueries({ queryKey: profile.keys.all });
+    },
+    onError: notifyError,
+  });
+}
+
+export function useRemoveAvatar() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationKey: profile.keys.custom("avatar", "remove"),
+    mutationFn: () =>
+      apiClient.delete("/profile/avatar").then((r) => r.data),
+    onSuccess: (response) => {
+      toast.success(
+        response?.message || "Profile image removed successfully."
+      );
+      void queryClient.invalidateQueries({ queryKey: profile.keys.all });
+    },
+    onError: notifyError,
+  });
+}
+
 export function useProfile() {
   const query = useQuery({
     queryKey: profile.keys.custom("me"),

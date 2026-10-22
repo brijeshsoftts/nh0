@@ -2,6 +2,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import {
   BriefcaseBusiness,
   CalendarDays,
+  Camera,
   Eye,
   EyeOff,
   FileText,
@@ -30,6 +31,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Separator } from "@/components/ui/separator";
 import { Spinner } from "@/components/ui/spinner";
+import { UpdateAvatarDialog } from "@/features/profile/components/UpdateAvatarDialog";
 import {
   useChangePassword,
   useProfileDetails,
@@ -120,6 +122,7 @@ export default function ProfilePage() {
   const password = useChangePassword();
   const [oldPasswordVisible, setOldPasswordVisible] = useState(false);
   const [newPasswordVisible, setNewPasswordVisible] = useState(false);
+  const [avatarDialogOpen, setAvatarDialogOpen] = useState(false);
 
   const profileForm = useForm<UpdateProfile>({
     resolver: zodResolver(UpdateProfileSchema),
@@ -202,33 +205,68 @@ export default function ProfilePage() {
         aria-label="Profile summary"
         className="flex flex-col gap-4 rounded-none border border-border bg-card p-5 sm:flex-row sm:items-center sm:justify-between"
       >
-        <div className="flex min-w-0 items-center gap-4">
-          <Avatar
-            size="lg"
-            className="size-16 ring-2 ring-background sm:size-18"
-          >
-            {user.avatar?.url ? (
-              <AvatarImage
-                src={user.avatar.url}
-                alt={`${user.fullName} profile`}
-              />
-            ) : null}
-            <AvatarFallback className="text-lg font-semibold">
-              {initials || "U"}
-            </AvatarFallback>
-          </Avatar>
+        <div className="flex min-w-0 items-start gap-4 sm:items-center">
+          <div className="group/avatar relative shrink-0">
+            <Avatar
+              size="lg"
+              className="size-16 border border-border ring-2 ring-background transition-opacity group-hover/avatar:opacity-90 sm:size-18"
+            >
+              {user.avatar?.url ? (
+                <AvatarImage
+                  src={user.avatar.url}
+                  alt={`${user.fullName} profile`}
+                  className="object-cover"
+                />
+              ) : null}
+              <AvatarFallback className="text-lg font-semibold tracking-wider">
+                {initials || "U"}
+              </AvatarFallback>
+            </Avatar>
+            <button
+              type="button"
+              onClick={() => setAvatarDialogOpen(true)}
+              aria-label="Change profile photo"
+              title="Change profile photo"
+              className="absolute inset-0 flex items-center justify-center rounded-full bg-black/45 text-white opacity-0 transition-opacity group-hover/avatar:opacity-100 focus-visible:opacity-100 focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none"
+            >
+              <Camera className="size-4" aria-hidden="true" />
+            </button>
+            <button
+              type="button"
+              onClick={() => setAvatarDialogOpen(true)}
+              aria-label="Change profile photo"
+              className="absolute -right-1 -bottom-1 flex size-6 items-center justify-center rounded-full border border-border bg-card text-foreground shadow-xs transition hover:bg-accent hover:text-accent-foreground focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none sm:hidden"
+            >
+              <Camera className="size-3" aria-hidden="true" />
+            </button>
+          </div>
+
           <div className="min-w-0 space-y-1">
-            <h2 className="truncate text-lg font-semibold text-foreground">
-              {user.fullName}
-            </h2>
-            <p className="truncate text-sm text-muted-foreground">
-              {user.email}
-            </p>
-            <div className="flex flex-wrap items-center gap-2 pt-1">
+            <div className="flex flex-wrap items-center gap-2">
+              <h2 className="truncate text-lg font-semibold text-foreground">
+                {user.fullName}
+              </h2>
               <Badge variant="outline">{formatLabel(user.role)}</Badge>
               <Badge variant={user.isActive ? "secondary" : "destructive"}>
                 {user.isActive ? "Active" : "Inactive"}
               </Badge>
+            </div>
+            <p className="truncate text-sm text-muted-foreground">
+              {user.email}
+            </p>
+            <div className="flex flex-wrap items-center gap-2 pt-1">
+              <Button
+                type="button"
+                variant="outline"
+                size="sm"
+                className="rounded-none gap-1.5 text-xs"
+                onClick={() => setAvatarDialogOpen(true)}
+              >
+                <Camera className="size-3.5" aria-hidden="true" />
+                <span>
+                  {user.avatar?.url ? "Change photo" : "Upload photo"}
+                </span>
+              </Button>
             </div>
           </div>
         </div>
@@ -237,6 +275,13 @@ export default function ProfilePage() {
           <span>Member since {formatDate(user.createdAt)}</span>
         </div>
       </section>
+
+      <UpdateAvatarDialog
+        open={avatarDialogOpen}
+        onOpenChange={setAvatarDialogOpen}
+        currentAvatarUrl={user.avatar?.url}
+        userName={user.fullName}
+      />
 
       <div className="grid gap-5 lg:grid-cols-[minmax(0,1.2fr)_minmax(18rem,0.8fr)]">
         <Card className="rounded-none">

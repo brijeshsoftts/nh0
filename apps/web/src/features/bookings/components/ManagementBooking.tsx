@@ -29,6 +29,7 @@ import { useBookings } from "../hooks/useBookings";
 import { useUpdateBookingStatus } from "../hooks/useUpdateBookingStatus";
 
 import { BookingDetailsSheet } from "./BookingDetailsSheet";
+import { BookingsStats } from "./BookingsStats";
 
 const BOOKING_STATUSES: BookingStatus[] = [
   "PENDING",
@@ -187,6 +188,8 @@ export function ManagementBooking() {
           </Link>
         </Button>
       </header>
+
+      <BookingsStats />
 
       <DataTable
         title="All reservations"

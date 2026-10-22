@@ -11,7 +11,9 @@ export const fileValidationPipe = (Size: number, Count: number) => ({
   fileFilter: (_req, file, callback) => {
     if (!ALLOWED_MIME_TYPES.includes(file.mimetype)) {
       return callback(
-        new BadRequestException('Only JPG, JPEG, and PNG images are allowed'),
+        new BadRequestException(
+          'Only JPG, JPEG, PNG, and WebP images are allowed',
+        ),
         false,
       );
     }

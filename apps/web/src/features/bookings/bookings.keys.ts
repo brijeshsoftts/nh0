@@ -12,6 +12,7 @@ export const bookingsKeys = {
   detail: (id: string) => [...bookingsKeys.details(), id] as const,
   availability: (params: BookingAvailabilityParams | undefined) =>
     [...bookingsKeys.all, "available-rooms", params] as const,
+  stats: () => [...bookingsKeys.all, "stats"] as const,
 } as const;
 
 export const bookingsMutationKeys = {

@@ -57,38 +57,48 @@ export class BookingsService {
     const where: Prisma.BookingWhereInput = {
       ...(role === UserRole.CUSTOMER && { customerId: userId }),
     };
-    const statusGroups = await this.prismaService.booking.groupBy({
-      by: ['status'],
-      where,
-      _count: { _all: true },
-    });
+
+    const [statusGroups, revenue] = await Promise.all([
+      this.prismaService.booking.groupBy({
+        by: ['status'],
+        where,
+        _count: { _all: true },
+      }),
+      this.prismaService.booking.aggregate({
+        where: {
+          ...where,
+          status: {
+            notIn: [BookingStatus.CANCELLED],
+          },
+        },
+        _sum: { totalAmount: true },
+      }),
+    ]);
+
     const countFor = (status: BookingStatus) =>
       statusGroups.find((group) => group.status === status)?._count._all ?? 0;
-    const checkedIn = countFor(BookingStatus.CHECKED_IN);
-    const checkedOut = countFor(BookingStatus.CHECKED_OUT);
+
     const total = statusGroups.reduce(
       (count, group) => count + group._count._all,
       0,
     );
+
+    const bookingRevenue = revenue._sum.totalAmount ?? 0;
+    const formatAmount = (amount: number) =>
+      `₹${amount.toLocaleString('en-IN')}`;
 
     return [
       {
         id: 'total-bookings',
         title: 'Total Bookings',
         value: total.toLocaleString(),
-        description: 'All bookings',
+        description:
+          role === UserRole.CUSTOMER
+            ? 'Your total reservations'
+            : 'All-time reservations',
         icon: 'CalendarCheck',
         link: 'bookings',
         tone: 'sky',
-      },
-      {
-        id: 'pending-bookings',
-        title: 'Pending',
-        value: countFor(BookingStatus.PENDING).toLocaleString(),
-        description: 'Awaiting confirmation',
-        icon: 'Clock3',
-        link: 'bookings?status=pending',
-        tone: 'gold',
       },
       {
         id: 'confirmed-bookings',
@@ -100,11 +110,23 @@ export class BookingsService {
         tone: 'emerald',
       },
       {
-        id: 'checked-in-out-bookings',
-        title: 'Checked In / Out',
-        value: `${checkedIn.toLocaleString()} / ${checkedOut.toLocaleString()}`,
-        description: 'Checked in / checked out',
-        icon: 'DoorOpen',
+        id: 'pending-bookings',
+        title: 'Pending',
+        value: countFor(BookingStatus.PENDING).toLocaleString(),
+        description: 'Awaiting confirmation',
+        icon: 'Clock3',
+        link: 'bookings?status=pending',
+        tone: 'gold',
+      },
+      {
+        id: 'booking-revenue',
+        title: 'Booking Revenue',
+        value: formatAmount(bookingRevenue),
+        description:
+          role === UserRole.CUSTOMER
+            ? 'Total reservation spend'
+            : 'Confirmed & active bookings',
+        icon: 'IndianRupee',
         link: 'bookings',
         tone: 'teal',
       },

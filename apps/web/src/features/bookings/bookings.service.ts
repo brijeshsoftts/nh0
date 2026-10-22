@@ -1,3 +1,4 @@
+import type { StatCard } from "@/components/common/StatCard";
 import { apiClient } from "@/lib/apiClient";
 import type { ApiListResponse } from "@/types/api.types";
 
@@ -31,4 +32,6 @@ export const bookingsService = {
       .then((response) => response.data?.data),
   create: (data: CreateBookingInput): Promise<CreateBookingResult> =>
     apiClient.post("/bookings", data).then((response) => response.data?.data),
+  getStats: (): Promise<StatCard[]> =>
+    apiClient.get("/bookings/stats").then((response) => response.data?.data),
 };
