@@ -64,6 +64,14 @@ export class PublicService {
     query: AvailableRoomQueryDto,
   ): Promise<AvailableRoomResponse> {
     const { checkInDate, checkOutDate } = query;
+    const hasDates = Boolean(checkInDate && checkOutDate);
+    const checkIn = checkInDate
+      ? new Date(`${checkInDate}T00:00:00.000Z`)
+      : undefined;
+    const checkOut = checkOutDate
+      ? new Date(`${checkOutDate}T00:00:00.000Z`)
+      : undefined;
+
     const roomType = await this.prismaService.roomType.findFirst({
       where: { slug, isActive: true },
       select: {
@@ -108,8 +116,11 @@ export class PublicService {
                       BookingStatus.CHECKED_IN,
                     ],
                   },
-                  checkInDate: { lt: new Date(checkOutDate) },
-                  checkOutDate: { gt: new Date(checkInDate) },
+                  ...(checkIn &&
+                    checkOut && {
+                      checkInDate: { lt: checkOut },
+                      checkOutDate: { gt: checkIn },
+                    }),
                 },
               },
               select: { id: true },
@@ -141,9 +152,9 @@ export class PublicService {
       images: roomType.images,
       amenities: roomType.amenities,
       availability: {
-        isAvailable: roomType.rooms.some(
-          (room) => room.bookingRooms.length === 0,
-        ),
+        isAvailable: hasDates
+          ? roomType.rooms.some((room) => room.bookingRooms.length === 0)
+          : false,
       },
     };
   }

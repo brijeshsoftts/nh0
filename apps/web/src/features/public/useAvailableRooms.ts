@@ -22,20 +22,28 @@ export function useAvailableRooms(params: AvailableRoomsParams) {
 
 export function useAvailableRoom(
   slug: string | null,
-  checkInDate: string,
-  checkOutDate: string
+  checkInDate?: string,
+  checkOutDate?: string
 ) {
+  const hasDates = Boolean(checkInDate && checkOutDate);
   const query = useQuery({
     queryKey: publicKeys.availableRoom(slug ?? "", checkInDate, checkOutDate),
     queryFn: () =>
-      publicService.findAvailableRoom(slug!, { checkInDate, checkOutDate }),
-    enabled: Boolean(slug && checkInDate && checkOutDate),
+      publicService.findAvailableRoom(
+        slug!,
+        hasDates
+          ? { checkInDate: checkInDate!, checkOutDate: checkOutDate! }
+          : undefined
+      ),
+    enabled: Boolean(slug),
   });
 
   return {
     room: query.data?.data,
     isLoading: query.isLoading,
+    isFetching: query.isFetching,
     isError: query.isError,
+    error: query.error,
     refetch: query.refetch,
   };
 }

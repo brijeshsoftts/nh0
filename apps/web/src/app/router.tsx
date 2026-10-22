@@ -18,6 +18,7 @@ import UsersPage from "@/pages/protect/Users";
 import AboutPage from "@/pages/public/About";
 import ContactPage from "@/pages/public/Contact";
 import LandingPage from "@/pages/public/Landing";
+import RoomDetails from "@/pages/public/RoomDetails";
 import RoomsPage from "@/pages/public/Rooms";
 
 export const router = createBrowserRouter([
@@ -28,6 +29,7 @@ export const router = createBrowserRouter([
       { path: "about", element: <AboutPage /> },
       { path: "contact", element: <ContactPage /> },
       { path: "rooms", element: <RoomsPage /> },
+      { path: "rooms/:slug", element: <RoomDetails /> },
       { path: "reset-passowrd", element: <LandingPage /> },
       { path: "reset-password", element: <LandingPage /> },
       {
