@@ -18,6 +18,7 @@ import {
   X,
 } from "lucide-react";
 import { useEffect, useState } from "react";
+import { Link } from "react-router-dom";
 
 import { Button } from "@/components/ui/button";
 import {
@@ -694,15 +695,15 @@ export function RoomTypeViewDialog({
                 </DialogClose>
 
                 {available ? (
-                  <a
-                    href={`/rooms/${room.slug}/book`}
+                  <Link
+                    to={`/rooms/${room.slug}/book`}
                     onClick={() => onOpenChange(false)}
                   >
                     <Button className="h-10 gap-2 rounded-none border border-[#25251F] bg-[#25251F] px-3 text-xs font-medium text-[#FAF8F4] hover:bg-[#3B3931] sm:h-11 sm:px-6">
                       <span>Reserve your stay</span>
                       <ArrowRight className="size-4" strokeWidth={1.5} />
                     </Button>
-                  </a>
+                  </Link>
                 ) : (
                   <Button
                     type="button"

@@ -5,6 +5,7 @@ import { useMemo, useState } from "react";
 import { useSearchParams } from "react-router-dom";
 
 import { AvailabilitySearch } from "@/components/common/AvailabilitySearch";
+import PageHero from "@/features/public/components/PageHero";
 import {
   type RoomType,
   RoomTypeCard,

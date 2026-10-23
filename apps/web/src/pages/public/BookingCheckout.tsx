@@ -33,6 +33,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { bookingsService } from "@/features/bookings/bookings.service";
 import type { BookingGuestInput } from "@/features/bookings/bookings.types";
+import PageHero from "@/features/public/components/PageHero";
 import { useAvailableRoom } from "@/features/public/useAvailableRooms";
 import { useAuth } from "@/hooks/useAuth";
 import { cn } from "@/lib/utils";
@@ -184,6 +185,7 @@ function BookingProgressIndicator({ currentStep }: { currentStep: number }) {
   );
 }
 
+import BookingImg from "@/assets/public/booking.png";
 /* -------------------------------------------------------------------------- */
 /* Main Booking Checkout Component                                            */
 /* -------------------------------------------------------------------------- */
@@ -674,78 +676,17 @@ export default function BookingCheckout() {
     room.images.find((img) => img.isPrimary) ?? room.images[0] ?? null;
 
   return (
-    <div className="bg-background text-foreground">
-      {/* Section A: Page Header & Breadcrumbs */}
-      <section className="border-b border-border bg-card/40 pt-6 pb-8 sm:pt-8 sm:pb-10">
-        <div className="mx-auto max-w-7xl px-5 sm:px-8 lg:px-12">
-          <nav aria-label="Breadcrumb" className="mb-4">
-            <ol className="flex flex-wrap items-center gap-2 text-xs text-muted-foreground">
-              <li>
-                <Link to="/" className="transition-colors hover:text-gold">
-                  Home
-                </Link>
-              </li>
-              <li>
-                <ChevronRight
-                  className="size-3 text-muted-foreground/60"
-                  aria-hidden="true"
-                />
-              </li>
-              <li>
-                <Link to="/rooms" className="transition-colors hover:text-gold">
-                  Rooms
-                </Link>
-              </li>
-              <li>
-                <ChevronRight
-                  className="size-3 text-muted-foreground/60"
-                  aria-hidden="true"
-                />
-              </li>
-              <li>
-                <Link
-                  to={`/rooms/${slug}`}
-                  className="transition-colors hover:text-gold"
-                >
-                  {room.name}
-                </Link>
-              </li>
-              <li>
-                <ChevronRight
-                  className="size-3 text-muted-foreground/60"
-                  aria-hidden="true"
-                />
-              </li>
-              <li aria-current="page" className="font-medium text-foreground">
-                Checkout
-              </li>
-            </ol>
-          </nav>
-
-          <div className="flex flex-col justify-between gap-4 sm:flex-row sm:items-end">
-            <div>
-              <p className="mb-1 text-[10px] font-medium tracking-[0.24em] text-gold uppercase">
-                Secure Reservation
-              </p>
-              <h1 className="font-heading text-3xl font-normal tracking-tight sm:text-4xl lg:text-5xl">
-                Complete Your Booking
-              </h1>
-              <p className="mt-2 max-w-xl text-sm text-muted-foreground">
-                Review your selected room and stay details, provide guest
-                information, and confirm your reservation.
-              </p>
-            </div>
-
-            <Link
-              to={`/rooms/${slug}?checkIn=${checkIn}&checkOut=${checkOut}&adults=${adults}&children=${children}`}
-              className="inline-flex items-center text-xs font-medium text-gold hover:underline"
-            >
-              <ChevronLeft className="mr-1 size-3.5" />
-              Edit stay details
-            </Link>
-          </div>
-        </div>
-      </section>
+    <>
+      <PageHero
+        title="Checkout"
+        paths={[
+          { label: "Home", href: "/" },
+          { label: "All rooms", href: "/rooms" },
+          { label: room.name, href: `/rooms/${slug}` },
+          { label: "Checkout" },
+        ]}
+        backgroundImage={BookingImg}
+      />
 
       {/* Main Content Area */}
       <div className="mx-auto max-w-7xl px-5 py-8 sm:px-8 sm:py-12 lg:px-12">
@@ -1358,6 +1299,6 @@ export default function BookingCheckout() {
           </div>
         </form>
       </div>
-    </div>
+    </>
   );
 }

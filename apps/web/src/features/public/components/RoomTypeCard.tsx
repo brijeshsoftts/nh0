@@ -1,6 +1,7 @@
 import { motion, useReducedMotion } from "framer-motion";
 import { ArrowUpRight, BedDouble, Users } from "lucide-react";
 import { useState } from "react";
+import { Link } from "react-router-dom";
 
 export type BedType =
   | "SINGLE"
@@ -189,7 +190,7 @@ export function RoomTypeCard({
             alt={room.primaryImage?.altText ?? room.name}
           />
 
-          <div className="pointer-events-none absolute inset-0 bg-gradient-to-t from-background/80 via-transparent to-background/10" />
+          <div className="pointer-events-none absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-background/10" />
 
           <div className="absolute top-4 left-4 sm:top-5 sm:left-5">
             <span className="inline-flex items-center gap-2 border border-border/70 bg-card/90 px-2.5 py-1.5 text-[9px] tracking-[0.16em] text-card-foreground uppercase backdrop-blur-sm">
@@ -297,23 +298,20 @@ export function RoomTypeCard({
             </div>
 
             <div className="flex shrink-0 items-end gap-2">
-              {onBook && available && (
+              <Link to={`/rooms/${room.slug}`}>
                 <button
                   type="button"
                   disabled={!available}
-                  onClick={() => onBook(room)}
                   className="inline-flex h-10 items-center justify-center gap-2 border border-primary bg-primary px-3 text-[11px] font-medium text-primary-foreground transition-colors hover:bg-primary/90 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring disabled:cursor-not-allowed disabled:border-border disabled:bg-muted disabled:text-muted-foreground sm:px-4"
                 >
-                  {available ? "Book now" : "Unavailable"}
-                  {available && (
-                    <ArrowUpRight
-                      className="size-3.5"
-                      strokeWidth={1.5}
-                      aria-hidden="true"
-                    />
-                  )}
+                  Book now
+                  <ArrowUpRight
+                    className="size-3.5"
+                    strokeWidth={1.5}
+                    aria-hidden="true"
+                  />
                 </button>
-              )}
+              </Link>
               <button
                 type="button"
                 onClick={() => onViewDetails?.(room)}

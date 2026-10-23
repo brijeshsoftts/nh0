@@ -38,7 +38,9 @@ import {
   useSearchParams,
 } from "react-router-dom";
 
+import RoomsDetailsImg from "@/assets/public/rooms-details.png";
 import { Button } from "@/components/ui/button";
+import PageHero from "@/features/public/components/PageHero";
 import { useAvailableRoom } from "@/features/public/useAvailableRooms";
 import { cn } from "@/lib/utils";
 
@@ -531,35 +533,6 @@ function RoomDetailsContent() {
       <section className="border-b border-border bg-card/40 pt-6 pb-8 sm:pt-8 sm:pb-10">
         <div className="mx-auto max-w-7xl px-5 sm:px-8 lg:px-12">
           {/* Section A: Breadcrumb Navigation */}
-          <nav aria-label="Breadcrumb" className="mb-4 sm:mb-6">
-            <ol className="flex flex-wrap items-center gap-2 text-xs text-muted-foreground">
-              <li>
-                <Link to="/" className="transition-colors hover:text-gold">
-                  Home
-                </Link>
-              </li>
-              <li>
-                <ChevronRight
-                  className="size-3 text-muted-foreground/60"
-                  aria-hidden="true"
-                />
-              </li>
-              <li>
-                <Link to="/rooms" className="transition-colors hover:text-gold">
-                  Rooms
-                </Link>
-              </li>
-              <li>
-                <ChevronRight
-                  className="size-3 text-muted-foreground/60"
-                  aria-hidden="true"
-                />
-              </li>
-              <li aria-current="page" className="font-medium text-foreground">
-                {room.name}
-              </li>
-            </ol>
-          </nav>
 
           <div className="flex flex-col justify-between gap-4 sm:flex-row sm:items-end">
             <div>
@@ -1084,5 +1057,18 @@ export default function RoomDetails() {
   const [searchParams] = useSearchParams();
   const searchKey = `${slug ?? ""}-${searchParams.toString()}`;
 
-  return <RoomDetailsContent key={searchKey} />;
+  return (
+    <>
+      <PageHero
+        title={slug?.replaceAll("-", " ") ?? "Room Details"}
+        paths={[
+          { label: "Home", href: "/rooms" },
+          { label: "All rooms", href: "/rooms" },
+          { label: slug?.replaceAll("-", " ") ?? "Room Details" },
+        ]}
+        backgroundImage={RoomsDetailsImg}
+      />
+      <RoomDetailsContent key={searchKey} />;
+    </>
+  );
 }
