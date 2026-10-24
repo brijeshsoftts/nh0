@@ -1,7 +1,8 @@
-import { Bell, ChevronRight } from "lucide-react";
+import { ChevronRight } from "lucide-react";
 import { useMemo } from "react";
 import { Link, Navigate, Outlet, useLocation } from "react-router-dom";
 
+import { NotificationsPopover } from "@/features/notifications/components/NotificationsPopover";
 import { useAuth } from "@/hooks/useAuth";
 
 import { DropdownProfile } from "../common/DropdownProfile";
@@ -63,18 +64,7 @@ export function DashboardLayout() {
           </div>
 
           <div className="flex items-center gap-3 sm:gap-4">
-            <Link
-              to="/dashboard/notifications"
-              className="relative inline-flex size-9 items-center justify-center rounded-full border border-border bg-card text-muted-foreground transition-colors hover:border-border/80 hover:text-foreground"
-              title="3 unread notifications"
-              aria-label="Notifications, 3 unread"
-            >
-              <Bell className="size-4" />
-              <span
-                aria-hidden="true"
-                className="absolute top-1 right-1 size-2 rounded-full bg-primary"
-              />
-            </Link>
+            <NotificationsPopover />
             <DropdownProfile />
           </div>
         </header>

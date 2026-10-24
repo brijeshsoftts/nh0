@@ -171,7 +171,7 @@ model User {
   reportedIssues         Issue[]                     @relation("IssueReportedBy")
   assignedIssues         Issue[]                     @relation("IssueAssignedTo")
   reviews                Review[]
-  notifications          Notification[]
+  notificationReads      NotificationRead[]
   passwordResetTokens    PasswordResetToken[]
   refreshTokens          RefreshToken[]
   auditLogs              AuditLog[]
@@ -304,7 +304,7 @@ model Booking {
 
   customer      User           @relation("BookingCustomer", fields: [customerId], references: [id])
   creator       User           @relation("BookingCreatedBy", fields: [createdBy], references: [id])
-  bookingRoom  BookingRoom?
+  bookingRoom   BookingRoom?
   bookingGuests BookingGuest[]
 
   invoice Invoice?
@@ -313,12 +313,12 @@ model Booking {
 
 model BookingRoom {
   id             String  @id @default(cuid())
-  bookingId      String        @unique
+  bookingId      String  @unique
   roomTypeId     String
   assignedRoomId String?
   pricePerNight  Int
 
-  booking  Booking   @relation(fields: [bookingId], references: [id])
+  booking      Booking  @relation(fields: [bookingId], references: [id])
   roomType     RoomType @relation(fields: [roomTypeId], references: [id])
   assignedRoom Room?    @relation(fields: [assignedRoomId], references: [id])
 }
@@ -463,7 +463,21 @@ model Notification {
   createdAt     DateTime         @default(now()) @db.Timestamp
   readAt        DateTime?
 
+  reads NotificationRead[]
+}
+
+model NotificationRead {
+  id             String    @id @default(cuid())
+  notificationId String
+  userId         String
+  isRead         Boolean   @default(false)
+  readAt         DateTime?
+
+  notification Notification @relation(fields: [notificationId], references: [id], onDelete: Cascade)
+
   user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([notificationId, userId])
 }
 
 model Image {

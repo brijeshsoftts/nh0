@@ -478,7 +478,7 @@ export class StaffService {
                 reportedIssues: true,
                 assignedIssues: true,
                 reviews: true,
-                notifications: true,
+                notificationReads: true,
                 auditLogs: true,
               },
             },
