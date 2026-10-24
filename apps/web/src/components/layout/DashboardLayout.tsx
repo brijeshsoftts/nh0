@@ -1,4 +1,4 @@
-import { ChevronRight } from "lucide-react";
+import { ChevronRight, Moon, Sun } from "lucide-react";
 import { useMemo } from "react";
 import { Link, Navigate, Outlet, useLocation } from "react-router-dom";
 
@@ -8,11 +8,14 @@ import { useAuth } from "@/hooks/useAuth";
 import { DropdownProfile } from "../common/DropdownProfile";
 import { FullScreenLoader } from "../common/Loader";
 import { AppSidebar } from "../sidebar/AppSidebar";
+import { useTheme } from "../theme-provider";
+import { Button } from "../ui/button";
 import { SidebarProvider, SidebarTrigger } from "../ui/sidebar";
 
 export function DashboardLayout() {
   const { isLoading, isAuthenticated } = useAuth();
   const location = useLocation();
+  const { setTheme, theme } = useTheme();
 
   const activeTab = useMemo(() => {
     const pathname = location.pathname;
@@ -64,6 +67,20 @@ export function DashboardLayout() {
           </div>
 
           <div className="flex items-center gap-3 sm:gap-4">
+            <Button
+              type="button"
+              variant="ghost"
+              size="lg"
+              className="relative hidden h-10 w-10 shrink-0 rounded-full sm:block"
+              onClick={() => setTheme(theme === "dark" ? "light" : "dark")}
+            >
+              {theme === "dark" ? (
+                <Sun className="size-5" />
+              ) : (
+                <Moon className="size-5" />
+              )}
+              <span className="sr-only">Toggle theme</span>
+            </Button>
             <NotificationsPopover />
             <DropdownProfile />
           </div>
