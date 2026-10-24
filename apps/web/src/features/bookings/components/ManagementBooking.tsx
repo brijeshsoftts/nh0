@@ -6,8 +6,8 @@ import {
   Plus,
   Users,
 } from "lucide-react";
-import { useState } from "react";
-import { Link } from "react-router-dom";
+import { useEffect, useState } from "react";
+import { Link, useSearchParams } from "react-router-dom";
 
 import { type ColumnDef, DataTable } from "@/components/common/DataTable";
 import { BookingBadge, InvoiceBadge } from "@/components/common/EnumBadges";
@@ -59,14 +59,16 @@ function formatCurrency(amount: number) {
 
 export function ManagementBooking() {
   const [search, setSearch] = useState("");
-  const [status, setStatus] = useState<BookingStatus | undefined>();
+  const [searchParams, setSearchParams] = useSearchParams();
+  const status = searchParams.get("status") as BookingStatus | null;
   const [page, setPage] = useState(1);
+  useEffect(() => setPage(1), [status]);
   const debouncedSearch = useDebounce(search, 400);
   const { items, pagination, isLoading, isError, refetch } = useBookings({
     page,
     limit: 10,
     search: debouncedSearch.trim() || undefined,
-    status,
+    status: status ?? undefined,
   });
 
   const columns: ColumnDef<BookingListItem>[] = [
@@ -216,7 +218,10 @@ export function ManagementBooking() {
           },
         ]}
         onFilterChange={(_key, value) => {
-          setStatus(value ? (value as BookingStatus) : undefined);
+          const next = new URLSearchParams(searchParams);
+          if (value) next.set("status", value);
+          else next.delete("status");
+          setSearchParams(next);
           setPage(1);
         }}
         isLoading={isLoading}

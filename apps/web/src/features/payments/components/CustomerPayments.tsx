@@ -7,11 +7,7 @@ import {
   PaymentStatusBadge,
 } from "@/components/common/EnumBadges";
 import { IconBtn } from "@/components/common/IconBtn";
-import {
-  StatCard,
-  StatCardError,
-  StatCardLoading,
-} from "@/components/common/StatCard";
+import { StatGrid } from "@/components/common/Stat";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -21,27 +17,13 @@ import {
 import { useListParams } from "@/hooks/useListParams";
 import { formatPrice } from "@/lib/format";
 
-import { usePayments, usePaymentsStats } from "../payments.crud";
+import { usePayments } from "../payments.crud";
+import { usePaymentsStats } from "../hooks/usePaymentsStats";
 import type { CustomerPayment } from "../payments.types";
 
 function Stats() {
-  const { data, isLoading, isError, refetch } = usePaymentsStats();
-
-  if (isLoading) {
-    return <StatCardLoading />;
-  }
-
-  if (isError || !data) {
-    return <StatCardError refetch={refetch} />;
-  }
-
-  return (
-    <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-4">
-      {data?.map((kpi) => (
-        <StatCard key={kpi.id} {...kpi} />
-      ))}
-    </div>
-  );
+  const { data, isLoading, isError } = usePaymentsStats();
+  return <StatGrid stats={data} isLoading={isLoading} isError={isError} />;
 }
 
 function PaymentsTable() {
@@ -106,8 +88,8 @@ function PaymentsTable() {
 
   const { searchInput, setSearch, setPage, params } = useListParams();
   const { items, pagination, isLoading, isError, refetch } = usePayments({
+    ...params,
     search: searchInput,
-    page: params.page || 1,
     limit: 10,
   });
 

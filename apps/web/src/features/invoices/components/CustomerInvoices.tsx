@@ -4,11 +4,7 @@ import { CreditCard, Download, EllipsisVertical, Eye } from "lucide-react";
 import { type ColumnDef, DataTable } from "@/components/common/DataTable";
 import { InvoiceBadge } from "@/components/common/EnumBadges";
 import { IconBtn } from "@/components/common/IconBtn";
-import {
-  StatCard,
-  StatCardError,
-  StatCardLoading,
-} from "@/components/common/StatCard";
+import { StatGrid } from "@/components/common/Stat";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -18,27 +14,13 @@ import {
 import { useListParams } from "@/hooks/useListParams";
 import { formatPrice } from "@/lib/format";
 
-import { useInvoices, useInvoicesStats } from "../invoices.crud";
+import { useInvoices } from "../invoices.crud";
+import { useInvoicesStats } from "../hooks/useInvoicesStats";
 import type { CustomerInvoice } from "../invoices.types";
 
 function Stats() {
-  const { data, isLoading, isError, refetch } = useInvoicesStats();
-
-  if (isLoading) {
-    return <StatCardLoading />;
-  }
-
-  if (isError || !data) {
-    return <StatCardError refetch={refetch} />;
-  }
-
-  return (
-    <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-4">
-      {data?.map((kpi) => (
-        <StatCard key={kpi.id} {...kpi} />
-      ))}
-    </div>
-  );
+  const { data, isLoading, isError } = useInvoicesStats();
+  return <StatGrid stats={data} isLoading={isLoading} isError={isError} />;
 }
 
 function InvoicesTable() {
@@ -118,8 +100,8 @@ function InvoicesTable() {
 
   const { searchInput, setSearch, setPage, params } = useListParams();
   const { items, pagination, isLoading, isError, refetch } = useInvoices({
+    ...params,
     search: searchInput,
-    page: params.page || 1,
     limit: 10,
   });
 

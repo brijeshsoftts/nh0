@@ -6,4 +6,4 @@ export const dashboardCrud = createCrud()({
   label: "Dashboard",
 });
 
-export const { useStats: useDashbaordStats } = dashboardCrud;
+export { useDashbaordStats as useDashboardStats } from "./hooks/useDashbaordStats";

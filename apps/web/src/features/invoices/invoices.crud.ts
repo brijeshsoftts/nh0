@@ -10,5 +10,4 @@ export const invoicesCrud = createCrud<Payment, undefined>()({
   label: "Invoice",
 });
 
-export const { useList: useInvoices, useStats: useInvoicesStats } =
-  invoicesCrud;
+export const { useList: useInvoices } = invoicesCrud;

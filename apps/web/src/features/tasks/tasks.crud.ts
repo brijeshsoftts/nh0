@@ -27,7 +27,6 @@ export const tasksService = tasksCrud.service;
 export const {
   useList: useTasks,
   useDetail: useTask,
-  useStats: useTasksStats,
   useDelete: useDeleteTask,
   useCreate: useCreateTask,
   useUpdate: useUpdateTask,

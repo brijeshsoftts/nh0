@@ -10,8 +10,5 @@ export const bookingsCrud = createCrud<Booking, undefined>()({
   label: "Booking",
 });
 
-export const {
-  useList: useBookings,
-  useStats: useBookingsStats,
-  useDetail: useBookingDetails,
-} = bookingsCrud;
+export const { useList: useBookings, useDetail: useBookingDetails } =
+  bookingsCrud;

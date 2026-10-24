@@ -1,6 +1,6 @@
-import type { StatCard } from "@/components/common/StatCard";
+import { toDashboardStats } from "../shared/stat-response";
 
-export const issuesStats: StatCard[] = [
+export const issuesStats = toDashboardStats([
   {
     id: "todays-arrivals",
     title: "Today's Arrivals",
@@ -37,4 +37,4 @@ export const issuesStats: StatCard[] = [
     link: "/bookings?status=pending",
     tone: "violet",
   },
-];
+]);

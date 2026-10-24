@@ -59,8 +59,8 @@ function IssuesTable() {
 
   const { searchInput, setSearch, setPage, params } = useListParams();
   const { items, pagination, isLoading, isError, refetch } = useIssues({
+    ...params,
     search: searchInput,
-    page: params.page || 1,
     limit: 10,
   });
 

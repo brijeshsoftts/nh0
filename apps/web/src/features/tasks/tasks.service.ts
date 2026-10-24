@@ -1,10 +1,12 @@
-import type { StatCard } from "@/components/common/StatCard";
+import type { DashboardStat } from "@/components/common/Stat";
 import { apiClient } from "@/lib/apiClient";
 import type {
   ApiListResponse,
   ApiMessageResponse,
   ListParams,
 } from "@/types/api.types";
+
+import { toDashboardStats } from "../shared/stat-response";
 
 import type { CreateTask } from "./schemas/createTask.schema";
 import type { UpdateTask } from "./schemas/updateTask.schema";
@@ -19,6 +21,8 @@ export const tasksService = {
     apiClient.patch(`/tasks/${id}`, data).then((r) => r.data),
   delete: (id: string): Promise<ApiMessageResponse> =>
     apiClient.delete(`/tasks/${id}`).then((r) => r.data),
-  getStats: (): Promise<StatCard[]> =>
-    apiClient.get("/tasks/stats").then((r) => r.data?.data),
+  getStats: (): Promise<DashboardStat[]> =>
+    apiClient
+      .get("/tasks/stats")
+      .then((r) => toDashboardStats(r.data?.data, "tasks")),
 };

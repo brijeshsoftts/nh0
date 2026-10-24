@@ -16,7 +16,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { useDebounce } from "@/hooks/useDebounce";
+import { useListParams } from "@/hooks/useListParams";
 
 import { AmenityGrid } from "../amenities/components/AmenityGrid";
 import { NewAmenityModal } from "../amenities/components/NewAmenityModal";
@@ -139,10 +139,8 @@ function RoomTable() {
     },
   ];
 
-  const [search, setSearch] = useState<string | undefined>();
-  const [page, setPage] = useState<number>(1);
-  const query = useDebounce(search, 400);
-  const { items, pagination } = useRooms({ search: query, page });
+  const { setSearch, setPage, params } = useListParams();
+  const { items, pagination } = useRooms(params);
 
   return (
     <>

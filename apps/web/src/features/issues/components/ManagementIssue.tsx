@@ -1,5 +1,5 @@
 import { formatDate } from "date-fns";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useSearchParams } from "react-router-dom";
 
 import { type ColumnDef, DataTable } from "@/components/common/DataTable";
@@ -7,41 +7,26 @@ import {
   IssuePriorityBadge,
   IssueStatusBadge,
 } from "@/components/common/EnumBadges";
-import {
-  StatCard,
-  StatCardError,
-  StatCardLoading,
-} from "@/components/common/StatCard";
-import { useDashbaordStats } from "@/features/dashboard/hooks/useDashbaordStats";
+import { StatGrid } from "@/components/common/Stat";
+import { useDashboardStats } from "@/features/dashboard/dashboard.crud";
 import { useDebounce } from "@/hooks/useDebounce";
 
 import { useIssues } from "../hooks/useIssues";
 import type { IssueItem } from "../issues.types";
 
 function IssueStats() {
-  const { data: stats, isLoading, isError, refetch } = useDashbaordStats();
-
-  if (isLoading) {
-    return <StatCardLoading />;
-  }
-
-  if (isError) {
-    return <StatCardError refetch={refetch} />;
-  }
-
-  return (
-    <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-4">
-      {stats?.map((s) => (
-        <StatCard key={s.id} {...s} />
-      ))}
-    </div>
-  );
+  const { data: stats, isLoading, isError } = useDashboardStats();
+  return <StatGrid stats={stats} isLoading={isLoading} isError={isError} />;
 }
 
 function IssueTable() {
   const [searchParams, setSearchParams] = useSearchParams();
   const [search, setSearch] = useState(searchParams.get("search") ?? "");
   const [page, setPage] = useState(Number(searchParams.get("page") ?? 1));
+  const statusFilter = searchParams.get("status");
+  const priorityFilter = searchParams.get("priority");
+  const categoryFilter = searchParams.get("category");
+  useEffect(() => setPage(1), [statusFilter, priorityFilter, categoryFilter]);
 
   const query = useDebounce(search, 400);
 
@@ -49,6 +34,9 @@ function IssueTable() {
     search: query,
     page,
     limit: 10,
+    status: statusFilter ?? undefined,
+    priority: priorityFilter ?? undefined,
+    category: categoryFilter ?? undefined,
   });
 
   function updateParams(updates: Record<string, string | undefined>) {

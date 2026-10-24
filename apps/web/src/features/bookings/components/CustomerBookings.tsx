@@ -96,11 +96,7 @@ export const columns: ColumnDef<CustomerBooking>[] = [
 function BookingsTable() {
   const { searchInput, setSearch, setPage, params } = useListParams();
   const { items, pagination, isLoading, isError, refetch } =
-    useBookings<CustomerBooking>({
-      search: searchInput,
-      page: params.page || 1,
-      limit: 10,
-    });
+    useBookings<CustomerBooking>({ ...params, search: searchInput, limit: 10 });
 
   return (
     <DataTable

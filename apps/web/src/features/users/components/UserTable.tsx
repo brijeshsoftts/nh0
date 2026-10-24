@@ -10,7 +10,7 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { useDebounce } from "@/hooks/useDebounce";
+import { useListParams } from "@/hooks/useListParams";
 
 import { useDeleteUser } from "../hooks/useDeleteUser";
 import { useUpdateUserStatus } from "../hooks/useUpdateUser";
@@ -21,15 +21,8 @@ import { UpdateUserDialog } from "./UpdateUserDialog";
 import { ViewUserDetails } from "./ViewUserDetails";
 
 export function UserTable() {
-  const [search, setSearch] = useState("");
-  const [page, setPage] = useState(1);
-
-  const debouncedSearch = useDebounce(search, 400);
-  const { items, pagination, isLoading, isError, refetch } = useUsers({
-    search: debouncedSearch || undefined,
-    page,
-    limit: 10,
-  });
+  const { setSearch, setPage, params } = useListParams();
+  const { items, pagination, isLoading, isError, refetch } = useUsers(params);
 
   const columns: ColumnDef<User>[] = [
     {
@@ -97,7 +90,6 @@ export function UserTable() {
         searchPlaceholder="Search users..."
         onSearchChange={(value) => {
           setSearch(value);
-          setPage(1);
         }}
         onPageChange={setPage}
         isLoading={isLoading}

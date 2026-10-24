@@ -5,7 +5,7 @@ import { tasksService } from "../tasks.service";
 
 export function useTasksStats() {
   return useQuery({
-    queryKey: tasksKeys.all,
+    queryKey: tasksKeys.stats(),
     queryFn: tasksService.getStats,
   });
 }

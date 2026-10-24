@@ -60,11 +60,7 @@ const columns: ColumnDef<HousekeeperRoom>[] = [
 function HouseKeeperRoomsTable() {
   const { searchInput, setSearch, setPage, params } = useListParams();
   const { items, pagination, isLoading, isError, refetch } =
-    useRooms<HousekeeperRoom>({
-      search: searchInput,
-      page: params.page,
-      limit: 10,
-    });
+    useRooms<HousekeeperRoom>({ ...params, search: searchInput, limit: 10 });
 
   return (
     <DataTable

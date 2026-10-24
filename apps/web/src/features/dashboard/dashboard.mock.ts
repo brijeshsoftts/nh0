@@ -1,11 +1,11 @@
-import type { StatCard } from "@/components/common/StatCard";
+import { toDashboardStats } from "../shared/stat-response";
 
 import type { DonutChartData } from "./components/DonutChart";
 import type { StatusBarChart } from "./components/StatusBarChart";
 import type { TrendChart } from "./components/TrendChart";
 
 // MANAGEMENT MOCK DATA
-export const MANAGEMENT_STAT: StatCard[] = [
+export const MANAGEMENT_STAT = toDashboardStats([
   {
     id: "occupancy",
     title: "Occupancy",
@@ -42,7 +42,7 @@ export const MANAGEMENT_STAT: StatCard[] = [
     link: "/bookings?status=pending",
     tone: "sky",
   },
-];
+]);
 
 export const TODAYS_ARRIVALS = [
   {
@@ -237,7 +237,7 @@ export const ROOM_STATUS = [
 ];
 
 // STAFF MOCK DATA
-export const STAFF_STAT: StatCard[] = [
+export const STAFF_STAT = toDashboardStats([
   {
     id: "todays-arrivals",
     title: "Today's Arrivals",
@@ -274,10 +274,10 @@ export const STAFF_STAT: StatCard[] = [
     link: "/bookings?status=pending",
     tone: "violet",
   },
-];
+]);
 
 // HOUSEKEEPER MOCK DATA
-export const HOUSEKEEPER_STAT: StatCard[] = [
+export const HOUSEKEEPER_STAT = toDashboardStats([
   {
     id: "pending-tasks",
     title: "My Pending Tasks",
@@ -314,7 +314,7 @@ export const HOUSEKEEPER_STAT: StatCard[] = [
     link: "/rooms?status=dirty",
     tone: "sky",
   },
-];
+]);
 
 export const TASKS_STATUS: DonutChartData[] = [
   {

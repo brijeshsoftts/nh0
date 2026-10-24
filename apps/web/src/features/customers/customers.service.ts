@@ -1,10 +1,12 @@
-import type { StatCard } from "@/components/common/StatCard";
+import type { DashboardStat } from "@/components/common/Stat";
 import { apiClient } from "@/lib/apiClient";
 import type {
   ApiListResponse,
   ApiMessageResponse,
   ListParams,
 } from "@/types/api.types";
+
+import { toDashboardStats } from "../shared/stat-response";
 
 import type { CreateCustomer } from "./schema/createCustomer.schema";
 import type { UpdateCustomer } from "./schema/updateCustomer.schema";
@@ -47,8 +49,10 @@ export const customersService = {
     apiClient.delete(`/customers/${id}`).then((r) => r.data),
   findOne: (id: string): Promise<CustomerDetails> =>
     apiClient.get(`/customers/${id}`).then((r) => r.data?.data),
-  getStats: (): Promise<StatCard[]> =>
-    apiClient.get("/customers/stats").then((r) => r.data.data),
+  getStats: (): Promise<DashboardStat[]> =>
+    apiClient
+      .get("/customers/stats")
+      .then((r) => toDashboardStats(r.data?.data, "customers")),
   search: (q?: string): Promise<SearchCustomer[]> =>
     apiClient
       .get("/customers/search", { params: { q } })

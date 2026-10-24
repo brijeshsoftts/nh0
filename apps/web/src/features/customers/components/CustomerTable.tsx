@@ -11,7 +11,7 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { useDebounce } from "@/hooks/useDebounce";
+import { useListParams } from "@/hooks/useListParams";
 import { formatPrice } from "@/lib/format";
 
 import type { Customer } from "../customers.types";
@@ -99,14 +99,8 @@ const columns: ColumnDef<Customer>[] = [
 ];
 
 export function CustomerTable() {
-  const [search, setSearch] = useState("");
-  const [page, setPage] = useState(1);
-  const query = useDebounce(search, 400);
-  const { items, pagination, isLoading, isError, refetch } = useCustomers({
-    search: query || undefined,
-    page,
-    limit: 10,
-  });
+  const { searchInput, setSearch, setPage, params } = useListParams();
+  const { items, pagination, isLoading, isError, refetch } = useCustomers(params);
 
   return (
     <div className="space-y-4">
@@ -118,7 +112,6 @@ export function CustomerTable() {
         searchPlaceholder="Search customers..."
         onSearchChange={(value) => {
           setSearch(value);
-          setPage(1);
         }}
         isLoading={isLoading}
         isError={isError}

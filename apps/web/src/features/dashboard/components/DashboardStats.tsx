@@ -1,27 +1,9 @@
-import {
-  StatCard,
-  StatCardError,
-  StatCardLoading,
-} from "@/components/common/StatCard";
+import { StatGrid } from "@/components/common/Stat";
 
-import { useDashbaordStats } from "../hooks/useDashbaordStats";
+import { useDashboardStats } from "../dashboard.crud";
 
 export function DashboardStats() {
-  const { data: stats, isLoading, isError, refetch } = useDashbaordStats();
+  const { data: stats, isLoading, isError } = useDashboardStats();
 
-  if (isLoading) {
-    return <StatCardLoading />;
-  }
-
-  if (isError) {
-    return <StatCardError refetch={refetch} />;
-  }
-
-  return (
-    <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-4">
-      {stats?.map((s) => (
-        <StatCard key={s.id} {...s} />
-      ))}
-    </div>
-  );
+  return <StatGrid stats={stats} isLoading={isLoading} isError={isError} />;
 }

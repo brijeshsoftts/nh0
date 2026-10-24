@@ -1,6 +1,5 @@
 import { EllipsisVertical, Eye, Pencil, Power, Trash2 } from "lucide-react";
 import { useState } from "react";
-import { useSearchParams } from "react-router-dom";
 
 import { type ColumnDef, DataTable } from "@/components/common/DataTable";
 import { StatusBadge } from "@/components/common/EnumBadges";
@@ -12,7 +11,7 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { useDebounce } from "@/hooks/useDebounce";
+import { useListParams } from "@/hooks/useListParams";
 import { getInitials } from "@/lib/format";
 
 import { useDeleteStaff } from "../hooks/useDeleteStaff";
@@ -71,31 +70,8 @@ const columns: ColumnDef<StaffItem>[] = [
 ];
 
 export function StaffTable() {
-  const [searchParams, setSearchParams] = useSearchParams();
-  const [search, setSearch] = useState(searchParams.get("search") ?? "");
-  const [page, setPage] = useState(Number(searchParams.get("page") ?? 1));
-
-  const query = useDebounce(search, 400);
-
-  const { data, isLoading, isError, refetch } = useStaffs({
-    search: query,
-    page,
-    limit: 10,
-  });
-
-  function updateParams(updates: Record<string, string | undefined>) {
-    const next = new URLSearchParams(searchParams);
-
-    for (const [key, value] of Object.entries(updates)) {
-      if (value) {
-        next.set(key, value);
-      } else {
-        next.delete(key);
-      }
-    }
-
-    setSearchParams(next);
-  }
+  const { setSearch, setPage, params } = useListParams();
+  const { data, isLoading, isError, refetch } = useStaffs(params);
 
   return (
     <DataTable
@@ -107,12 +83,7 @@ export function StaffTable() {
       searchableKeys={["fullName", "staffId", "email"]}
       onSearchChange={(value) => {
         setSearch(value);
-        updateParams({
-          search: value || undefined,
-          page: undefined,
-        });
       }}
-
       onPageChange={setPage}
       pagination={data?.meta}
       isLoading={isLoading}

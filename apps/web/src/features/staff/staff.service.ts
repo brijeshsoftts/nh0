@@ -1,10 +1,12 @@
-import type { StatCard } from "@/components/common/StatCard";
+import type { DashboardStat } from "@/components/common/Stat";
 import { apiClient } from "@/lib/apiClient";
 import type {
   ApiListResponse,
   ApiMessageResponse,
   ListParams,
 } from "@/types/api.types";
+
+import { toDashboardStats } from "../shared/stat-response";
 
 import type { CreateStaff } from "./schemas/createStaff.schema";
 import type { UpdateStaff } from "./schemas/updateStaff.schema";
@@ -49,8 +51,10 @@ export const staffService = {
     apiClient.patch(`/staff/${id}/status`, { isActive }).then((r) => r.data),
   delete: (id: string): Promise<ApiMessageResponse> =>
     apiClient.delete(`/staff/${id}`).then((r) => r.data),
-  getStats: (): Promise<StatCard[]> =>
-    apiClient.get("/staff/stats").then((r) => r.data.data),
+  getStats: (): Promise<DashboardStat[]> =>
+    apiClient
+      .get("/staff/stats")
+      .then((r) => toDashboardStats(r.data?.data, "staff")),
   findOne: (id: string): Promise<StaffDetails> =>
     apiClient.get(`/staff/${id}`).then((r) => r.data.data),
 };

@@ -1,4 +1,4 @@
-import type { StatCard } from "@/components/common/StatCard";
+import type { DashboardStat } from "@/components/common/Stat";
 import { apiClient } from "@/lib/apiClient";
 import type {
   ApiListResponse,
@@ -6,9 +6,12 @@ import type {
   ListParams,
 } from "@/types/api.types";
 
+import { toDashboardStats } from "../shared/stat-response";
+
 import type { CreateUser } from "./schema/createUser.schema";
 import type { UpdateUser } from "./schema/updateUser.schema";
 import type { User, UserDetails, UserProfile } from "./users.types";
+
 
 export const usersService = {
   create: (data: CreateUser): Promise<ApiMessageResponse> =>
@@ -25,8 +28,10 @@ export const usersService = {
     apiClient.patch(`/users/${id}/status`, { isActive }).then((r) => r.data),
   delete: (id: string): Promise<ApiMessageResponse> =>
     apiClient.delete(`/users/${id}`).then((r) => r.data),
-  getStats: (): Promise<StatCard[]> =>
-    apiClient.get("/users/stats").then((r) => r.data.data),
+  getStats: (): Promise<DashboardStat[]> =>
+    apiClient
+      .get("/users/stats")
+      .then((r) => toDashboardStats(r.data?.data, "users")),
   fineOne: (id: string): Promise<UserDetails> =>
     apiClient.get(`/users/${id}`).then((r) => r.data.data),
 };

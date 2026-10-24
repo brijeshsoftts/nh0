@@ -1,27 +1,8 @@
-import {
-  StatCard,
-  StatCardError,
-  StatCardLoading,
-} from "@/components/common/StatCard";
+import { StatGrid } from "@/components/common/Stat";
 
 import { useTasksStats } from "../hooks/useTasksStats";
 
 export function TasksStats() {
-  const { data, isLoading, isError, refetch } = useTasksStats();
-
-  if (isLoading) {
-    return <StatCardLoading />;
-  }
-
-  if (isError) {
-    return <StatCardError refetch={refetch} />;
-  }
-
-  return (
-    <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-4">
-      {data?.map((kpi) => (
-        <StatCard key={kpi.id} {...kpi} />
-      ))}
-    </div>
-  );
+  const { data, isLoading, isError } = useTasksStats();
+  return <StatGrid stats={data} isLoading={isLoading} isError={isError} />;
 }

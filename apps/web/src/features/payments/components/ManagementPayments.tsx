@@ -1,6 +1,6 @@
 import { formatDate } from "date-fns";
 import { EllipsisVertical } from "lucide-react";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useSearchParams } from "react-router-dom";
 
 import { type ColumnDef, DataTable } from "@/components/common/DataTable";
@@ -9,11 +9,7 @@ import {
   PaymentStatusBadge,
 } from "@/components/common/EnumBadges";
 import { IconBtn } from "@/components/common/IconBtn";
-import {
-  StatCard,
-  StatCardError,
-  StatCardLoading,
-} from "@/components/common/StatCard";
+import { StatGrid } from "@/components/common/Stat";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -32,29 +28,16 @@ import { PaymentDownload } from "./PaymentDownload";
 import { ViewPaymentDetails } from "./ViewPaymentDetails";
 
 function PaymentsKpi() {
-  const { data, isLoading, isError, refetch } = usePaymentsStats();
-
-  if (isLoading) {
-    return <StatCardLoading />;
-  }
-
-  if (isError) {
-    return <StatCardError refetch={refetch} />;
-  }
-
-  return (
-    <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-4">
-      {data?.map((kpi) => (
-        <StatCard key={kpi.id} {...kpi} />
-      ))}
-    </div>
-  );
+  const { data, isLoading, isError } = usePaymentsStats();
+  return <StatGrid stats={data} isLoading={isLoading} isError={isError} />;
 }
 
 function PaymentsTable() {
   const [searchParams, setSearchParams] = useSearchParams();
   const [search, setSearch] = useState(searchParams.get("search") ?? "");
   const [page, setPage] = useState(Number(searchParams.get("page") ?? 1));
+  const statusFilter = searchParams.get("status");
+  useEffect(() => setPage(1), [statusFilter]);
 
   const query = useDebounce(search, 400);
 
@@ -62,6 +45,7 @@ function PaymentsTable() {
     search: query,
     page,
     limit: 10,
+    status: statusFilter ?? undefined,
   });
 
   function updateParams(updates: Record<string, string | undefined>) {

@@ -1,6 +1,8 @@
-import type { StatCard } from "@/components/common/StatCard";
+import type { DashboardStat } from "@/components/common/Stat";
 import { apiClient } from "@/lib/apiClient";
 import type { ApiListResponse } from "@/types/api.types";
+
+import { toDashboardStats } from "../shared/stat-response";
 
 import type {
   AvailableBookingRoom,
@@ -32,6 +34,8 @@ export const bookingsService = {
       .then((response) => response.data?.data),
   create: (data: CreateBookingInput): Promise<CreateBookingResult> =>
     apiClient.post("/bookings", data).then((response) => response.data?.data),
-  getStats: (): Promise<StatCard[]> =>
-    apiClient.get("/bookings/stats").then((response) => response.data?.data),
+  getStats: (): Promise<DashboardStat[]> =>
+    apiClient
+      .get("/bookings/stats")
+      .then((response) => toDashboardStats(response.data?.data, "bookings")),
 };

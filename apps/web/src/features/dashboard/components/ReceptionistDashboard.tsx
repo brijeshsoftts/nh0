@@ -3,7 +3,7 @@ import { useState } from "react";
 
 import { type ColumnDef,DataTable } from "@/components/common/DataTable";
 import { BookingBadge } from "@/components/common/EnumBadges";
-import { StatCard } from "@/components/common/StatCard";
+import { StatGrid } from "@/components/common/Stat";
 import { BookingDetailsSheet } from "@/features/bookings/components/BookingDetailsSheet";
 
 import {
@@ -128,11 +128,7 @@ function TodaysDepartures() {
 export function ReceptionistDashboard() {
   return (
     <>
-      <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-4">
-        {STAFF_STAT.map((kpi) => (
-          <StatCard key={kpi.id} {...kpi} />
-        ))}
-      </div>
+      <StatGrid stats={STAFF_STAT} isLoading={false} isError={false} />
       <div className="grid gap-6 lg:grid-cols-2">
         <DonutChart
           data={ROOM_STATUS}

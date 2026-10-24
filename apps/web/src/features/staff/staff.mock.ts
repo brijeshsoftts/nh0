@@ -1,6 +1,6 @@
-import type { StatCard } from "@/components/common/StatCard";
+import { toDashboardStats } from "../shared/stat-response";
 
-export const MOCK_STAFF_KPIS: StatCard[] = [
+export const MOCK_STAFF_KPIS = toDashboardStats([
   {
     id: "total-staff",
     title: "Total Staff",
@@ -33,4 +33,4 @@ export const MOCK_STAFF_KPIS: StatCard[] = [
     icon: "UserX",
     link: "/dashboard/staff",
   },
-];
+]);

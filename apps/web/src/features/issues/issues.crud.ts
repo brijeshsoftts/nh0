@@ -20,7 +20,6 @@ export const issuesCrud = createCrud<Issues, undefined>()({
 
 export const {
   useList: useIssues,
-  useStats: useIssuesStats,
   useCreate: useCreateIssueCrud,
   useUpdate: useUpdateIssue,
   useDelete: useDeleteIssue,

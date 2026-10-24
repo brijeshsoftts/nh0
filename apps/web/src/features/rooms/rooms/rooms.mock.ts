@@ -1,8 +1,8 @@
-import type { StatCard } from "@/components/common/StatCard";
+import { toDashboardStats } from "../../shared/stat-response";
 
 import type { Room } from "./rooms.types";
 
-export const ROOMS_STAT: StatCard[] = [
+export const ROOMS_STAT = toDashboardStats([
   {
     id: "total-rooms",
     title: "Total Rooms",
@@ -31,7 +31,7 @@ export const ROOMS_STAT: StatCard[] = [
     description: "Unavailable for booking",
     icon: "DoorClosed",
   },
-];
+]);
 
 export const rooms: Room[] = [
   {

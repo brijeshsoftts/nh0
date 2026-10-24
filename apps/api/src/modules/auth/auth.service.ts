@@ -23,8 +23,8 @@ import { EmailsService } from '../emails/emails.service';
 
 import { ForgotPasswordDto } from './dto/forgot-password.dto';
 import { LoginDto } from './dto/login.dto';
-import { ResetPasswordDto } from './dto/reset-password.dto';
 import { RegisterDto } from './dto/register.dto';
+import { ResetPasswordDto } from './dto/reset-password.dto';
 import { AUTH_ERROR_MSG } from './auth.constants';
 import { JwtPayload } from './auth.types';
 

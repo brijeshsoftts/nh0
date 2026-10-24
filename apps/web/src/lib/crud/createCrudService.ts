@@ -1,4 +1,4 @@
-import type { StatCard } from "@/components/common/StatCard";
+import type { DashboardStat } from "@/components/common/Stat";
 import { apiClient } from "@/lib/apiClient";
 import type {
   ApiListResponse,
@@ -25,8 +25,8 @@ export function createCrudService<TItem, TCreate, TUpdate, TLookup>(
     delete: (id: string): Promise<ApiMessageResponse> =>
       apiClient.delete(`${endpoint}/${id}`).then((r) => r.data),
 
-    getStats: (): Promise<StatCard[]> =>
-      apiClient.get(`${endpoint}/stats`).then((r) => r.data?.data),
+    getStats: (): Promise<DashboardStat[]> =>
+      apiClient.get(`${endpoint}/stats`).then((r) => r.data?.data || []),
 
     lookup: (params?: ListParams): Promise<TLookup> =>
       apiClient.get(`${endpoint}/lookup`, { params }).then((r) => r.data),
