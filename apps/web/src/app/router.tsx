@@ -2,6 +2,7 @@ import { createBrowserRouter, Navigate } from "react-router-dom";
 
 import { DashboardLayout } from "@/components/layout/DashboardLayout";
 import { PublicLayout } from "@/components/layout/PublicLayout";
+import ResetPasswordPage from "@/pages/auth/ResetPassword";
 import AuditLogsPage from "@/pages/protect/AuditLogs";
 import BookingsPage from "@/pages/protect/Bookings";
 import CustomersPage from "@/pages/protect/Customers";
@@ -33,13 +34,15 @@ export const router = createBrowserRouter([
       { path: "rooms/:slug", element: <RoomDetails /> },
       { path: "rooms/:slug/book", element: <BookingCheckout /> },
       { path: "checkout", element: <BookingCheckout /> },
-      { path: "reset-passowrd", element: <LandingPage /> },
-      { path: "reset-password", element: <LandingPage /> },
       {
         path: "/login",
         element: <Navigate to="/" replace state={{ openAuth: true }} />,
       },
     ],
+  },
+  {
+    path: "/reset-password",
+    element: <ResetPasswordPage />,
   },
   {
     element: <DashboardLayout />,

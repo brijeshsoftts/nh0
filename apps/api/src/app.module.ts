@@ -7,6 +7,7 @@ import { AuthModule } from './modules/auth/auth.module';
 import { BookingsModule } from './modules/bookings/bookings.module';
 import { CustomersModule } from './modules/customers/customers.module';
 import { DashboardModule } from './modules/dashboard/dashboard.module';
+import { EmailsModule } from './modules/emails/emails.module';
 import { InvoicesModule } from './modules/invoices/invoices.module';
 import { IssuesModule } from './modules/issues/issues.module';
 import { NotificationsModule } from './modules/notifications/notifications.module';
@@ -48,6 +49,7 @@ import { env } from './config';
     TasksModule,
     ProfileModule,
     NotificationsModule,
+    EmailsModule,
   ],
   controllers: [AppController],
   providers: [AppService],

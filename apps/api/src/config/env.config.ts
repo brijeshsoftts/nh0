@@ -14,6 +14,8 @@ const envSchema = z.object({
   APPWRITE_API_KEY: z.string(),
   APPWRITE_BUCKET_ID: z.string(),
   APPWRITE_BUCKET_NAME: z.string(),
+  EMAIL_USER: z.string(),
+  EMAIL_PASS: z.string(),
 });
 
 export type Env = z.infer<typeof envSchema>;

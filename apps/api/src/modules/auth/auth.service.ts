@@ -19,8 +19,11 @@ import {
 import { env } from '../../config';
 import { PrismaService } from '../../prisma/prisma.service';
 import { Category, UserRole } from '../../types/prisma.types';
+import { EmailsService } from '../emails/emails.service';
 
+import { ForgotPasswordDto } from './dto/forgot-password.dto';
 import { LoginDto } from './dto/login.dto';
+import { ResetPasswordDto } from './dto/reset-password.dto';
 import { RegisterDto } from './dto/register.dto';
 import { AUTH_ERROR_MSG } from './auth.constants';
 import { JwtPayload } from './auth.types';
@@ -30,6 +33,7 @@ export class AuthService {
   constructor(
     private readonly prismaService: PrismaService,
     private readonly jwtService: JwtService,
+    private readonly emailsService: EmailsService,
   ) {
     // (async () => {
     //   await this.prismaService.user.create({
@@ -69,6 +73,110 @@ export class AuthService {
       }
       throw error;
     }
+  }
+
+  async forgotPassword(dto: ForgotPasswordDto): Promise<void> {
+    const user = await this.prismaService.user.findFirst({
+      where: {
+        email: dto.email,
+        softDeletedAt: null,
+      },
+      select: {
+        id: true,
+        fullName: true,
+        email: true,
+      },
+    });
+
+    if (!user) {
+      return;
+    }
+
+    const token = generateRandomStr();
+    const tokenHash = hashRandomStr(token);
+    const now = new Date();
+    const expiresAt = new Date(now.getTime() + 30 * 60 * 1000);
+
+    await this.prismaService.$transaction([
+      this.prismaService.passwordResetToken.updateMany({
+        where: {
+          userId: user.id,
+          usedAt: null,
+          expiresAt: { gt: now },
+        },
+        data: { usedAt: now },
+      }),
+      this.prismaService.passwordResetToken.create({
+        data: {
+          userId: user.id,
+          tokenHash,
+          expiresAt,
+        },
+        select: { id: true },
+      }),
+    ]);
+
+    await this.emailsService.resetPassword(user.fullName, token, '30 minutes');
+  }
+
+  async resetPassword(token: string, dto: ResetPasswordDto): Promise<void> {
+    const now = new Date();
+    const resetToken = await this.prismaService.passwordResetToken.findFirst({
+      where: {
+        tokenHash: hashRandomStr(token),
+        usedAt: null,
+        expiresAt: { gt: now },
+        user: { is: { softDeletedAt: null } },
+      },
+      select: {
+        id: true,
+        userId: true,
+      },
+    });
+
+    if (!resetToken) {
+      throw new UnauthorizedException(
+        AUTH_ERROR_MSG.INVALID_PASSWORD_RESET_TOKEN,
+      );
+    }
+
+    const passwordHash = await hashPassword(dto.password);
+
+    await this.prismaService.$transaction(async (transaction) => {
+      const consumedToken = await transaction.passwordResetToken.updateMany({
+        where: {
+          id: resetToken.id,
+          usedAt: null,
+          expiresAt: { gt: now },
+        },
+        data: { usedAt: now },
+      });
+
+      if (consumedToken.count !== 1) {
+        throw new UnauthorizedException(
+          AUTH_ERROR_MSG.INVALID_PASSWORD_RESET_TOKEN,
+        );
+      }
+
+      await transaction.passwordResetToken.updateMany({
+        where: {
+          userId: resetToken.userId,
+          usedAt: null,
+        },
+        data: { usedAt: now },
+      });
+      await transaction.user.update({
+        where: { id: resetToken.userId },
+        data: { passwordHash },
+      });
+      await transaction.refreshToken.updateMany({
+        where: {
+          userId: resetToken.userId,
+          revokedAt: null,
+        },
+        data: { revokedAt: now },
+      });
+    });
   }
 
   async login(dto: LoginDto, res: Response): Promise<void> {

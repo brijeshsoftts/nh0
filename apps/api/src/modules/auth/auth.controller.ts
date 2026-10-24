@@ -4,6 +4,7 @@ import {
   HttpCode,
   HttpStatus,
   Post,
+  Query,
   Req,
   Res,
   UseGuards,
@@ -15,7 +16,17 @@ import { AuthGuard } from '../../common/guards';
 import { apiMessageResponse } from '../../common/helpers';
 import { ValidationPipe } from '../../common/pipes';
 
+import {
+  ForgotPasswordDto,
+  ForgotPasswordSchema,
+} from './dto/forgot-password.dto';
 import { LoginDto, LoginSchema } from './dto/login.dto';
+import {
+  ResetPasswordDto,
+  ResetPasswordQueryDto,
+  ResetPasswordQuerySchema,
+  ResetPasswordSchema,
+} from './dto/reset-password.dto';
 import { RegisterDto, RegisterSchema } from './dto/register.dto';
 import { AUTH_SUCCESS_MSG } from './auth.constants';
 import { AuthService } from './auth.service';
@@ -29,6 +40,26 @@ export class AuthController {
   async register(@Body(new ValidationPipe(RegisterSchema)) body: RegisterDto) {
     await this.authService.register(body);
     return apiMessageResponse(AUTH_SUCCESS_MSG.REGISTER);
+  }
+
+  @Post('forgot-password')
+  @HttpCode(HttpStatus.OK)
+  async forgotPassword(
+    @Body(new ValidationPipe(ForgotPasswordSchema)) body: ForgotPasswordDto,
+  ) {
+    await this.authService.forgotPassword(body);
+    return apiMessageResponse(AUTH_SUCCESS_MSG.PASSWORD_RESET_EMAIL_SENT);
+  }
+
+  @Post('reset-password')
+  @HttpCode(HttpStatus.OK)
+  async resetPassword(
+    @Query(new ValidationPipe(ResetPasswordQuerySchema))
+    query: ResetPasswordQueryDto,
+    @Body(new ValidationPipe(ResetPasswordSchema)) body: ResetPasswordDto,
+  ) {
+    await this.authService.resetPassword(query.token, body);
+    return apiMessageResponse(AUTH_SUCCESS_MSG.PASSWORD_RESET);
   }
 
   @Post('login')
