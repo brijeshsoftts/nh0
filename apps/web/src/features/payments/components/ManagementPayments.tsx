@@ -20,6 +20,7 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import { useAuth } from "@/hooks/useAuth";
 import { useDebounce } from "@/hooks/useDebounce";
 import { formatPrice } from "@/lib/format";
 
@@ -27,6 +28,7 @@ import { usePayments } from "../hooks/usePayments";
 import { usePaymentsStats } from "../hooks/usePaymentsStats";
 import type { PaymentItem } from "../payments.types";
 
+import { PaymentDownload } from "./PaymentDownload";
 import { ViewPaymentDetails } from "./ViewPaymentDetails";
 
 function PaymentsKpi() {
@@ -179,6 +181,11 @@ function PaymentsTable() {
 
 function ActionDropdownMenu({ payment }: { payment: PaymentItem }) {
   const [isViewModal, setIsViewModal] = useState(false);
+  const { user } = useAuth();
+  const isActiveDownload =
+    user?.role === "ADMIN" ||
+    user?.role === "MANAGER" ||
+    (user?.role === "STAFF" && user?.category !== "RECEPTIONIST");
 
   return (
     <>
@@ -201,6 +208,12 @@ function ActionDropdownMenu({ payment }: { payment: PaymentItem }) {
           <DropdownMenuItem onClick={() => setIsViewModal(true)}>
             View
           </DropdownMenuItem>
+
+          {isActiveDownload && (
+            <DropdownMenuItem>
+              <PaymentDownload payment={payment} />
+            </DropdownMenuItem>
+          )}
         </DropdownMenuContent>
       </DropdownMenu>
 

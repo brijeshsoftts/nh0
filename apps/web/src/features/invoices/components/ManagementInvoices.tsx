@@ -17,6 +17,7 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import { useAuth } from "@/hooks/useAuth";
 import { useDebounce } from "@/hooks/useDebounce";
 import { formatPrice } from "@/lib/format";
 
@@ -24,6 +25,7 @@ import { useInvoices } from "../hooks/useInvoices";
 import { useInvoicesStats } from "../hooks/useInvoicesStats";
 import type { InvoiceItem } from "../invoices.types";
 
+import { InvoiceDownload } from "./InvoiceDownload";
 import { ViewInvoiceDetails } from "./ViewInvoiceDetails";
 
 function InvoicesStats() {
@@ -152,7 +154,7 @@ function InvoicesTable() {
 
   return (
     <DataTable
-      title="Payments"
+      title="Invoices"
       description="Review transactions, invoice methods, and collection status."
       data={data?.data || []}
       columns={columns}
@@ -180,6 +182,11 @@ function InvoicesTable() {
 
 function ActionDropdownMenu({ invoice }: { invoice: InvoiceItem }) {
   const [isViewModal, setIsViewModal] = useState(false);
+  const { user } = useAuth();
+  const isActiveDownload =
+    user?.role === "ADMIN" ||
+    user?.role === "MANAGER" ||
+    (user?.role === "STAFF" && user?.category !== "RECEPTIONIST");
 
   return (
     <>
@@ -202,6 +209,11 @@ function ActionDropdownMenu({ invoice }: { invoice: InvoiceItem }) {
           <DropdownMenuItem onClick={() => setIsViewModal(true)}>
             View
           </DropdownMenuItem>
+          {isActiveDownload && (
+            <DropdownMenuItem>
+              <InvoiceDownload invoice={invoice} />
+            </DropdownMenuItem>
+          )}
         </DropdownMenuContent>
       </DropdownMenu>
 
