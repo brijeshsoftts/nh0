@@ -3,6 +3,8 @@ import type { CustomerPayment } from "./payments.types";
 export const customerPayments: CustomerPayment[] = [
   {
     id: "PAY-2041",
+    bookingId: "booking-2041",
+    bookingReference: "BK-2041",
     date: "2026-10-16",
     invoiceNumber: "INV-1024",
     transactionId: "TXN-9823417650",
@@ -12,6 +14,8 @@ export const customerPayments: CustomerPayment[] = [
   },
   {
     id: "PAY-2042",
+    bookingId: "booking-2042",
+    bookingReference: "BK-2042",
     date: "2026-10-16",
     invoiceNumber: "INV-1025",
     transactionId: "",
@@ -21,6 +25,8 @@ export const customerPayments: CustomerPayment[] = [
   },
   {
     id: "PAY-2043",
+    bookingId: "booking-2043",
+    bookingReference: "BK-2043",
     date: "2026-10-15",
     invoiceNumber: "INV-1026",
     transactionId: "TXN-9823417652",
@@ -30,6 +36,8 @@ export const customerPayments: CustomerPayment[] = [
   },
   {
     id: "PAY-2044",
+    bookingId: "booking-2044",
+    bookingReference: "BK-2044",
     date: "2026-10-15",
     invoiceNumber: "INV-1027",
     transactionId: "TXN-9823417653",
@@ -39,6 +47,8 @@ export const customerPayments: CustomerPayment[] = [
   },
   {
     id: "PAY-2045",
+    bookingId: "booking-2045",
+    bookingReference: "BK-2045",
     date: "2026-10-14",
     invoiceNumber: "INV-1028",
     transactionId: "",
@@ -48,6 +58,8 @@ export const customerPayments: CustomerPayment[] = [
   },
   {
     id: "PAY-2046",
+    bookingId: "booking-2046",
+    bookingReference: "BK-2046",
     date: "2026-10-14",
     invoiceNumber: "INV-1029",
     transactionId: "TXN-9823417655",
@@ -57,6 +69,8 @@ export const customerPayments: CustomerPayment[] = [
   },
   {
     id: "PAY-2047",
+    bookingId: "booking-2047",
+    bookingReference: "BK-2047",
     date: "2026-10-13",
     invoiceNumber: "INV-1030",
     transactionId: "TXN-9823417656",
@@ -66,6 +80,8 @@ export const customerPayments: CustomerPayment[] = [
   },
   {
     id: "PAY-2048",
+    bookingId: "booking-2048",
+    bookingReference: "BK-2048",
     date: "2026-10-12",
     invoiceNumber: "INV-1031",
     transactionId: "",
@@ -75,6 +91,8 @@ export const customerPayments: CustomerPayment[] = [
   },
   {
     id: "PAY-2049",
+    bookingId: "booking-2049",
+    bookingReference: "BK-2049",
     date: "2026-10-11",
     invoiceNumber: "INV-1032",
     transactionId: "TXN-9823417658",
@@ -84,6 +102,8 @@ export const customerPayments: CustomerPayment[] = [
   },
   {
     id: "PAY-2050",
+    bookingId: "booking-2050",
+    bookingReference: "BK-2050",
     date: "2026-10-10",
     invoiceNumber: "INV-1033",
     transactionId: "TXN-9823417659",
@@ -93,6 +113,8 @@ export const customerPayments: CustomerPayment[] = [
   },
   {
     id: "PAY-2051",
+    bookingId: "booking-2051",
+    bookingReference: "BK-2051",
     date: "2026-10-09",
     invoiceNumber: "INV-1034",
     transactionId: "",
@@ -102,6 +124,8 @@ export const customerPayments: CustomerPayment[] = [
   },
   {
     id: "PAY-2052",
+    bookingId: "booking-2052",
+    bookingReference: "BK-2052",
     date: "2026-10-08",
     invoiceNumber: "INV-1035",
     transactionId: "TXN-9823417661",

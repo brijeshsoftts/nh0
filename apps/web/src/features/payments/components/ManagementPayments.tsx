@@ -18,6 +18,7 @@ import {
 import { useAuth } from "@/hooks/useAuth";
 import { useListParams } from "@/hooks/useListParams";
 import { formatPrice } from "@/lib/format";
+import { BookingDetailsSheet } from "@/features/bookings/components/BookingDetailsSheet";
 
 import { usePayments } from "../hooks/usePayments";
 import { usePaymentsStats } from "../hooks/usePaymentsStats";
@@ -126,31 +127,40 @@ function PaymentsTable() {
   ];
 
   return (
-    <DataTable
-      title="Payments"
-      description="Review transactions, payment methods, and collection status."
-      data={data?.data || []}
-      columns={columns}
-      searchPlaceholder="Search payment, booking, or customer..."
-      searchableKeys={["paymentReference", "bookingReference", "customerName"]}
-      onSearchChange={setSearch}
-      onFilterChange={(key, value) => setFilter({ [key]: value })}
-      onPageChange={setPage}
-      filters={filters}
-      pagination={data?.meta}
-      isLoading={isLoading}
-      isError={isError}
-      refetch={refetch}
-      errorMessage="Could not load payments. Please try again."
-      emptyMessage="No payments match your search or filters."
-      showPagination
-    />
+    <>
+      <DataTable
+        title="Payments"
+        description="Review transactions, payment methods, and collection status."
+        data={data?.data || []}
+        columns={columns}
+        searchPlaceholder="Search payment, booking, or customer..."
+        searchableKeys={[
+          "paymentReference",
+          "bookingReference",
+          "customerName",
+        ]}
+        onSearchChange={setSearch}
+        onFilterChange={(key, value) => setFilter({ [key]: value })}
+        onPageChange={setPage}
+        filters={filters}
+        pagination={data?.meta}
+        isLoading={isLoading}
+        isError={isError}
+        refetch={refetch}
+        errorMessage="Could not load payments. Please try again."
+        emptyMessage="No payments match your search or filters."
+        showPagination
+      />
+    </>
   );
 }
 
 function ActionDropdownMenu({ payment }: { payment: PaymentItem }) {
   const [isViewModal, setIsViewModal] = useState(false);
+  const [isBookingOpen, setIsBookingOpen] = useState(false);
   const { user } = useAuth();
+  const canInitiatePayment =
+    user?.role === "STAFF" && user.category === "RECEPTIONIST";
   const isActiveDownload =
     user?.role === "ADMIN" ||
     user?.role === "MANAGER" ||
@@ -177,6 +187,11 @@ function ActionDropdownMenu({ payment }: { payment: PaymentItem }) {
           <DropdownMenuItem onClick={() => setIsViewModal(true)}>
             View
           </DropdownMenuItem>
+          {canInitiatePayment && (
+            <DropdownMenuItem onClick={() => setIsBookingOpen(true)}>
+              Collect payment
+            </DropdownMenuItem>
+          )}
 
           {isActiveDownload && (
             <DropdownMenuItem>
@@ -191,6 +206,13 @@ function ActionDropdownMenu({ payment }: { payment: PaymentItem }) {
           open={isViewModal}
           onOpenChange={setIsViewModal}
           payment={payment}
+        />
+      )}
+      {isBookingOpen && (
+        <BookingDetailsSheet
+          open={isBookingOpen}
+          onOpenChange={setIsBookingOpen}
+          bookingId={payment.bookingId}
         />
       )}
     </>

@@ -19,6 +19,7 @@ import { formatPrice } from "@/lib/format";
 
 import { usePaymentsStats } from "../hooks/usePaymentsStats";
 import { usePayments } from "../payments.crud";
+import { useRazorpayPayment } from "../hooks/useRazorpayPayment";
 import type { CustomerPayment } from "../payments.types";
 
 import { filters } from "./ManagementPayments";
@@ -116,6 +117,8 @@ function PaymentsTable() {
 }
 
 function ActionDropdownMenu({ payment }: { payment: CustomerPayment }) {
+  const { startPayment, isPending } = useRazorpayPayment();
+
   return (
     <>
       <DropdownMenu>
@@ -138,7 +141,12 @@ function ActionDropdownMenu({ payment }: { payment: CustomerPayment }) {
             View
           </DropdownMenuItem>
           {payment.status === "FAILED" && (
-            <DropdownMenuItem>
+            <DropdownMenuItem
+              disabled={isPending}
+              onClick={() =>
+                void startPayment(payment.bookingId, payment.bookingReference)
+              }
+            >
               <RefreshCcw />
               Retry
             </DropdownMenuItem>

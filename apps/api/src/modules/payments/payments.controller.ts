@@ -18,8 +18,9 @@ import {
   apiResponse,
 } from '../../common/helpers';
 import { ValidationPipe } from '../../common/pipes';
-import { UserRole } from '../../types/prisma.types';
+import { Category, UserRole } from '../../types/prisma.types';
 
+import { CreateOrderDto, CreateOrderSchema } from './dto/create-order.dto';
 import {
   CreatePaymentDto,
   CreatePaymentSchema,
@@ -28,6 +29,10 @@ import {
   PaymentsQueryDto,
   PaymentsQuerySchema,
 } from './dto/payments-query.dto';
+import {
+  VerifyPaymentDto,
+  VerifyPaymentSchema,
+} from './dto/verify-payment.dto';
 import { PAYMENTS_SUCCESS_MSG } from './payments.constants';
 import { PaymentsService } from './payments.service';
 
@@ -78,23 +83,55 @@ export class PaymentsController {
   async createCash(
     @Body(new ValidationPipe(CreatePaymentSchema)) body: CreatePaymentDto,
     @CurrentUser('id') userId: string,
+    @CurrentUser('role') role: UserRole,
+    @CurrentUser('category') category: Category | undefined,
   ) {
-    const data = await this.paymentsService.createCash(body, userId);
+    const data = await this.paymentsService.createCash(
+      body,
+      userId,
+      role,
+      category,
+    );
     return apiResponse({ data, message: PAYMENTS_SUCCESS_MSG.CASH_RECORDED });
   }
 
-  @Roles('CUSTOMER')
-  @Post('online')
+  @Roles('CUSTOMER', 'STAFF', 'ADMIN')
+  @Post('orders')
   @HttpCode(HttpStatus.CREATED)
-  async createOnline(
-    @Body(new ValidationPipe(CreatePaymentSchema)) body: CreatePaymentDto,
+  async createOrder(
+    @Body(new ValidationPipe(CreateOrderSchema)) body: CreateOrderDto,
     @CurrentUser('id') userId: string,
+    @CurrentUser('role') role: UserRole,
+    @CurrentUser('category') category: Category | undefined,
   ) {
-    const data = await this.paymentsService.createOnline(body, userId);
+    const data = await this.paymentsService.createOrder(
+      body.bookingId,
+      userId,
+      role,
+      category,
+    );
     return apiResponse({
       data,
       message: PAYMENTS_SUCCESS_MSG.ONLINE_INITIATED,
     });
+  }
+
+  @Roles('CUSTOMER', 'STAFF')
+  @Post('verify')
+  @HttpCode(HttpStatus.OK)
+  async verifyPayment(
+    @Body(new ValidationPipe(VerifyPaymentSchema)) body: VerifyPaymentDto,
+    @CurrentUser('id') userId: string,
+    @CurrentUser('role') role: UserRole,
+    @CurrentUser('category') category: Category | undefined,
+  ) {
+    const data = await this.paymentsService.verifyPayment(
+      body,
+      userId,
+      role,
+      category,
+    );
+    return apiResponse({ data, message: PAYMENTS_SUCCESS_MSG.ONLINE_VERIFIED });
   }
 
   @Roles('ADMIN', 'MANAGER')

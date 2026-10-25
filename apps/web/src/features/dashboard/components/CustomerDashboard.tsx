@@ -23,6 +23,7 @@ import {
 import { Skeleton } from "@/components/ui/skeleton";
 import { useBookings } from "@/features/bookings/bookings.crud";
 import { columns } from "@/features/bookings/components/CustomerBookings";
+import {} from "@/features/customers/components/CustomerTable";
 
 import { useNextBooking } from "../hooks/useNextBooking";
 

@@ -24,6 +24,9 @@ import {
   SheetTitle,
 } from "@/components/ui/sheet";
 import { Spinner } from "@/components/ui/spinner";
+import { ManualCashPaymentButton } from "@/features/payments/components/ManualCashPaymentButton";
+import { PaymentPopup } from "@/features/payments/components/PaymentPopup";
+import { useAuth } from "@/hooks/useAuth";
 import type {
   BookingStatus,
   InvoiceStatus,
@@ -168,6 +171,9 @@ export function BookingDetailsSheet({
 }: BookingDetailsSheetProps) {
   const { booking, isLoading, isError, refetch } = useBooking(bookingId, open);
   const { mutate: updateStatus, isPending } = useUpdateBookingStatus();
+  const { user } = useAuth();
+  const isReceptionist =
+    user?.role === "STAFF" && user.category === "RECEPTIONIST";
 
   if (isLoading) {
     return (
@@ -622,6 +628,25 @@ export function BookingDetailsSheet({
                   </div>
                 </div>
               ) : null}
+
+              {isReceptionist &&
+                booking.invoice &&
+                remainingAmount > 0 &&
+                ["PENDING", "CONFIRMED", "CHECKED_IN"].includes(
+                  booking.status
+                ) && (
+                  <div className="flex flex-wrap gap-2">
+                    <PaymentPopup
+                      bookingId={booking.id}
+                      bookingReference={booking.bookingReference}
+                    />
+                    <ManualCashPaymentButton
+                      invoiceId={booking.invoice.id}
+                      amount={remainingAmount}
+                      onRecorded={() => void refetch()}
+                    />
+                  </div>
+                )}
             </Section>
 
             {/* Special request */}

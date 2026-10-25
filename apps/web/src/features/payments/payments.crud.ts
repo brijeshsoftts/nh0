@@ -1,6 +1,6 @@
 import { createCrud } from "@/lib/crud/createCrud";
 
-import type { CustomerPayment } from "./payments.types";
+import type { CustomerPayment, PaymentItem } from "./payments.types";
 
 type Payment = CustomerPayment | PaymentItem;
 

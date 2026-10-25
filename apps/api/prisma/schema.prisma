@@ -387,13 +387,17 @@ model Invoice {
 model Payment {
   id               String        @id @default(cuid())
   paymentReference String        @unique
-  transactionId    String?
+  transactionId    String?       @unique
   invoiceId        String
   bookingId        String
   customerId       String
   amount           Int
+  amountPaise      Int?
+  currency         String        @default("INR")
   paymentMethod    PaymentMethod
   paymentStatus    PaymentStatus @default(PENDING)
+  orderId          String?       @unique
+  orderCreationStartedAt DateTime?
   paidAt           DateTime?
   recordedBy       String?
   createdAt        DateTime      @default(now()) @db.Timestamp
@@ -401,6 +405,15 @@ model Payment {
   invoice  Invoice @relation(fields: [invoiceId], references: [id])
   customer User    @relation("PaymentCustomer", fields: [customerId], references: [id])
   recorder User?   @relation("PaymentRecordedBy", fields: [recordedBy], references: [id])
+}
+
+model PaymentWebhookEvent {
+  id              String   @id @default(cuid())
+  eventId         String   @unique
+  eventType       String
+  orderId         String?
+  gatewayPaymentId String?
+  receivedAt      DateTime @default(now()) @db.Timestamp
 }
 
 model Issue {

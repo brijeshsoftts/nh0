@@ -31,6 +31,7 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { useListParams } from "@/hooks/useListParams";
 import { formatPrice } from "@/lib/format";
+import { PaymentPopup } from "@/features/payments/components/PaymentPopup";
 
 import { useBookingDetails, useBookings } from "../bookings.crud";
 import type { CustomerBooking } from "../bookings.types";
@@ -38,7 +39,7 @@ import type { CustomerBooking } from "../bookings.types";
 import { BookingsStats } from "./BookingsStats";
 import { filters } from "./ManagementBooking";
 
-const columns: ColumnDef<CustomerBooking>[] = [
+export const columns: ColumnDef<CustomerBooking>[] = [
   {
     key: "bookingNumber",
     header: "Booking #",
@@ -300,6 +301,13 @@ function BookingDetailsDialog({
         )}
 
         <DialogFooter className="flex flex-col-reverse gap-2 sm:flex-row sm:justify-end">
+          {booking &&
+            ["PENDING", "CONFIRMED", "CHECKED_IN"].includes(booking.status) && (
+              <PaymentPopup
+                bookingId={booking.id}
+                bookingReference={booking.bookingNumber}
+              />
+            )}
           <Button
             type="button"
             variant="outline"

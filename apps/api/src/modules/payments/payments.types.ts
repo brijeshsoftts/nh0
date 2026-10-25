@@ -1,7 +1,16 @@
 import { PaymentMethod, PaymentStatus } from '../../types/prisma.types';
 
+export type CreateOrder = {
+  paymentId: string;
+  orderId: string;
+  amount: number;
+  currency: string;
+  keyId: string;
+};
+
 export type PaymentItem = {
   id: string;
+  bookingId: string;
   paymentReference: string;
   transactionId: string | null;
   invoiceNumber: string;
@@ -27,9 +36,11 @@ export type CreatePayment = {
 
 export interface CustomerPayment {
   id: string;
+  bookingId: string;
+  bookingReference: string;
   date: string;
   invoiceNumber: string;
-  transactionId?: string;
+  transactionId: string | null;
   amount: number;
   paymentMethod: PaymentMethod;
   status: PaymentStatus;

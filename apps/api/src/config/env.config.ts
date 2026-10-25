@@ -16,6 +16,9 @@ const envSchema = z.object({
   APPWRITE_BUCKET_NAME: z.string(),
   EMAIL_USER: z.string(),
   EMAIL_PASS: z.string(),
+  RAZORPAY_KEY_ID: z.string(),
+  RAZORPAY_KEY_SECRET: z.string().trim().min(1),
+  RAZORPAY_WEBHOOK_SECRET: z.string().min(1),
 });
 
 export type Env = z.infer<typeof envSchema>;
