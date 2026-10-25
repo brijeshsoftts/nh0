@@ -36,6 +36,8 @@ export type StaffDetails = {
   emergencyContact: string;
   address: string;
   createdAt: string;
+  idProofImage: { url: string; altText: string | null } | null;
+  signatureImage: { url: string; altText: string | null } | null;
   user: {
     id: string;
     fullName: string;
@@ -43,6 +45,7 @@ export type StaffDetails = {
     phone: string;
     isActive: boolean;
     lastLoginAt: string | null;
+    profileImage?: { url: string; altText: string | null } | null;
   };
   assignedTasks: StaffTask[];
 };

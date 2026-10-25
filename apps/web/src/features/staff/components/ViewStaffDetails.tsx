@@ -4,7 +4,6 @@ import {
   Clock,
   FileText,
   GraduationCap,
-  Image,
   Mail,
   MapPin,
   Phone,
@@ -12,10 +11,11 @@ import {
   UserRound,
   Users,
 } from "lucide-react";
+import type { ReactNode } from "react";
 
 import { ErrorModal } from "@/components/common/ErrorModal";
 import { FullScreenLoader } from "@/components/common/Loader";
-import { Avatar, AvatarFallback } from "@/components/ui/avatar";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import {
   Dialog,
@@ -66,7 +66,7 @@ function DetailItem({
 }: {
   icon: React.ElementType;
   label: string;
-  value: string | null | undefined;
+  value: string | ReactNode;
   mono?: boolean;
 }) {
   return (
@@ -133,6 +133,12 @@ export function ViewStaffDetails({
           <div className="max-h-[60vh] space-y-4 overflow-y-scroll">
             <div className="mt-6 flex min-w-0 flex-col items-center gap-4 rounded-xl border bg-muted/20 p-5 text-center sm:flex-row sm:text-left">
               <Avatar className="size-20 shrink-0 border">
+                {staff?.user.profileImage && (
+                  <AvatarImage
+                    src={staff.user.profileImage.url}
+                    alt={staff.user.profileImage.altText || staff.user.fullName}
+                  />
+                )}
                 <AvatarFallback className="text-xl font-semibold">
                   {getInitials(staff?.user.fullName)}
                 </AvatarFallback>
@@ -245,46 +251,59 @@ export function ViewStaffDetails({
                     value={staff?.experience}
                   />
 
-<DetailItem
-                      icon={FileText}
-                      label="ID proof number"
-                      value={staff?.idProofNumber}
-                      mono
-                    />
-                    {staff?.idProofImage && (
-                      <DetailItem
-                        icon={Image}
-                        label="ID proof image"
-                        value={
-                          <a
-                            href={staff.idProofImage.url}
-                            target="_blank"
-                            rel="noopener noreferrer"
-                          >
-                            {staff.idProofImage.altText || staff.idProofImage.url}
-                          </a>
-                        }
-                        mono
-                      />
-                    )}
-                    {staff?.signatureImage && (
-                      <DetailItem
-                        icon={Image}
-                        label="Signature image"
-                        value={
-                          <a
-                            href={staff.signatureImage.url}
-                            target="_blank"
-                            rel="noopener noreferrer"
-                          >
-                            {staff.signatureImage.altText || staff.signatureImage.url}
-                          </a>
-                        }
-                        mono
-                      />
-                    )}
-                  </div>
-                </section>
+                  <DetailItem
+                    icon={FileText}
+                    label="ID proof number"
+                    value={staff?.idProofNumber}
+                    mono
+                  />
+                </div>
+                <div className="grid w-full grid-cols-1 gap-4 sm:grid-cols-2">
+                  {staff?.idProofImage && (
+                    <div className="space-y-2 py-3">
+                      <p className="text-sm text-muted-foreground">
+                        ID proof image
+                      </p>
+                      <a
+                        href={staff.idProofImage.url}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="inline-flex w-full rounded-md border bg-background p-2 focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:outline-none"
+                        aria-label="Open full-size signature image in a new tab"
+                      >
+                        <img
+                          src={staff.idProofImage.url}
+                          alt={staff.idProofImage.altText || "Staff signature"}
+                          className="max-h-28 w-full object-contain"
+                        />
+                      </a>
+                    </div>
+                  )}
+
+                  {staff?.signatureImage && (
+                    <div className="space-y-2 py-3">
+                      <p className="text-sm text-muted-foreground">
+                        Signature image
+                      </p>
+                      <a
+                        href={staff.signatureImage.url}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="inline-flex w-full max-w-full rounded-md border bg-background p-2 focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:outline-none"
+                        aria-label="Open full-size signature image in a new tab"
+                      >
+                        <img
+                          src={staff.signatureImage.url}
+                          alt={
+                            staff.signatureImage.altText || "Staff signature"
+                          }
+                          className="max-h-28 w-full object-contain"
+                        />
+                      </a>
+                    </div>
+                  )}
+                </div>
+              </section>
 
               <Separator />
 
