@@ -1,4 +1,4 @@
-import { Search, X } from "lucide-react";
+import { Plus, Search, X } from "lucide-react";
 import { useState } from "react";
 
 import { Pagination } from "@/components/common/Pagination";
@@ -9,6 +9,7 @@ import { useDebounce } from "@/hooks/useDebounce";
 import { useRoomTypes } from "../hooks/useRoomTypes";
 
 // import { roomTypes } from "../roomTypes.mock";
+import { CreateRoomTypeDialog } from "./CreateRoomTypeDialog";
 import { RoomTypeCard } from "./RoomTypeCard";
 
 interface RoomTypeSearchProps {
@@ -22,7 +23,7 @@ function RoomTypeSearch({
   placeholder = "Search room types...",
 }: RoomTypeSearchProps) {
   return (
-    <div className="flex flex-col items-center justify-between gap-6 rounded-none border bg-card p-4 sm:flex-row">
+    <div className="flex flex-col items-stretch justify-between gap-3 border-b border-border p-4 sm:flex-row sm:items-center sm:px-6">
       <div className="relative w-full max-w-md">
         <Search className="pointer-events-none absolute top-1/2 left-3 size-4 -translate-y-1/2 text-muted-foreground" />
         <Input
@@ -44,6 +45,12 @@ function RoomTypeSearch({
           </Button>
         )}
       </div>
+      <CreateRoomTypeDialog>
+        <Button className="h-10 w-full rounded-none sm:w-auto">
+          <Plus className="size-4" />
+          New Room Type
+        </Button>
+      </CreateRoomTypeDialog>
     </div>
   );
 }
@@ -60,7 +67,7 @@ export function RoomTypeGrid() {
   return (
     <>
       <RoomTypeSearch value={search} onChange={setSearch} />
-      <div className="mt-4 grid grid-cols-1 gap-6 sm:grid-cols-2 md:grid-cols-2 xl:grid-cols-3">
+      <div className="grid grid-cols-1 gap-6 p-4 sm:grid-cols-2 sm:px-6 xl:grid-cols-3">
         {items.map((roomType) => (
           <RoomTypeCard key={roomType.id} roomType={roomType} />
         ))}

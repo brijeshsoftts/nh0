@@ -1,4 +1,4 @@
-import { Search, X } from "lucide-react";
+import { Plus, Search, X } from "lucide-react";
 import { useState } from "react";
 
 import { Pagination } from "@/components/common/Pagination";
@@ -9,6 +9,7 @@ import { useDebounce } from "@/hooks/useDebounce";
 import { useAmenities } from "../hooks/useAmenities";
 
 import { AmenityCard } from "./AmenityCard";
+import { NewAmenityModal } from "./NewAmenityModal";
 
 interface AmenitySearchProps {
   value: string;
@@ -21,7 +22,7 @@ function AmenitySearch({
   placeholder = "Search amenities...",
 }: AmenitySearchProps) {
   return (
-    <div className="mb-4 flex flex-col items-center justify-between gap-6 rounded-none border bg-card p-4 sm:flex-row">
+    <div className="flex flex-col items-stretch justify-between gap-3 border-b border-border p-4 sm:flex-row sm:items-center sm:px-6">
       <div className="relative w-full max-w-md">
         <Search className="pointer-events-none absolute top-1/2 left-3 size-4 -translate-y-1/2 text-muted-foreground" />
         <Input
@@ -43,6 +44,12 @@ function AmenitySearch({
           </Button>
         )}
       </div>
+      <NewAmenityModal>
+        <Button className="h-10 w-full rounded-none sm:w-auto">
+          <Plus className="size-4" />
+          New Amenity
+        </Button>
+      </NewAmenityModal>
     </div>
   );
 }
@@ -59,7 +66,7 @@ export function AmenityGrid() {
   return (
     <>
       <AmenitySearch value={search} onChange={setSearch} />
-      <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+      <div className="grid grid-cols-1 gap-6 p-4 sm:grid-cols-2 sm:px-6 lg:grid-cols-3 xl:grid-cols-4">
         {items?.map((a) => (
           <AmenityCard amenity={a} key={a.id} />
         ))}
