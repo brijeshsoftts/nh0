@@ -1,7 +1,6 @@
 import { formatDate } from "date-fns";
 import { EllipsisVertical } from "lucide-react";
-import { useEffect, useState } from "react";
-import { useSearchParams } from "react-router-dom";
+import { useState } from "react";
 
 import { type ColumnDef, DataTable } from "@/components/common/DataTable";
 import {
@@ -17,7 +16,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { useAuth } from "@/hooks/useAuth";
-import { useDebounce } from "@/hooks/useDebounce";
+import { useListParams } from "@/hooks/useListParams";
 import { formatPrice } from "@/lib/format";
 
 import { usePayments } from "../hooks/usePayments";
@@ -32,35 +31,26 @@ function PaymentsKpi() {
   return <StatGrid stats={data} isLoading={isLoading} isError={isError} />;
 }
 
+const paymentMethod = ["CASH", "ONLINE"];
+
+const paymentStatus = ["PENDING", "COMPLETED", "FAILED", "REFUNDED"];
+
+export const filters = [
+  {
+    key: "paymentMethod",
+    label: "Method",
+    options: paymentMethod.map((value) => ({ value, label: value })),
+  },
+  {
+    key: "paymentStatus",
+    label: "Status",
+    options: paymentStatus.map((value) => ({ value, label: value })),
+  },
+];
+
 function PaymentsTable() {
-  const [searchParams, setSearchParams] = useSearchParams();
-  const [search, setSearch] = useState(searchParams.get("search") ?? "");
-  const [page, setPage] = useState(Number(searchParams.get("page") ?? 1));
-  const statusFilter = searchParams.get("status");
-  useEffect(() => setPage(1), [statusFilter]);
-
-  const query = useDebounce(search, 400);
-
-  const { data, isLoading, isError, refetch } = usePayments({
-    search: query,
-    page,
-    limit: 10,
-    status: statusFilter ?? undefined,
-  });
-
-  function updateParams(updates: Record<string, string | undefined>) {
-    const next = new URLSearchParams(searchParams);
-
-    for (const [key, value] of Object.entries(updates)) {
-      if (value) {
-        next.set(key, value);
-      } else {
-        next.delete(key);
-      }
-    }
-
-    setSearchParams(next);
-  }
+  const { setSearch, setPage, params, setFilter } = useListParams();
+  const { data, isLoading, isError, refetch } = usePayments(params);
 
   const columns: ColumnDef<PaymentItem>[] = [
     {
@@ -143,15 +133,10 @@ function PaymentsTable() {
       columns={columns}
       searchPlaceholder="Search payment, booking, or customer..."
       searchableKeys={["paymentReference", "bookingReference", "customerName"]}
-      onSearchChange={(value) => {
-        setSearch(value);
-        updateParams({
-          search: value || undefined,
-          page: undefined,
-        });
-      }}
-
+      onSearchChange={setSearch}
+      onFilterChange={(key, value) => setFilter({ [key]: value })}
       onPageChange={setPage}
+      filters={filters}
       pagination={data?.meta}
       isLoading={isLoading}
       isError={isError}

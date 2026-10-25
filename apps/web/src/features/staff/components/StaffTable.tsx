@@ -70,7 +70,7 @@ const columns: ColumnDef<StaffItem>[] = [
 ];
 
 export function StaffTable() {
-  const { setSearch, setPage, params } = useListParams();
+  const { setSearch, setPage, params, setFilter } = useListParams();
   const { data, isLoading, isError, refetch } = useStaffs(params);
 
   return (
@@ -81,6 +81,39 @@ export function StaffTable() {
       columns={columns}
       searchPlaceholder="Search staff..."
       searchableKeys={["fullName", "staffId", "email"]}
+      filters={[
+        {
+          key: "isActive",
+          label: "Status",
+          options: [
+            {
+              label: "Active",
+              value: true,
+            },
+            {
+              label: "Inactive",
+              value: false,
+            },
+          ],
+        },
+        {
+          key: "category",
+          label: "Category",
+          options: [
+            {
+              label: "Receptionist",
+              value: "Receptionist",
+            },
+            {
+              label: "Housekeeper",
+              value: "Housekeeper",
+            },
+          ],
+        },
+      ]}
+      onFilterChange={(key, value) => {
+        setFilter({ [key]: value });
+      }}
       onSearchChange={(value) => {
         setSearch(value);
       }}

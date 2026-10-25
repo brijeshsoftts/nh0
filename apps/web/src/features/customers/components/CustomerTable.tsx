@@ -99,8 +99,9 @@ const columns: ColumnDef<Customer>[] = [
 ];
 
 export function CustomerTable() {
-  const { searchInput, setSearch, setPage, params } = useListParams();
-  const { items, pagination, isLoading, isError, refetch } = useCustomers(params);
+  const { setSearch, setPage, params, setFilter } = useListParams();
+  const { items, pagination, isLoading, isError, refetch } =
+    useCustomers(params);
 
   return (
     <div className="space-y-4">
@@ -112,6 +113,25 @@ export function CustomerTable() {
         searchPlaceholder="Search customers..."
         onSearchChange={(value) => {
           setSearch(value);
+        }}
+        filters={[
+          {
+            key: "isActive",
+            label: "Status",
+            options: [
+              {
+                label: "Active",
+                value: true,
+              },
+              {
+                label: "Inactive",
+                value: false,
+              },
+            ],
+          },
+        ]}
+        onFilterChange={(key, value) => {
+          setFilter({ [key]: value });
         }}
         isLoading={isLoading}
         isError={isError}

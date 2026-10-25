@@ -132,7 +132,28 @@ export function useListParams(initial: Partial<ListParams> = {}) {
         ...filterPatch
       } = patch;
 
-      setFilters((prev) => ({ ...prev, ...filterPatch }));
+      setFilters((prev) => {
+        const next = { ...prev };
+
+        Object.entries(filterPatch).forEach(([key, value]) => {
+          const isEmpty =
+            value === "" ||
+            value === null ||
+            value === undefined ||
+            (typeof value === "object" &&
+              !Array.isArray(value) &&
+              Object.keys(value).length === 0) ||
+            (Array.isArray(value) && value.length === 0);
+
+          if (isEmpty) {
+            delete next[key];
+          } else {
+            next[key] = value;
+          }
+        });
+
+        return next;
+      });
       setPage(1);
     },
   };

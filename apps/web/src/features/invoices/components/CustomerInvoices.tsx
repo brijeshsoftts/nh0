@@ -14,9 +14,11 @@ import {
 import { useListParams } from "@/hooks/useListParams";
 import { formatPrice } from "@/lib/format";
 
-import { useInvoices } from "../invoices.crud";
 import { useInvoicesStats } from "../hooks/useInvoicesStats";
+import { useInvoices } from "../invoices.crud";
 import type { CustomerInvoice } from "../invoices.types";
+
+import { filters } from "./ManagementInvoices";
 
 function Stats() {
   const { data, isLoading, isError } = useInvoicesStats();
@@ -98,12 +100,9 @@ function InvoicesTable() {
     },
   ];
 
-  const { searchInput, setSearch, setPage, params } = useListParams();
-  const { items, pagination, isLoading, isError, refetch } = useInvoices({
-    ...params,
-    search: searchInput,
-    limit: 10,
-  });
+  const { setSearch, setPage, params, setFilter } = useListParams();
+  const { items, pagination, isLoading, isError, refetch } =
+    useInvoices(params);
 
   return (
     <DataTable
@@ -114,6 +113,8 @@ function InvoicesTable() {
       searchPlaceholder="Search invoice, booking, or customer..."
       searchableKeys={["invoiceNumber", "bookingReference", "customerName"]}
       onSearchChange={setSearch}
+      filters={filters}
+      onFilterChange={(key, value) => setFilter({ [key]: value })}
       onPageChange={setPage}
       pagination={pagination}
       isLoading={isLoading}

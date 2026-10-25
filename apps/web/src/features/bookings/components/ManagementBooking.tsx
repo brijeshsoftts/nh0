@@ -1,16 +1,10 @@
-import {
-  ArrowUpRight,
-  CalendarDays,
-  EllipsisVertical,
-  Eye,
-  Plus,
-  Users,
-} from "lucide-react";
-import { useEffect, useState } from "react";
-import { Link, useSearchParams } from "react-router-dom";
+import { EllipsisVertical, Eye, Plus, Users } from "lucide-react";
+import { useState } from "react";
+import { Link } from "react-router-dom";
 
 import { type ColumnDef, DataTable } from "@/components/common/DataTable";
 import { BookingBadge, InvoiceBadge } from "@/components/common/EnumBadges";
+import { Header } from "@/components/common/Header";
 import { IconBtn } from "@/components/common/IconBtn";
 import { Button } from "@/components/ui/button";
 import {
@@ -20,7 +14,7 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { useDebounce } from "@/hooks/useDebounce";
+import { useListParams } from "@/hooks/useListParams";
 import type { BookingStatus } from "@/types/enum.types";
 
 import { getBookingStatusActions } from "../booking-status";
@@ -56,20 +50,27 @@ function formatCurrency(amount: number) {
     maximumFractionDigits: 0,
   }).format(amount);
 }
+const invoiceStatus = ["UNPAID", "PARTIALLY_PAID", "PAID", "REFUNDED"];
+export const filters = [
+  {
+    key: "status",
+    label: "Booking status",
+    options: BOOKING_STATUSES.map((value) => ({ value, label: value })),
+  },
+  {
+    key: "invoiceStatus",
+    label: "Invoice status",
+    options: invoiceStatus.map((status) => ({
+      label: status,
+      value: status,
+    })),
+  },
+];
 
 export function ManagementBooking() {
-  const [search, setSearch] = useState("");
-  const [searchParams, setSearchParams] = useSearchParams();
-  const status = searchParams.get("status") as BookingStatus | null;
-  const [page, setPage] = useState(1);
-  useEffect(() => setPage(1), [status]);
-  const debouncedSearch = useDebounce(search, 400);
-  const { items, pagination, isLoading, isError, refetch } = useBookings({
-    page,
-    limit: 10,
-    search: debouncedSearch.trim() || undefined,
-    status: status ?? undefined,
-  });
+  const { params, setPage, setSearch, setFilter } = useListParams();
+  const { items, pagination, isLoading, isError, refetch } =
+    useBookings(params);
 
   const columns: ColumnDef<BookingListItem>[] = [
     {
@@ -168,28 +169,19 @@ export function ManagementBooking() {
   ];
 
   return (
-    <main className="space-y-6">
-      <header className="flex flex-col gap-5 rounded-none border bg-card p-5 shadow-sm sm:flex-row sm:items-end sm:justify-between sm:p-7">
-        <div className="max-w-2xl">
-          <div className="mb-3 flex items-center gap-2 text-xs font-semibold tracking-[0.16em] text-muted-foreground uppercase">
-            <CalendarDays className="size-4 text-primary" />
-            Front desk · Booking register
-          </div>
-          <h1 className="text-2xl font-semibold tracking-tight sm:text-3xl">
-            Bookings
-          </h1>
-          <p className="mt-2 text-sm leading-6 text-muted-foreground">
-            Find reservations, check stay details, and keep arrivals moving.
-          </p>
-        </div>
-        <Button className="shrink-0 rounded-none">
+    <>
+      <Header
+        title="Bookings"
+        description="Find reservations, check stay details, and keep arrivals moving."
+        rightContent={
           <Link to="/dashboard/bookings/new">
-            <Plus className="size-4" />
-            New booking
-            <ArrowUpRight className="size-4" />
+            <Button className="shrink-0 rounded-none">
+              <Plus className="size-4" />
+              New booking
+            </Button>
           </Link>
-        </Button>
-      </header>
+        }
+      />
 
       <BookingsStats />
 
@@ -204,33 +196,17 @@ export function ManagementBooking() {
         columns={columns}
         pagination={pagination}
         onPageChange={setPage}
-        onSearchChange={(value) => {
-          setSearch(value);
-          setPage(1);
-        }}
+        onSearchChange={setSearch}
         searchPlaceholder="Search booking, customer, or room…"
-        filters={[
-          {
-            key: "status",
-            label: "status",
-            placeholder: "All statuses",
-            options: BOOKING_STATUSES.map((value) => ({ value, label: value })),
-          },
-        ]}
-        onFilterChange={(_key, value) => {
-          const next = new URLSearchParams(searchParams);
-          if (value) next.set("status", value);
-          else next.delete("status");
-          setSearchParams(next);
-          setPage(1);
-        }}
+        filters={filters}
+        onFilterChange={(key, value) => setFilter({ [key]: value })}
         isLoading={isLoading}
         isError={isError}
         refetch={() => void refetch()}
         errorMessage="Bookings could not be loaded. Try again."
         emptyMessage="No bookings match these filters. Try another search or create a booking."
       />
-    </main>
+    </>
   );
 }
 

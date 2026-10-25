@@ -1,6 +1,6 @@
 import type { DashboardStat } from "@/components/common/Stat";
 import { apiClient } from "@/lib/apiClient";
-import type { ApiListResponse } from "@/types/api.types";
+import type { ApiListResponse, ListParams } from "@/types/api.types";
 
 import { toDashboardStats } from "../shared/stat-response";
 
@@ -9,7 +9,6 @@ import type {
   BookingAvailabilityParams,
   BookingDetails,
   BookingListItem,
-  BookingListParams,
   CreateBookingInput,
   CreateBookingResult,
   UpdateBookingStatusInput,
@@ -18,9 +17,7 @@ import type {
 export const bookingsService = {
   findOne: (id: string): Promise<BookingDetails> =>
     apiClient.get(`/bookings/${id}`).then((response) => response.data?.data),
-  findAll: (
-    params: BookingListParams
-  ): Promise<ApiListResponse<BookingListItem>> =>
+  findAll: (params: ListParams): Promise<ApiListResponse<BookingListItem>> =>
     apiClient.get("/bookings", { params }).then((response) => response.data),
   updateStatus: ({ id, status }: UpdateBookingStatusInput) =>
     apiClient

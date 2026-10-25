@@ -1,6 +1,4 @@
 import { formatDate } from "date-fns";
-import { useEffect, useState } from "react";
-import { useSearchParams } from "react-router-dom";
 
 import { type ColumnDef, DataTable } from "@/components/common/DataTable";
 import {
@@ -9,7 +7,7 @@ import {
 } from "@/components/common/EnumBadges";
 import { StatGrid } from "@/components/common/Stat";
 import { useDashboardStats } from "@/features/dashboard/dashboard.crud";
-import { useDebounce } from "@/hooks/useDebounce";
+import { useListParams } from "@/hooks/useListParams";
 
 import { useIssues } from "../hooks/useIssues";
 import type { IssueItem } from "../issues.types";
@@ -19,39 +17,50 @@ function IssueStats() {
   return <StatGrid stats={stats} isLoading={isLoading} isError={isError} />;
 }
 
+const issueCategory = [
+  "PLUMBING",
+  "ELECTRICAL",
+  "HVAC",
+  "FURNITURE",
+  "APPLIANCE",
+  "INTERNET",
+  "BATHROOM",
+  "DOOR_LOCK",
+  "LIGHTING",
+  "OTHER",
+];
+
+const issuePriority = ["LOW", "MEDIUM", "HIGH", "URGENT"];
+
+const issueStatus = [
+  "OPEN",
+  "IN_PROGRESS",
+  "COMPLETED",
+  "RESOLVED",
+  "CANCELLED",
+];
+
+export const filters = [
+  {
+    key: "category",
+    label: "Category",
+    options: issueCategory.map((value) => ({ value, label: value })),
+  },
+  {
+    key: "priority",
+    label: "Priority",
+    options: issuePriority.map((value) => ({ value, label: value })),
+  },
+  {
+    key: "status",
+    label: "Status",
+    options: issueStatus.map((value) => ({ value, label: value })),
+  },
+];
+
 function IssueTable() {
-  const [searchParams, setSearchParams] = useSearchParams();
-  const [search, setSearch] = useState(searchParams.get("search") ?? "");
-  const [page, setPage] = useState(Number(searchParams.get("page") ?? 1));
-  const statusFilter = searchParams.get("status");
-  const priorityFilter = searchParams.get("priority");
-  const categoryFilter = searchParams.get("category");
-  useEffect(() => setPage(1), [statusFilter, priorityFilter, categoryFilter]);
-
-  const query = useDebounce(search, 400);
-
-  const { items, pagination, isLoading, isError, refetch } = useIssues({
-    search: query,
-    page,
-    limit: 10,
-    status: statusFilter ?? undefined,
-    priority: priorityFilter ?? undefined,
-    category: categoryFilter ?? undefined,
-  });
-
-  function updateParams(updates: Record<string, string | undefined>) {
-    const next = new URLSearchParams(searchParams);
-
-    for (const [key, value] of Object.entries(updates)) {
-      if (value) {
-        next.set(key, value);
-      } else {
-        next.delete(key);
-      }
-    }
-
-    setSearchParams(next);
-  }
+  const { setFilter, params, setPage, setSearch } = useListParams();
+  const { items, pagination, isLoading, isError, refetch } = useIssues(params);
   const columns: ColumnDef<IssueItem>[] = [
     {
       key: "reference",
@@ -117,13 +126,11 @@ function IssueTable() {
       searchPlaceholder="Search issue..."
       emptyMessage="Issue not found"
       showPagination
-      onSearchChange={(value) => {
-        setSearch(value);
-        updateParams({
-          search: value || undefined,
-          page: undefined,
-        });
+      filters={filters}
+      onFilterChange={(key, value) => {
+        setFilter({ [key]: value });
       }}
+      onSearchChange={setSearch}
       onPageChange={setPage}
       pagination={pagination}
       isLoading={isLoading}

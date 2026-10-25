@@ -1,7 +1,6 @@
 import { formatDate } from "date-fns";
 import { EllipsisVertical } from "lucide-react";
-import { useEffect, useState } from "react";
-import { useSearchParams } from "react-router-dom";
+import { useState } from "react";
 
 import { type ColumnDef, DataTable } from "@/components/common/DataTable";
 import { InvoiceBadge } from "@/components/common/EnumBadges";
@@ -14,7 +13,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { useAuth } from "@/hooks/useAuth";
-import { useDebounce } from "@/hooks/useDebounce";
+import { useListParams } from "@/hooks/useListParams";
 import { formatPrice } from "@/lib/format";
 
 import { useInvoices } from "../hooks/useInvoices";
@@ -29,35 +28,18 @@ function InvoicesStats() {
   return <StatGrid stats={data} isLoading={isLoading} isError={isError} />;
 }
 
+const invoiceStatus = ["UNPAID", "PARTIALLY_PAID", "PAID", "REFUNDED"];
+export const filters = [
+  {
+    key: "status",
+    label: "Status",
+    options: invoiceStatus.map((value) => ({ value, label: value })),
+  },
+];
+
 function InvoicesTable() {
-  const [searchParams, setSearchParams] = useSearchParams();
-  const [search, setSearch] = useState(searchParams.get("search") ?? "");
-  const [page, setPage] = useState(Number(searchParams.get("page") ?? 1));
-  const statusFilter = searchParams.get("status");
-  useEffect(() => setPage(1), [statusFilter]);
-
-  const query = useDebounce(search, 400);
-
-  const { data, isLoading, isError, refetch } = useInvoices({
-    search: query,
-    page,
-    limit: 10,
-    status: statusFilter ?? undefined,
-  });
-
-  function updateParams(updates: Record<string, string | undefined>) {
-    const next = new URLSearchParams(searchParams);
-
-    for (const [key, value] of Object.entries(updates)) {
-      if (value) {
-        next.set(key, value);
-      } else {
-        next.delete(key);
-      }
-    }
-
-    setSearchParams(next);
-  }
+  const { setSearch, setPage, params, setFilter } = useListParams();
+  const { data, isLoading, isError, refetch } = useInvoices(params);
 
   const columns: ColumnDef<InvoiceItem>[] = [
     {
@@ -144,14 +126,9 @@ function InvoicesTable() {
       columns={columns}
       searchPlaceholder="Search invoice, booking, or customer..."
       searchableKeys={["paymentReference", "bookingReference", "customerName"]}
-      onSearchChange={(value) => {
-        setSearch(value);
-        updateParams({
-          search: value || undefined,
-          page: undefined,
-        });
-      }}
-
+      onSearchChange={setSearch}
+      onFilterChange={(key, value) => setFilter({ [key]: value })}
+      filters={filters}
       onPageChange={setPage}
       pagination={data?.meta}
       isLoading={isLoading}

@@ -21,7 +21,7 @@ import { UpdateUserDialog } from "./UpdateUserDialog";
 import { ViewUserDetails } from "./ViewUserDetails";
 
 export function UserTable() {
-  const { setSearch, setPage, params } = useListParams();
+  const { setSearch, setPage, params, setFilter } = useListParams();
   const { items, pagination, isLoading, isError, refetch } = useUsers(params);
 
   const columns: ColumnDef<User>[] = [
@@ -87,6 +87,39 @@ export function UserTable() {
         data={items}
         pagination={pagination}
         columns={columns}
+        filters={[
+          {
+            key: "isActive",
+            label: "Status",
+            options: [
+              {
+                label: "Active",
+                value: true,
+              },
+              {
+                label: "Inactive",
+                value: false,
+              },
+            ],
+          },
+          {
+            key: "role",
+            label: "Role",
+            options: [
+              {
+                label: "Manager",
+                value: "Manager",
+              },
+              {
+                label: "Staff",
+                value: "Staff",
+              },
+            ],
+          },
+        ]}
+        onFilterChange={(key, value) => {
+          setFilter({ [key]: value });
+        }}
         searchPlaceholder="Search users..."
         onSearchChange={(value) => {
           setSearch(value);

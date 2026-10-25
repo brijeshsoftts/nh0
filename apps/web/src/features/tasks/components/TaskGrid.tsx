@@ -1,5 +1,6 @@
 import { Search } from "lucide-react";
 
+import { FilterSelect } from "@/components/common/FilterSelect";
 import { Pagination } from "@/components/common/Pagination";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -9,8 +10,16 @@ import { useTasks } from "../hooks/useTasks";
 
 import { TaskCard, TaskCardSkeleton } from "./TaskCard";
 
+const taskType = ["CLEANING", "DEEP_CLEAN", "TURNDOWN"];
+const taskStatus = ["PENDING", "IN_PROGRESS", "COMPLETED"];
+const filters = {
+  taskType: taskType.map((value) => ({ value, label: value })),
+  status: taskStatus.map((value) => ({ value, label: value })),
+};
+
 export function TaskGrid() {
-  const { searchInput, setSearch, setPage, params } = useListParams();
+  const { searchInput, setSearch, setPage, params, setFilter } =
+    useListParams();
   const { items, pagination, isLoading, isError, refetch } = useTasks(params);
 
   return (
@@ -22,16 +31,23 @@ export function TaskGrid() {
             Manage and view tasks. {items.length}
           </p>
         </div>
-
-        <div className="relative w-full sm:max-w-xs">
-          <Search className="pointer-events-none absolute top-1/2 left-3 size-4 -translate-y-1/2 text-muted-foreground" />
-          <Input
-            type="text"
-            value={searchInput}
-            onChange={(event) => setSearch(event.target.value)}
-            placeholder="Search tasks..."
-            aria-label="Search tasks"
-            className="h-9 rounded-none pl-9 text-sm"
+        <div className="flex max-w-full min-w-0 flex-wrap items-center gap-2.5 sm:flex-nowrap">
+          <div className="relative w-full sm:max-w-xs">
+            <Search className="pointer-events-none absolute top-1/2 left-3 size-4 -translate-y-1/2 text-muted-foreground" />
+            <Input
+              type="text"
+              value={searchInput}
+              onChange={(event) => setSearch(event.target.value)}
+              placeholder="Search tasks..."
+              aria-label="Search tasks"
+              className="h-9 rounded-none pl-9 text-sm"
+            />
+          </div>
+          <FilterSelect
+            filterKey="status"
+            label="Status"
+            options={filters.status}
+            onValueChange={(value) => setFilter({ [value.key]: value.value })}
           />
         </div>
       </div>

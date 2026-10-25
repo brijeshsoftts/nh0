@@ -18,6 +18,7 @@ import type { CustomerIssue } from "../issues.types";
 
 import { CreateCustomerIssueDialog } from "./IssuesDialogs";
 import { IssuesStats } from "./IssuesStats";
+import { filters } from "./ManagementIssue";
 
 function IssuesTable() {
   const columns: ColumnDef<CustomerIssue>[] = [
@@ -57,12 +58,8 @@ function IssuesTable() {
     },
   ];
 
-  const { searchInput, setSearch, setPage, params } = useListParams();
-  const { items, pagination, isLoading, isError, refetch } = useIssues({
-    ...params,
-    search: searchInput,
-    limit: 10,
-  });
+  const { setSearch, setPage, params, setFilter } = useListParams();
+  const { items, pagination, isLoading, isError, refetch } = useIssues(params);
 
   return (
     <DataTable
@@ -71,6 +68,10 @@ function IssuesTable() {
       data={items}
       columns={columns}
       showPagination
+      filters={filters}
+      onFilterChange={(key, value) => {
+        setFilter({ [key]: value });
+      }}
       onSearchChange={setSearch}
       onPageChange={setPage}
       pagination={pagination}

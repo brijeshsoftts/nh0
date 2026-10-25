@@ -17,9 +17,11 @@ import {
 import { useListParams } from "@/hooks/useListParams";
 import { formatPrice } from "@/lib/format";
 
-import { usePayments } from "../payments.crud";
 import { usePaymentsStats } from "../hooks/usePaymentsStats";
+import { usePayments } from "../payments.crud";
 import type { CustomerPayment } from "../payments.types";
+
+import { filters } from "./ManagementPayments";
 
 function Stats() {
   const { data, isLoading, isError } = usePaymentsStats();
@@ -86,12 +88,9 @@ function PaymentsTable() {
     },
   ];
 
-  const { searchInput, setSearch, setPage, params } = useListParams();
-  const { items, pagination, isLoading, isError, refetch } = usePayments({
-    ...params,
-    search: searchInput,
-    limit: 10,
-  });
+  const { setSearch, setPage, params, setFilter } = useListParams();
+  const { items, pagination, isLoading, isError, refetch } =
+    usePayments(params);
 
   return (
     <DataTable
@@ -101,6 +100,8 @@ function PaymentsTable() {
       columns={columns}
       searchPlaceholder="Search payment, booking, or customer..."
       searchableKeys={["paymentReference", "bookingReference", "customerName"]}
+      filters={filters}
+      onFilterChange={(key, value) => setFilter({ [key]: value })}
       onSearchChange={setSearch}
       onPageChange={setPage}
       pagination={pagination}

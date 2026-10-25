@@ -1,13 +1,11 @@
-import type {
-  BookingAvailabilityParams,
-  BookingListParams,
-} from "./bookings.types";
+import type { ListParams } from "@/types/api.types";
+
+import type { BookingAvailabilityParams } from "./bookings.types";
 
 export const bookingsKeys = {
   all: ["bookings"] as const,
   lists: () => [...bookingsKeys.all, "list"] as const,
-  list: (params: BookingListParams) =>
-    [...bookingsKeys.lists(), params] as const,
+  list: (params: ListParams) => [...bookingsKeys.lists(), params] as const,
   details: () => [...bookingsKeys.all, "detail"] as const,
   detail: (id: string) => [...bookingsKeys.details(), id] as const,
   availability: (params: BookingAvailabilityParams | undefined) =>

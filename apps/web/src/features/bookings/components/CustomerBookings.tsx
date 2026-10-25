@@ -34,9 +34,11 @@ import { formatPrice } from "@/lib/format";
 
 import { useBookingDetails, useBookings } from "../bookings.crud";
 import type { CustomerBooking } from "../bookings.types";
-import { BookingsStats } from "./BookingsStats";
 
-export const columns: ColumnDef<CustomerBooking>[] = [
+import { BookingsStats } from "./BookingsStats";
+import { filters } from "./ManagementBooking";
+
+const columns: ColumnDef<CustomerBooking>[] = [
   {
     key: "bookingNumber",
     header: "Booking #",
@@ -94,9 +96,9 @@ export const columns: ColumnDef<CustomerBooking>[] = [
 ];
 
 function BookingsTable() {
-  const { searchInput, setSearch, setPage, params } = useListParams();
+  const { setSearch, setPage, params, setFilter } = useListParams();
   const { items, pagination, isLoading, isError, refetch } =
-    useBookings<CustomerBooking>({ ...params, search: searchInput, limit: 10 });
+    useBookings<CustomerBooking>(params);
 
   return (
     <DataTable
@@ -107,6 +109,8 @@ function BookingsTable() {
       searchPlaceholder="Search by booking number"
       searchableKeys={["bookingReference", "customerName"]}
       onSearchChange={setSearch}
+      filters={filters}
+      onFilterChange={(key, value) => setFilter({ [key]: value })}
       onPageChange={setPage}
       pagination={pagination}
       isLoading={isLoading}
