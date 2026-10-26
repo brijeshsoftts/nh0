@@ -26,6 +26,17 @@ export class IssuesController {
   constructor(private readonly issuesService: IssuesService) {}
 
   @Roles('ADMIN', 'MANAGER', 'CUSTOMER')
+  @Get('stats')
+  @HttpCode(HttpStatus.OK)
+  async getStats(
+    @CurrentUser('id') userId: string,
+    @CurrentUser('role') role: UserRole,
+  ) {
+    const data = await this.issuesService.getStats(userId, role);
+    return apiResponse({ data });
+  }
+
+  @Roles('ADMIN', 'MANAGER', 'CUSTOMER')
   @Get()
   @HttpCode(HttpStatus.OK)
   async findAll(

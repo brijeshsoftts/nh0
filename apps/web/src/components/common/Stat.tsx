@@ -52,7 +52,7 @@ function Stat({ stat, format = "number" }: StatProps) {
               className={`inline-flex items-center gap-1 rounded-md px-2 py-1 text-xs font-semibold ${trendStyle}`}
             >
               <TrendIcon className="size-3.5" aria-hidden="true" />
-              {Math.abs(stat.changePercentage)}%
+              {Math.abs(stat.changePercentage) || 0}%
             </span>
 
             <span className="text-xs text-muted-foreground">

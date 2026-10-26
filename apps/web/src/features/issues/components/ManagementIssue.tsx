@@ -5,17 +5,12 @@ import {
   IssuePriorityBadge,
   IssueStatusBadge,
 } from "@/components/common/EnumBadges";
-import { StatGrid } from "@/components/common/Stat";
-import { useDashboardStats } from "@/features/dashboard/dashboard.crud";
 import { useListParams } from "@/hooks/useListParams";
 
 import { useIssues } from "../hooks/useIssues";
 import type { IssueItem } from "../issues.types";
 
-function IssueStats() {
-  const { data: stats, isLoading, isError } = useDashboardStats();
-  return <StatGrid stats={stats} isLoading={isLoading} isError={isError} />;
-}
+import { IssuesStats } from "./IssuesStats";
 
 const issueCategory = [
   "PLUMBING",
@@ -144,7 +139,7 @@ function IssueTable() {
 export function ManagementIssue() {
   return (
     <>
-      <IssueStats />
+      <IssuesStats />
       <IssueTable />
     </>
   );

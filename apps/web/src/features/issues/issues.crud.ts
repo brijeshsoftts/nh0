@@ -1,6 +1,7 @@
-import { createCrud } from "@/lib/crud/createCrud";
 import type { UseFormReturn } from "react-hook-form";
 import type { z } from "zod";
+
+import { createCrud } from "@/lib/crud/createCrud";
 
 import {
   adminCreateIssueSchema,
@@ -12,7 +13,7 @@ type Issues = CustomerIssue | undefined;
 
 export const issuesCrud = createCrud<Issues, undefined>()({
   resource: "issues",
-  endpoint: "issues",
+  endpoint: "/issues",
   label: "Issue",
   createSchema: customerCreateIssueSchema || adminCreateIssueSchema,
   updateSchema: adminCreateIssueSchema,
@@ -23,6 +24,7 @@ export const {
   useCreate: useCreateIssueCrud,
   useUpdate: useUpdateIssue,
   useDelete: useDeleteIssue,
+  useStats: useIssueStats,
 } = issuesCrud;
 
 type CustomerCreateIssueInput = z.input<typeof customerCreateIssueSchema>;

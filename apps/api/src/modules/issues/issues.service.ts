@@ -7,7 +7,13 @@ import {
 
 import { PrismaService } from '../../prisma/prisma.service';
 import { ListResponse } from '../../types/api.types';
-import { BookingStatus, Prisma, UserRole } from '../../types/prisma.types';
+import {
+  BookingStatus,
+  IssuePriority,
+  Prisma,
+  UserRole,
+} from '../../types/prisma.types';
+import { StatItem } from '../../types/shared.types';
 
 import { CreateIssueDto } from './dto/create-issue.dto';
 import { IssuesQueryDto } from './dto/issues-query.dto';
@@ -17,6 +23,73 @@ import { CreateIssue, IssueItem } from './issues.types';
 @Injectable()
 export class IssuesService {
   constructor(private readonly prismaService: PrismaService) {}
+
+  async getStats(userId: string, role: UserRole): Promise<StatItem[]> {
+    const isCustomer = role === UserRole.CUSTOMER;
+    const where: Prisma.IssueWhereInput = isCustomer
+      ? { reportedById: userId }
+      : {};
+
+    const [total, medium, high, urgent] = await this.prismaService.$transaction(
+      [
+        this.prismaService.issue.count({ where }),
+        this.prismaService.issue.count({
+          where: { ...where, priority: IssuePriority.MEDIUM },
+        }),
+        this.prismaService.issue.count({
+          where: { ...where, priority: IssuePriority.HIGH },
+        }),
+        this.prismaService.issue.count({
+          where: { ...where, priority: IssuePriority.URGENT },
+        }),
+      ],
+    );
+
+    return [
+      {
+        id: 'total-issues',
+        title: 'Total Issues',
+        value: total.toLocaleString(),
+        description: isCustomer ? 'Issues you reported' : 'All reported issues',
+        icon: 'ClipboardList',
+        link: '/issues',
+        tone: 'sky',
+      },
+      {
+        id: 'medium-issues',
+        title: 'Medium Priority',
+        value: medium.toLocaleString(),
+        description: isCustomer
+          ? 'Your medium-priority issues'
+          : 'Issues with medium priority',
+        icon: 'CircleAlert',
+        link: '/issues?priority=MEDIUM',
+        tone: 'gold',
+      },
+      {
+        id: 'high-issues',
+        title: 'High Priority',
+        value: high.toLocaleString(),
+        description: isCustomer
+          ? 'Your high-priority issues'
+          : 'Issues with high priority',
+        icon: 'TriangleAlert',
+        link: '/issues?priority=HIGH',
+        tone: 'rose',
+      },
+      {
+        id: 'urgent-issues',
+        title: 'Urgent Priority',
+        value: urgent.toLocaleString(),
+        description: isCustomer
+          ? 'Your urgent issues'
+          : 'Issues requiring urgent attention',
+        icon: 'Siren',
+        link: '/issues?priority=URGENT',
+        tone: 'violet',
+      },
+    ];
+  }
 
   async findAll(
     query: IssuesQueryDto,
