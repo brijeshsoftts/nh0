@@ -10,6 +10,7 @@ import { ListResponse } from '../../types/api.types';
 import {
   BookingStatus,
   IssuePriority,
+  IssueStatus,
   Prisma,
   UserRole,
 } from '../../types/prisma.types';
@@ -17,8 +18,35 @@ import { StatItem } from '../../types/shared.types';
 
 import { CreateIssueDto } from './dto/create-issue.dto';
 import { IssuesQueryDto } from './dto/issues-query.dto';
+import { UpdateIssueDto } from './dto/update-issue.dto';
 import { ISSUE_ERROR_MSG } from './issue.constants';
-import { CreateIssue, IssueItem } from './issues.types';
+import { CreateIssue, IssueDetails, IssueItem } from './issues.types';
+
+const ISSUE_DETAILS_SELECT = {
+  id: true,
+  reference: true,
+  title: true,
+  description: true,
+  category: true,
+  priority: true,
+  status: true,
+  reportedAt: true,
+  startedAt: true,
+  completedAt: true,
+  resolvedAt: true,
+  createdAt: true,
+  updatedAt: true,
+  room: {
+    select: { id: true, roomNumber: true, name: true, floor: true },
+  },
+  reporter: { select: { id: true, fullName: true } },
+  assignee: { select: { id: true, fullName: true } },
+  image: { select: { id: true, url: true, altText: true } },
+} satisfies Prisma.IssueSelect;
+
+type IssueDetailsRecord = Prisma.IssueGetPayload<{
+  select: typeof ISSUE_DETAILS_SELECT;
+}>;
 
 @Injectable()
 export class IssuesService {
@@ -89,6 +117,77 @@ export class IssuesService {
         tone: 'violet',
       },
     ];
+  }
+
+  async findOne(
+    id: string,
+    userId: string,
+    role: UserRole,
+  ): Promise<IssueDetails> {
+    const issue = await this.prismaService.issue.findFirst({
+      where: {
+        id,
+        ...(role === UserRole.CUSTOMER && { reportedById: userId }),
+      },
+      select: ISSUE_DETAILS_SELECT,
+    });
+
+    if (!issue) {
+      throw new NotFoundException(ISSUE_ERROR_MSG.NOT_FOUND);
+    }
+
+    return this.mapIssueDetails(issue);
+  }
+
+  async update(id: string, dto: UpdateIssueDto): Promise<IssueDetails> {
+    return this.prismaService.$transaction(async (tx) => {
+      const issue = await tx.issue.findUnique({
+        where: { id },
+        select: {
+          status: true,
+          startedAt: true,
+          completedAt: true,
+          resolvedAt: true,
+        },
+      });
+
+      if (!issue) {
+        throw new NotFoundException(ISSUE_ERROR_MSG.NOT_FOUND);
+      }
+
+      if (dto.status === issue.status && Object.keys(dto).length === 1) {
+        throw new BadRequestException(ISSUE_ERROR_MSG.STATUS_UNCHANGED);
+      }
+
+      const timestamp = new Date();
+      const result = await tx.issue.updateMany({
+        where: { id, status: issue.status },
+        data: {
+          ...dto,
+          ...(dto.status === IssueStatus.IN_PROGRESS &&
+            !issue.startedAt && { startedAt: timestamp }),
+          ...(dto.status === IssueStatus.COMPLETED &&
+            !issue.completedAt && { completedAt: timestamp }),
+          ...(dto.status === IssueStatus.RESOLVED &&
+            !issue.resolvedAt && { resolvedAt: timestamp }),
+        },
+      });
+
+      if (result.count !== 1) {
+        throw new ConflictException(ISSUE_ERROR_MSG.CHANGED);
+      }
+
+      const updated = await tx.issue.findUnique({
+        where: { id },
+        select: ISSUE_DETAILS_SELECT,
+      });
+
+      if (!updated) {
+        throw new NotFoundException(ISSUE_ERROR_MSG.NOT_FOUND);
+      }
+
+      return this.mapIssueDetails(updated);
+    });
   }
 
   async findAll(
@@ -262,5 +361,17 @@ export class IssuesService {
 
       throw error;
     }
+  }
+
+  private mapIssueDetails(issue: IssueDetailsRecord): IssueDetails {
+    return {
+      ...issue,
+      reportedAt: issue.reportedAt.toISOString(),
+      startedAt: issue.startedAt?.toISOString() ?? null,
+      completedAt: issue.completedAt?.toISOString() ?? null,
+      resolvedAt: issue.resolvedAt?.toISOString() ?? null,
+      createdAt: issue.createdAt.toISOString(),
+      updatedAt: issue.updatedAt.toISOString(),
+    };
   }
 }

@@ -1,5 +1,6 @@
 export const ISSUE_SUCCESS_MSG = {
   CREATED: 'Issue reported successfully.',
+  UPDATED: 'Issue updated successfully.',
 } as const;
 
 export const ISSUE_ERROR_MSG = {
@@ -9,5 +10,8 @@ export const ISSUE_ERROR_MSG = {
   ROOM_REQUIRED: 'A room must be selected to report an issue.',
   ROOM_NOT_FOUND: 'Room could not be found.',
   IMAGE_NOT_FOUND: 'Issue image could not be found.',
+  NOT_FOUND: 'Issue could not be found.',
+  STATUS_UNCHANGED: 'Select a different issue status.',
+  CHANGED: 'Issue changed before the update could be applied.',
   REFERENCE_CONFLICT: 'Could not create the issue. Please try again.',
 } as const;

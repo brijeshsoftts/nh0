@@ -23,25 +23,49 @@ export const issueCategorySchema = z
   .transform((value) => value.toUpperCase())
   .pipe(
     z.enum(
-      ["ROOM", "BATHROOM", "FOOD", "ENTERTAINMENT", "CONNECTIVITY"],
+      [
+        "PLUMBING",
+        "ELECTRICAL",
+        "HVAC",
+        "FURNITURE",
+        "APPLIANCE",
+        "INTERNET",
+        "BATHROOM",
+        "DOOR_LOCK",
+        "LIGHTING",
+        "OTHER",
+      ],
       "Invalid category"
     )
   );
 
 const issuePrioritySchema = z.enum(
-  ["LOW", "MEDIUM", "HIGH"],
+  ["LOW", "MEDIUM", "HIGH", "URGENT"],
   "Invalid priority"
 );
 const issueStatusSchema = z.enum(
-  ["OPEN", "IN_PROGRESS", "RESOLVED", "CLOSED"],
+  ["OPEN", "IN_PROGRESS", "COMPLETED", "RESOLVED", "CANCELLED"],
   "Invalid status"
 );
+
+const updateTitleSchema = z
+  .string()
+  .trim()
+  .min(3, "Title must contain at least 3 characters")
+  .max(200, "Title must contain 200 characters or fewer");
+
+const updateDescriptionSchema = z
+  .string()
+  .trim()
+  .min(1, "Description is required")
+  .max(5000, "Description must contain 5000 characters or fewer");
 
 // CUSTOMER: Create issue
 export const customerCreateIssueSchema = z
   .object({
     category: issueCategorySchema,
     title: titleSchema,
+    priority: issuePrioritySchema.default("LOW"),
     description: descriptionSchema,
   })
   .strict();
@@ -65,9 +89,8 @@ export const adminUpdateIssueSchema = z
     category: issueCategorySchema.optional(),
     priority: issuePrioritySchema.optional(),
     status: issueStatusSchema.optional(),
-    title: titleSchema.optional(),
-    description: descriptionSchema.optional(),
-    assignedToId: idSchema.nullable().optional(),
+    title: updateTitleSchema.optional(),
+    description: updateDescriptionSchema.optional(),
   })
   .strict()
   .refine((data) => Object.keys(data).length > 0, {

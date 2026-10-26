@@ -1,31 +1,24 @@
 import { formatDate } from "date-fns";
-import { EllipsisVertical, Eye } from "lucide-react";
 
 import { type ColumnDef, DataTable } from "@/components/common/DataTable";
 import { IssueStatusBadge } from "@/components/common/EnumBadges";
 import { Header } from "@/components/common/Header";
-import { IconBtn } from "@/components/common/IconBtn";
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
 import { useListParams } from "@/hooks/useListParams";
 
+import { issueFilters } from "../issue-filters";
 import { useIssues } from "../issues.crud";
 import type { CustomerIssue } from "../issues.types";
 
+import { IssueRowActions } from "./IssueRowActions";
 import { CreateCustomerIssueDialog } from "./IssuesDialogs";
 import { IssuesStats } from "./IssuesStats";
-import { filters } from "./ManagementIssue";
 
 function IssuesTable() {
   const columns: ColumnDef<CustomerIssue>[] = [
     {
       key: "subject",
       header: "Subject",
-      cell: (row) => <>{row.subject}</>,
+      cell: (row) => <>{row.title}</>,
     },
     {
       key: "category",
@@ -44,17 +37,17 @@ function IssuesTable() {
     {
       key: "reportedOn",
       header: "Reported On",
-      cell: (row) => formatDate(row.reportedOn, "dd MMM, yyyy"),
+      cell: (row) => formatDate(row.reportedAt, "dd MMM, yyyy"),
     },
     {
-      key: "lastUpdated",
-      header: "Last Updated",
-      cell: (row) => formatDate(row.lastUpdated, "dd MMM, yyyy"),
+      key: "priority",
+      header: "Priority",
+      cell: (row) => <>{row.priority}</>,
     },
     {
       key: "actions",
       header: "Actions",
-      cell: (row) => <ActionDropdownMenu issue={row} />,
+      cell: (row) => <IssueRowActions issue={row} />,
     },
   ];
 
@@ -68,7 +61,7 @@ function IssuesTable() {
       data={items}
       columns={columns}
       showPagination
-      filters={filters}
+      filters={issueFilters}
       onFilterChange={(key, value) => {
         setFilter({ [key]: value });
       }}
@@ -84,34 +77,6 @@ function IssuesTable() {
       emptyMessage="Issue not found"
       errorMessage="Could not load issues. Please try again."
     />
-  );
-}
-
-function ActionDropdownMenu({ issue }: { issue: CustomerIssue }) {
-  return (
-    <>
-      <DropdownMenu>
-        <DropdownMenuTrigger>
-          <IconBtn
-            size="sm"
-            variant="ghost"
-            shape="square"
-            aria-label={`Actions for ${issue.id}`}
-          >
-            <EllipsisVertical />
-          </IconBtn>
-        </DropdownMenuTrigger>
-        <DropdownMenuContent
-          align="end"
-          className="rounded-none **:data-[slot=dropdown-menu-item]:rounded-none"
-        >
-          <DropdownMenuItem>
-            <Eye />
-            View
-          </DropdownMenuItem>
-        </DropdownMenuContent>
-      </DropdownMenu>
-    </>
   );
 }
 

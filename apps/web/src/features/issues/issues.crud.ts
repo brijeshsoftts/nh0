@@ -4,23 +4,24 @@ import type { z } from "zod";
 import { createCrud } from "@/lib/crud/createCrud";
 
 import {
-  adminCreateIssueSchema,
+  adminUpdateIssueSchema,
   customerCreateIssueSchema,
 } from "./schemas/issue.schema";
-import type { CustomerIssue } from "./issues.types";
+import type { IssueDetails } from "./issues.types";
 
-type Issues = CustomerIssue | undefined;
+type Issues = IssueDetails;
 
 export const issuesCrud = createCrud<Issues, undefined>()({
   resource: "issues",
   endpoint: "/issues",
   label: "Issue",
-  createSchema: customerCreateIssueSchema || adminCreateIssueSchema,
-  updateSchema: adminCreateIssueSchema,
+  createSchema: customerCreateIssueSchema,
+  updateSchema: adminUpdateIssueSchema,
 });
 
 export const {
   useList: useIssues,
+  useDetail: useIssue,
   useCreate: useCreateIssueCrud,
   useUpdate: useUpdateIssue,
   useDelete: useDeleteIssue,

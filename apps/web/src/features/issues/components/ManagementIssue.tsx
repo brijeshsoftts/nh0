@@ -8,50 +8,11 @@ import {
 import { useListParams } from "@/hooks/useListParams";
 
 import { useIssues } from "../hooks/useIssues";
+import { issueFilters } from "../issue-filters";
 import type { IssueItem } from "../issues.types";
 
+import { IssueRowActions } from "./IssueRowActions";
 import { IssuesStats } from "./IssuesStats";
-
-const issueCategory = [
-  "PLUMBING",
-  "ELECTRICAL",
-  "HVAC",
-  "FURNITURE",
-  "APPLIANCE",
-  "INTERNET",
-  "BATHROOM",
-  "DOOR_LOCK",
-  "LIGHTING",
-  "OTHER",
-];
-
-const issuePriority = ["LOW", "MEDIUM", "HIGH", "URGENT"];
-
-const issueStatus = [
-  "OPEN",
-  "IN_PROGRESS",
-  "COMPLETED",
-  "RESOLVED",
-  "CANCELLED",
-];
-
-export const filters = [
-  {
-    key: "category",
-    label: "Category",
-    options: issueCategory.map((value) => ({ value, label: value })),
-  },
-  {
-    key: "priority",
-    label: "Priority",
-    options: issuePriority.map((value) => ({ value, label: value })),
-  },
-  {
-    key: "status",
-    label: "Status",
-    options: issueStatus.map((value) => ({ value, label: value })),
-  },
-];
 
 function IssueTable() {
   const { setFilter, params, setPage, setSearch } = useListParams();
@@ -110,6 +71,12 @@ function IssueTable() {
       header: "Reported At",
       cell: (row) => formatDate(row.reportedAt, "dd MMM, yyyy"),
     },
+    {
+      key: "actions",
+      header: "Actions",
+      align: "right",
+      cell: (row) => <IssueRowActions issue={row} />,
+    },
   ];
 
   return (
@@ -121,7 +88,7 @@ function IssueTable() {
       searchPlaceholder="Search issue..."
       emptyMessage="Issue not found"
       showPagination
-      filters={filters}
+      filters={issueFilters}
       onFilterChange={(key, value) => {
         setFilter({ [key]: value });
       }}

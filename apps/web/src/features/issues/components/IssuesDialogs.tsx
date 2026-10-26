@@ -23,11 +23,22 @@ import { Spinner } from "@/components/ui/spinner";
 import { useCreateIssue } from "../issues.crud";
 
 const issueCategories: SelectOption[] = [
-  { id: "ROOM", name: "Room" },
+  { id: "PLUMBING", name: "Plumbing" },
+  { id: "ELECTRICAL", name: "Electrical" },
+  { id: "HVAC", name: "HVAC" },
+  { id: "FURNITURE", name: "Furniture" },
+  { id: "APPLIANCE", name: "Appliance" },
+  { id: "INTERNET", name: "Internet" },
   { id: "BATHROOM", name: "Bathroom" },
-  { id: "FOOD", name: "Food" },
-  { id: "ENTERTAINMENT", name: "Entertainment" },
-  { id: "CONNECTIVITY", name: "Connectivity" },
+  { id: "DOOR_LOCK", name: "Door Lock" },
+  { id: "LIGHTING", name: "Lighting" },
+  { id: "OTHER", name: "Other" },
+];
+
+const issuePriorities: SelectOption[] = [
+  { id: "LOW", name: "Low" },
+  { id: "MEDIUM", name: "Medium" },
+  { id: "HIGH", name: "High" },
 ];
 
 export function CreateCustomerIssueDialog() {
@@ -66,7 +77,15 @@ export function CreateCustomerIssueDialog() {
             error={formState.errors.category?.message}
             disabled={mutation.isPending}
           />
-
+          <SelectField
+            name="priority"
+            control={control}
+            label="Priority"
+            placeholder="Select a priority"
+            options={issuePriorities}
+            error={formState.errors.priority?.message}
+            disabled={mutation.isPending}
+          />
           <InputField
             label="Title"
             placeholder="Briefly describe the issue"
@@ -106,7 +125,3 @@ export function CreateCustomerIssueDialog() {
     </Dialog>
   );
 }
-
-export function UpdateIssueDialog() {}
-
-export function ViewIssueDialog() {}

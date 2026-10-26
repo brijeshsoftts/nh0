@@ -4,6 +4,8 @@ import {
   Get,
   HttpCode,
   HttpStatus,
+  Param,
+  Patch,
   Post,
   Query,
   UseGuards,
@@ -17,6 +19,7 @@ import { UserRole } from '../../types/prisma.types';
 
 import { CreateIssueDto, CreateIssueSchema } from './dto/create-issue.dto';
 import { IssuesQueryDto, IssuesQuerySchema } from './dto/issues-query.dto';
+import { UpdateIssueDto, UpdateIssueSchema } from './dto/update-issue.dto';
 import { ISSUE_SUCCESS_MSG } from './issue.constants';
 import { IssuesService } from './issues.service';
 
@@ -50,6 +53,29 @@ export class IssuesController {
       role,
     );
     return apiListResponse({ data, meta });
+  }
+
+  @Roles('ADMIN', 'MANAGER', 'CUSTOMER')
+  @Get(':id')
+  @HttpCode(HttpStatus.OK)
+  async findOne(
+    @Param('id') id: string,
+    @CurrentUser('id') userId: string,
+    @CurrentUser('role') role: UserRole,
+  ) {
+    const data = await this.issuesService.findOne(id, userId, role);
+    return apiResponse({ data });
+  }
+
+  @Roles('ADMIN', 'MANAGER')
+  @Patch(':id')
+  @HttpCode(HttpStatus.OK)
+  async update(
+    @Param('id') id: string,
+    @Body(new ValidationPipe(UpdateIssueSchema)) body: UpdateIssueDto,
+  ) {
+    const data = await this.issuesService.update(id, body);
+    return apiResponse({ data, message: ISSUE_SUCCESS_MSG.UPDATED });
   }
 
   @Roles('ADMIN', 'MANAGER', 'CUSTOMER')
