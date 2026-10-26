@@ -2,11 +2,14 @@ import {
   BadRequestException,
   ConflictException,
   Injectable,
+  Logger,
   NotFoundException,
 } from '@nestjs/common';
 import slugify from 'slugify';
+import type {} from 'multer';
 
-import { uploadFile } from '../../config';
+import { MAX_FILES } from '../../common/constants';
+import { deleteFile, uploadFile } from '../../config';
 import { Prisma } from '../../generated/prisma/client';
 import { PrismaService } from '../../prisma/prisma.service';
 import { ListResponse } from '../../types/api.types';
@@ -14,6 +17,7 @@ import { BookingStatus, UserRole } from '../../types/prisma.types';
 
 import { CreateRoomTypeDto } from './dto/create-room-type.dto';
 import { RoomTypeQueryDto } from './dto/room-type-query.dto';
+import { UpdateRoomTypeDto } from './dto/update-room-type.dto';
 import { ROOM_TYPE_ERROR_MSG } from './room-types.constants';
 import {
   BrowseRoom,
@@ -24,6 +28,8 @@ import {
 
 @Injectable()
 export class RoomTypesService {
+  private readonly logger = new Logger(RoomTypesService.name);
+
   constructor(private readonly prismaService: PrismaService) {}
 
   async create(files, dto: CreateRoomTypeDto): Promise<CreateRoomType> {
@@ -106,6 +112,196 @@ export class RoomTypesService {
     });
   }
 
+  async update(
+    id: string,
+    dto: UpdateRoomTypeDto,
+    files: Express.Multer.File[] = [],
+  ): Promise<void> {
+    const roomType = await this.prismaService.roomType.findUnique({
+      where: { id },
+      select: {
+        id: true,
+        images: {
+          select: {
+            id: true,
+            url: true,
+            altText: true,
+            isPrimary: true,
+            sortOrder: true,
+          },
+          orderBy: { sortOrder: 'asc' },
+        },
+      },
+    });
+
+    if (!roomType) {
+      throw new NotFoundException(ROOM_TYPE_ERROR_MSG.ROOM_TYPE_NOT_FOUND);
+    }
+
+    const retainedIds = new Set(dto.retainedImageIds);
+    const retainedImages = roomType.images.filter((image) =>
+      retainedIds.has(image.id),
+    );
+
+    if (
+      retainedImages.length !== retainedIds.size ||
+      retainedIds.size + files.length < 1
+    ) {
+      throw new BadRequestException(
+        retainedIds.size + files.length < 1
+          ? ROOM_TYPE_ERROR_MSG.IMAGE_REQUIRED
+          : ROOM_TYPE_ERROR_MSG.INVALID_IMAGE_SELECTION,
+      );
+    }
+
+    if (retainedIds.size + files.length > MAX_FILES) {
+      throw new BadRequestException(ROOM_TYPE_ERROR_MSG.IMAGE_LIMIT);
+    }
+
+    const [primaryType, primaryValue] = dto.primaryImage.split(':');
+    const primaryFileIndex = Number(primaryValue);
+    const hasValidPrimary =
+      (primaryType === 'existing' && retainedIds.has(primaryValue)) ||
+      (primaryType === 'new' &&
+        Number.isInteger(primaryFileIndex) &&
+        primaryFileIndex >= 0 &&
+        primaryFileIndex < files.length);
+
+    if (!hasValidPrimary) {
+      throw new BadRequestException(
+        ROOM_TYPE_ERROR_MSG.INVALID_IMAGE_SELECTION,
+      );
+    }
+
+    const name = dto.name.trim();
+    const slug = slugify(name);
+    const conflictingRoomType = await this.prismaService.roomType.findFirst({
+      where: {
+        id: { not: id },
+        OR: [
+          { name: { equals: name, mode: 'insensitive' } },
+          { slug: { equals: slug, mode: 'insensitive' } },
+        ],
+      },
+      select: { id: true },
+    });
+
+    if (conflictingRoomType) {
+      throw new ConflictException(ROOM_TYPE_ERROR_MSG.CONFLICT_NAME);
+    }
+
+    const uploadedImages: {
+      url: string;
+      altText: string;
+      isPrimary: boolean;
+      sortOrder: number;
+    }[] = [];
+
+    try {
+      for (const [index, file] of files.entries()) {
+        const uploaded = await uploadFile(file);
+        uploadedImages.push({
+          url: uploaded.url,
+          altText: uploaded.name,
+          isPrimary: primaryType === 'new' && primaryFileIndex === index,
+          sortOrder: retainedImages.length + index,
+        });
+      }
+
+      await this.prismaService.$transaction(async (transaction) => {
+        await transaction.roomType.update({
+          where: { id },
+          data: {
+            name,
+            slug,
+            description: dto.description?.trim() || null,
+            sizeSqFt: dto.sizeSqFt ?? null,
+            maxGuests: dto.maxGuests,
+            basePrice: dto.basePrice,
+            currency: dto.currency,
+            bedType: dto.bedType,
+            adults: dto.adults,
+            children: dto.children,
+            bedCount: dto.bedCount,
+            smokingAllowed: dto.smokingAllowed,
+            petsAllowed: dto.petsAllowed,
+            isActive: dto.isActive,
+            amenities: {
+              set: dto.amenities.map((amenityId) => ({ id: amenityId })),
+            },
+          },
+          select: { id: true },
+        });
+
+        const removedImages = roomType.images.filter(
+          (image) => !retainedIds.has(image.id),
+        );
+
+        if (removedImages.length > 0) {
+          await transaction.image.deleteMany({
+            where: {
+              roomTypeId: id,
+              id: { in: removedImages.map((image) => image.id) },
+            },
+          });
+        }
+
+        await transaction.image.updateMany({
+          where: { roomTypeId: id },
+          data: { isPrimary: false },
+        });
+
+        for (const [index, image] of retainedImages.entries()) {
+          await transaction.image.update({
+            where: { id: image.id },
+            data: {
+              isPrimary:
+                primaryType === 'existing' && primaryValue === image.id,
+              sortOrder: index,
+            },
+          });
+        }
+
+        if (uploadedImages.length > 0) {
+          await transaction.image.createMany({
+            data: uploadedImages.map((image) => ({
+              ...image,
+              roomTypeId: id,
+            })),
+          });
+        }
+      });
+    } catch (error) {
+      await Promise.allSettled(
+        uploadedImages.map((image) => deleteFile(image.url)),
+      );
+
+      if (error instanceof Prisma.PrismaClientKnownRequestError) {
+        if (error.code === 'P2002') {
+          throw new ConflictException(ROOM_TYPE_ERROR_MSG.CONFLICT_NAME);
+        }
+        if (error.code === 'P2025') {
+          throw new NotFoundException(ROOM_TYPE_ERROR_MSG.ROOM_TYPE_NOT_FOUND);
+        }
+      }
+
+      throw error;
+    }
+
+    const removedImages = roomType.images.filter(
+      (image) => !retainedIds.has(image.id),
+    );
+    const cleanupResults = await Promise.allSettled(
+      removedImages.map((image) => deleteFile(image.url)),
+    );
+
+    cleanupResults.forEach((result) => {
+      if (result.status === 'rejected') {
+        this.logger.warn('Could not remove a replaced room type image.');
+      }
+    });
+  }
+
   async findAll(
     query: RoomTypeQueryDto,
     role: UserRole,
@@ -138,6 +334,7 @@ export class RoomTypesService {
           bedCount: true,
           amenities: {
             select: {
+              id: true,
               name: true,
               icon: true,
             },
@@ -373,7 +570,7 @@ export class RoomTypesService {
           },
         },
         amenities: {
-          select: { name: true, icon: true },
+          select: { id: true, name: true, icon: true },
         },
         rooms: {
           select: {

@@ -22,6 +22,7 @@ export type CreateRoomType = RoomTypeBase & {
 };
 
 type Amenity = {
+  id: string;
   name: string;
   icon: string | null;
 };

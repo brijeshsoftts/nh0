@@ -1,8 +1,9 @@
 import type { BedType } from "@/types/enum.types";
 
 type Amenity = {
+  id: string;
   name: string;
-  icon: string;
+  icon: string | null;
 };
 
 export type RoomType = {

@@ -20,6 +20,8 @@ import { Separator } from "@/components/ui/separator";
 
 import type { RoomType } from "../roomTypes.types";
 
+import { UpdateRoomTypeDialog } from "./UpdateRoomTypeDialog";
+
 interface RoomTypeCardProps {
   roomType: RoomType;
 }
@@ -29,6 +31,7 @@ const MAX_VISIBLE_AMENITIES = 4;
 export function RoomTypeCard({ roomType }: RoomTypeCardProps) {
   const visibleAmenities = roomType.amenities.slice(0, MAX_VISIBLE_AMENITIES);
   const [open, setOpen] = useState(false);
+  const [editOpen, setEditOpen] = useState(false);
 
   const remainingAmenities =
     roomType.amenities.length - visibleAmenities.length;
@@ -214,6 +217,7 @@ export function RoomTypeCard({ roomType }: RoomTypeCardProps) {
               variant="outline"
               size="sm"
               className="gap-2 rounded-none"
+              onClick={() => setEditOpen(true)}
             >
               <Pencil className="size-3.5" />
               Edit
@@ -256,6 +260,11 @@ export function RoomTypeCard({ roomType }: RoomTypeCardProps) {
           slug={roomType.slug}
         />
       )}
+      <UpdateRoomTypeDialog
+        open={editOpen}
+        onOpenChange={setEditOpen}
+        roomType={roomType}
+      />
     </>
   );
 }

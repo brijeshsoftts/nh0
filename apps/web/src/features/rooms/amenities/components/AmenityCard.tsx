@@ -21,8 +21,7 @@ interface AmenityCardProps {
   amenity: Amenity;
 }
 export function AmenityCard({ amenity }: AmenityCardProps) {
-  const { icon } = amenity;
-  const Icon = icons[icon] || Sparkles;
+  const Icon = icons[amenity.icon] ?? Sparkles;
   const { handleDelete, isPending } = useDeleteAmenity(amenity.id);
 
   return (
