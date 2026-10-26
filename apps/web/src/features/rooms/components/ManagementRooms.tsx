@@ -1,4 +1,4 @@
-import { EllipsisVertical } from "lucide-react";
+import { EllipsisVertical, Plus } from "lucide-react";
 import { useState } from "react";
 
 import { type ColumnDef, DataTable } from "@/components/common/DataTable";
@@ -8,6 +8,7 @@ import {
   StatusBadge,
 } from "@/components/common/EnumBadges";
 import { IconBtn } from "@/components/common/IconBtn";
+import { Button } from "@/components/ui/button";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -18,6 +19,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useListParams } from "@/hooks/useListParams";
 
 import { AmenityGrid } from "../amenities/components/AmenityGrid";
+import { CreateRoomDialog } from "../rooms/components/CreateRoomDialog";
 import { UpdateRoomDialog } from "../rooms/components/UpdateRoomDialog";
 import { ViewRoomDialog } from "../rooms/components/ViewRoomDialog";
 import { useDeleteRoom } from "../rooms/hooks/useDeleteRoom";
@@ -154,6 +156,14 @@ function RoomTable() {
       <DataTable
         title="Rooms"
         description="Manage rooms and bookings."
+        headerActions={
+          <CreateRoomDialog>
+            <Button className="h-10 rounded-none">
+              <Plus className="size-4" />
+              New Room
+            </Button>
+          </CreateRoomDialog>
+        }
         data={items}
         columns={columns}
         searchPlaceholder="Search rooms..."

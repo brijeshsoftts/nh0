@@ -154,11 +154,6 @@ export const RECEPTIONIST_PAGES: NavItem[] = [
     href: "/dashboard/customers",
   },
   {
-    title: "Rooms",
-    icon: BedDouble,
-    href: "/dashboard/rooms",
-  },
-  {
     title: "New Booking",
     icon: CalendarPlus,
     href: "/dashboard/bookings/new",

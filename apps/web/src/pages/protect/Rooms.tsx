@@ -1,4 +1,5 @@
-import { NoAccess } from "@/components/common/NoAccess";
+import { Navigate } from "react-router-dom";
+
 import { HouseKeeperRooms } from "@/features/rooms/components/HouseKeeperRooms";
 import { ManagementRooms } from "@/features/rooms/components/ManagementRooms";
 import { useAuth } from "@/hooks/useAuth";
@@ -11,14 +12,11 @@ export default function RoomsPage() {
     case "MANAGER":
       return <ManagementRooms />;
     case "STAFF":
-      if (user.category === "RECEPTIONIST") {
-        return <NoAccess />;
-      }
       if (user.category === "HOUSEKEEPER") {
         return <HouseKeeperRooms />;
       }
-      return <NoAccess />;
+      return <Navigate to="/dashboard" replace />;
     default:
-      return <NoAccess />;
+      return <Navigate to="/dashboard" replace />;
   }
 }

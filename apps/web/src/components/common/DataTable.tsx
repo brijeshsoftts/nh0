@@ -47,6 +47,7 @@ export interface DynamicFilter {
 export interface DataTable<T> {
   title?: string;
   description?: string;
+  headerActions?: React.ReactNode;
   data: T[];
   pagination?: Pagination;
   columns: ColumnDef<T>[];
@@ -77,6 +78,7 @@ export interface DataTable<T> {
 export function DataTable<T extends Record<string, any>>({
   title,
   description,
+  headerActions,
   data = [],
   columns,
   searchPlaceholder = "Search...",
@@ -211,6 +213,7 @@ export function DataTable<T extends Record<string, any>>({
                 ))}
               </div>
             )}
+            {headerActions}
           </div>
         </div>
 
