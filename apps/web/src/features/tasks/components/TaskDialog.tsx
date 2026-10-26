@@ -25,6 +25,7 @@ import {
 import { Label } from "@/components/ui/label";
 import { Spinner } from "@/components/ui/spinner";
 import { useDebounce } from "@/hooks/useDebounce";
+import type { TaskStatus, TaskType } from "@/types/enum.types";
 
 import {
   useCreateTask,
@@ -38,37 +39,9 @@ import type {
   TaskItem,
 } from "../tasks.types";
 
-/* -------------------------------------------------------------------------- */
-/* Types (nested, mirrors Prisma relations). Move to tasks.types.ts if needed. */
-/* -------------------------------------------------------------------------- */
-
-const TASK_TYPES = ["CLEANING", "DEEP_CLEAN", "TURNDOWN"] as const;
-const TASK_STATUSES = ["PENDING", "IN_PROGRESS", "COMPLETED"] as const;
-
-export type TaskType = (typeof TASK_TYPES)[number];
-export type TaskStatus = (typeof TASK_STATUSES)[number];
-
-export type HousekeepingTask = {
-  id: string;
-  taskType: TaskType;
-  status: TaskStatus;
-  scheduledDate: string; // ISO
-  startedAt: string | null;
-  completedAt: string | null;
-  createdAt: string;
-  updatedAt: string;
-  room: { id: string; roomNumber: string; floor: number };
-  assignee: { id: string; fullName: string };
-};
-
-export type TaskRoomOption = { id: string; roomNumber: string; floor: number };
-export type TaskHousekeeperOption = { id: string; fullName: string };
+const TASK_TYPES: TaskType[] = ["CLEANING", "DEEP_CLEAN", "TURNDOWN"];
 
 export type TaskDialogMode = "create" | "edit" | "view";
-
-/* -------------------------------------------------------------------------- */
-/* Schema (move to task.schema.ts if you prefer)                               */
-/* -------------------------------------------------------------------------- */
 
 /* -------------------------------------------------------------------------- */
 /* Helpers                                                                     */
@@ -101,18 +74,6 @@ const TITLE: Record<TaskDialogMode, string> = {
 
 const SUBMIT_LABEL = { create: "Create task", edit: "Save changes" } as const;
 
-const todayInputValue = () => new Date().toISOString().slice(0, 10);
-
-const getDefaultValues = (
-  task?: HousekeepingTask | null,
-  defaultRoomId?: string
-): TaskFormValues => ({
-  roomId: task?.room.id ?? defaultRoomId ?? "",
-  assignedTo: task?.assignee.id ?? "",
-  taskType: task?.taskType ?? "CLEANING",
-  scheduledDate: task ? task.scheduledDate.slice(0, 10) : todayInputValue(),
-});
-
 const formatDateTime = (value: string | null) =>
   value
     ? new Date(value).toLocaleString("en-IN", {
@@ -142,8 +103,11 @@ export function TaskDialog({
   task,
   onEdit,
 }: TaskDialogProps) {
-  const createTask = useCreateTask();
-  const updateTask = useUpdateTask(task?.id ?? "");
+  const closeOnSuccess = () => onOpenChange(false);
+  const createTask = useCreateTask({ onSuccess: closeOnSuccess });
+  const updateTask = useUpdateTask(task?.id ?? "", {
+    onSuccess: closeOnSuccess,
+  });
 
   const activeForm = mode === "create" ? createTask : updateTask;
   const isPending = activeForm.mutation.isPending;
@@ -275,7 +239,7 @@ function HousekeeperSelect({
   onSelect,
   error,
 }: {
-  onSelect: any;
+  onSelect: (id: string) => void;
   error: string;
 }) {
   const [search, setSearch] = useState("");
@@ -322,7 +286,7 @@ function RoomSelect({
   onSelect,
   error,
 }: {
-  onSelect: (option: any) => void;
+  onSelect: (id: string) => void;
   error: string;
 }) {
   const [search, setSearch] = useState("");
@@ -365,7 +329,7 @@ function TaskTypeSelect({
   onSelect,
   error,
 }: {
-  onSelect: (option: any) => void;
+  onSelect: (taskType: TaskType) => void;
   error: string;
 }) {
   const taskTypeOptions = useMemo(

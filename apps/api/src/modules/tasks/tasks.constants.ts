@@ -6,6 +6,7 @@ export const TASK_SUCCESS_MSG = {
 
 export const TASK_ERROR_MSG = {
   NOT_FOUND: 'Task could not be found.',
+  EDIT_ONLY_PENDING: 'Only pending tasks can be edited.',
   ROOM_NOT_FOUND: 'Room could not be found.',
   HOUSEKEEPER_NOT_FOUND: 'Active housekeeper could not be found.',
   HOUSEKEEPER_TASK_FORBIDDEN: 'You can only update tasks assigned to you.',

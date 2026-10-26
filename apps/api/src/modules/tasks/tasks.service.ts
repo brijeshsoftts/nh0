@@ -168,7 +168,7 @@ export class TasksService {
     const [existingTask, room, staff] = await Promise.all([
       this.prismaService.housekeepingTask.findUnique({
         where: { id },
-        select: { id: true },
+        select: { id: true, status: true, roomId: true },
       }),
       dto.roomId
         ? this.prismaService.room.findUnique({
@@ -195,6 +195,9 @@ export class TasksService {
     if (!existingTask) {
       throw new NotFoundException(TASK_ERROR_MSG.NOT_FOUND);
     }
+    if (existingTask.status !== TaskStatus.PENDING) {
+      throw new ConflictException(TASK_ERROR_MSG.EDIT_ONLY_PENDING);
+    }
 
     if (dto.roomId && !room) {
       throw new NotFoundException(TASK_ERROR_MSG.ROOM_NOT_FOUND);
@@ -209,24 +212,45 @@ export class TasksService {
       throw new NotFoundException(TASK_ERROR_MSG.HOUSEKEEPER_NOT_FOUND);
     }
 
-    const task = await this.prismaService.housekeepingTask.update({
-      where: { id },
-      data: {
-        ...(dto.roomId && { roomId: dto.roomId }),
-        ...(dto.assignedTo && { assignedTo: dto.assignedTo }),
-        ...(dto.taskType && { taskType: dto.taskType }),
-        ...(dto.scheduledDate && { scheduledDate: dto.scheduledDate }),
-      },
-      select: {
-        id: true,
-        taskType: true,
-        status: true,
-        scheduledDate: true,
-        startedAt: true,
-        completedAt: true,
-        room: { select: { id: true, roomNumber: true } },
-        assignee: { select: { id: true, fullName: true } },
-      },
+    const task = await this.prismaService.$transaction(async (tx) => {
+      const result = await tx.housekeepingTask.updateMany({
+        where: { id, status: TaskStatus.PENDING },
+        data: {
+          ...(dto.roomId && { roomId: dto.roomId }),
+          ...(dto.assignedTo && { assignedTo: dto.assignedTo }),
+          ...(dto.taskType && { taskType: dto.taskType }),
+          ...(dto.scheduledDate && { scheduledDate: dto.scheduledDate }),
+        },
+      });
+
+      if (result.count !== 1) {
+        throw new ConflictException(TASK_ERROR_MSG.EDIT_ONLY_PENDING);
+      }
+
+      if (dto.roomId && dto.roomId !== existingTask.roomId) {
+        await this.syncRoomHousekeepingStatus(tx, existingTask.roomId);
+        await this.syncRoomHousekeepingStatus(tx, dto.roomId);
+      }
+
+      const updatedTask = await tx.housekeepingTask.findUnique({
+        where: { id },
+        select: {
+          id: true,
+          taskType: true,
+          status: true,
+          scheduledDate: true,
+          startedAt: true,
+          completedAt: true,
+          room: { select: { id: true, roomNumber: true } },
+          assignee: { select: { id: true, fullName: true } },
+        },
+      });
+
+      if (!updatedTask) {
+        throw new NotFoundException(TASK_ERROR_MSG.NOT_FOUND);
+      }
+
+      return updatedTask;
     });
 
     return {
