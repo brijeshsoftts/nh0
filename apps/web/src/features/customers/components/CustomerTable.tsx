@@ -1,4 +1,4 @@
-import { EllipsisVertical } from "lucide-react";
+import { EllipsisVertical, Eye, Pencil, Power, Trash2 } from "lucide-react";
 import { useState } from "react";
 
 import { type ColumnDef, DataTable } from "@/components/common/DataTable";
@@ -17,6 +17,7 @@ import { formatPrice } from "@/lib/format";
 import type { Customer } from "../customers.types";
 import { useCustomers } from "../hooks/useCustomers";
 import { useDeleteCustomer } from "../hooks/useDeleteCustomer";
+import { useUpdateCustomerStatus } from "../hooks/useUpdateCustomer";
 
 import { UpdateCustomerDialog } from "./UpdateCustomerDialog";
 import { ViewCustomerDialog } from "./ViewCustomerDialog";
@@ -161,7 +162,9 @@ function formatLastLogin(lastLogin?: string) {
 function ActionDropdownMenu({ customer }: { customer: Customer }) {
   const [isUpdateModal, setIsUpdateModal] = useState(false);
   const [isViewModal, setIsViewModal] = useState(false);
-  const { handleDelete, isDeleting } = useDeleteCustomer();
+  const { handleDelete, isDeleting } = useDeleteCustomer(customer.id);
+  const { handleToggleStatus, isPending: isStatusPending } =
+    useUpdateCustomerStatus(customer.id, customer.isActive);
 
   return (
     <>
@@ -182,16 +185,32 @@ function ActionDropdownMenu({ customer }: { customer: Customer }) {
           className="rounded-none **:data-[slot=dropdown-menu-item]:rounded-none"
         >
           <DropdownMenuItem onClick={() => setIsViewModal(true)}>
+            <Eye className="mr-2 size-4" />
             View
           </DropdownMenuItem>
-          <DropdownMenuItem onClick={() => setIsUpdateModal(true)}>
-            Edit
+
+          <DropdownMenuItem
+            onClick={handleToggleStatus}
+            disabled={isStatusPending || isDeleting}
+          >
+            <Power className="mr-2 size-4" />
+            {customer.isActive ? "Deactivate" : "Activate"}
           </DropdownMenuItem>
+
+          <DropdownMenuItem
+            onClick={() => setIsUpdateModal(true)}
+            disabled={isDeleting || isStatusPending}
+          >
+            <Pencil className="mr-2 size-4" />
+            Update
+          </DropdownMenuItem>
+
           <DropdownMenuItem
             className="text-destructive"
-            onClick={() => handleDelete(customer.id)}
-            disabled={isDeleting}
+            onClick={() => handleDelete()}
+            disabled={isDeleting || isStatusPending}
           >
+            <Trash2 className="mr-2 size-4" />
             Delete
           </DropdownMenuItem>
         </DropdownMenuContent>

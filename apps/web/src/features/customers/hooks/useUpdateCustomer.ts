@@ -21,7 +21,7 @@ function useUpdateCustomer(id: string) {
     onSuccess: (res) => {
       toast.success(res?.message || "Customer updated successfully");
       queryClient.invalidateQueries({
-        queryKey: customersKeys.lists(),
+        queryKey: customersKeys.all,
       });
     },
     onError: notifyError,
@@ -54,3 +54,30 @@ export function useUpdateCustomerFacade(id: string) {
     getValues,
   };
 }
+
+export const useUpdateCustomerStatus = (
+  customerId: string,
+  isActive: boolean
+) => {
+  const queryClient = useQueryClient();
+  const { mutate, isPending } = useMutation({
+    mutationKey: customersMutationKeys.update,
+    mutationFn: () => customersService.updateStatus(customerId, !isActive),
+    onSuccess: (res) => {
+      toast.success(res?.message || "Customer status updated successfully.");
+      queryClient.invalidateQueries({
+        queryKey: customersKeys.all,
+      });
+    },
+    onError: notifyError,
+  });
+
+  const handleToggleStatus = () => {
+    mutate();
+  };
+
+  return {
+    isPending,
+    handleToggleStatus,
+  };
+};

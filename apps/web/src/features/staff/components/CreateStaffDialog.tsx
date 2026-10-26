@@ -47,8 +47,6 @@ export function CreateStaffDialog({ children }: { children: React.ReactNode }) {
     }
   }, [isSuccess, isOpen, reset]);
 
-  console.log(errors);
-
   return (
     <Dialog open={isOpen} onOpenChange={setIsOpen}>
       <DialogTrigger>{children}</DialogTrigger>

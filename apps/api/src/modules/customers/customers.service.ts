@@ -288,6 +288,28 @@ export class CustomersService {
     }
   }
 
+  async updateStatus(
+    id: string,
+    isActive: boolean,
+  ): Promise<{ id: string; isActive: boolean }> {
+    const customer = await this.prismaService.user.findFirst({
+      where: { id, role: UserRole.CUSTOMER, softDeletedAt: null },
+      select: { id: true, isActive: true },
+    });
+
+    if (!customer) {
+      throw new NotFoundException(CUSTOMER_ERROR_MSG.NOT_FOUND);
+    }
+
+    const updated = await this.prismaService.user.update({
+      where: { id },
+      data: { isActive },
+      select: { id: true, isActive: true },
+    });
+
+    return updated;
+  }
+
   async delete(id: string): Promise<void> {
     const result = await this.prismaService.user.updateMany({
       where: { id, role: UserRole.CUSTOMER, softDeletedAt: null },

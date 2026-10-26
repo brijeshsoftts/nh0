@@ -39,6 +39,10 @@ import {
   UpdateCustomerSchema,
 } from './dto/update-customer.dto';
 import {
+  UpdateCustomerStatusDto,
+  UpdateCustomerStatusSchema,
+} from './dto/update-customer-status.dto';
+import {
   CUSTOMER_ERROR_MSG,
   CUSTOMER_SUCCESS_MSG,
 } from './customers.constants';
@@ -130,6 +134,19 @@ export class CustomersController {
   ) {
     await this.customersService.update(id, body, files);
     return apiMessageResponse(CUSTOMER_SUCCESS_MSG.UPDATED);
+  }
+
+  @UseGuards(AuthGuard, RoleGuard)
+  @Roles('ADMIN', 'MANAGER')
+  @Patch(':id/status')
+  @HttpCode(HttpStatus.OK)
+  async updateStatus(
+    @Param('id') id: string,
+    @Body(new ValidationPipe(UpdateCustomerStatusSchema))
+    body: UpdateCustomerStatusDto,
+  ) {
+    const data = await this.customersService.updateStatus(id, body.isActive);
+    return apiResponse({ data, message: CUSTOMER_SUCCESS_MSG.UPDATED });
   }
 
   @UseGuards(AuthGuard, RoleGuard)

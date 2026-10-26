@@ -6,16 +6,16 @@ import { notifyError } from "@/lib/notification";
 import { customersKeys, customersMutationKeys } from "../customers.keys";
 import { customersService } from "../customers.service";
 
-export function useDeleteCustomer() {
+export function useDeleteCustomer(id: string) {
   const queryClient = useQueryClient();
 
   const { isPending, mutate } = useMutation({
     mutationKey: customersMutationKeys.delete,
-    mutationFn: customersService.delete,
+    mutationFn: () => customersService.delete(id),
     onSuccess: (res) => {
       toast.success(res?.message || "Customer deleted successfully");
       queryClient.invalidateQueries({
-        queryKey: customersKeys.lists(),
+        queryKey: customersKeys.all,
       });
     },
     onError: notifyError,

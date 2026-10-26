@@ -45,6 +45,10 @@ export const customersService = {
     apiClient
       .patch(`/customers/${id}`, toCustomerFormData(data))
       .then((r) => r.data),
+  updateStatus: (id: string, isActive: boolean): Promise<ApiMessageResponse> =>
+    apiClient
+      .patch(`/customers/${id}/status`, { isActive })
+      .then((r) => r.data),
   delete: (id: string): Promise<ApiMessageResponse> =>
     apiClient.delete(`/customers/${id}`).then((r) => r.data),
   findOne: (id: string): Promise<CustomerDetails> =>
