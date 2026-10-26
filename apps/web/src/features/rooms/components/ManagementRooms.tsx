@@ -1,4 +1,4 @@
-import { EllipsisVertical, Plus } from "lucide-react";
+import { Plus } from "lucide-react";
 import { useState } from "react";
 
 import { type ColumnDef, DataTable } from "@/components/common/DataTable";
@@ -7,26 +7,17 @@ import {
   OccupancyBadge,
   StatusBadge,
 } from "@/components/common/EnumBadges";
-import { IconBtn } from "@/components/common/IconBtn";
 import { Button } from "@/components/ui/button";
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useListParams } from "@/hooks/useListParams";
 
 import { AmenityGrid } from "../amenities/components/AmenityGrid";
 import { CreateRoomDialog } from "../rooms/components/CreateRoomDialog";
-import { UpdateRoomDialog } from "../rooms/components/UpdateRoomDialog";
-import { ViewRoomDialog } from "../rooms/components/ViewRoomDialog";
-import { useDeleteRoom } from "../rooms/hooks/useDeleteRoom";
 import { useRooms } from "../rooms/hooks/useRooms";
 import type { Room } from "../rooms/rooms.types";
 import { RoomTypeGrid } from "../roomTypes/components/RoomTypeGrid";
 
+import { RoomActionDropdownMenu } from "./RoomActionDropdownMenu";
 import { RoomsStats } from "./RoomsStats";
 
 const tabs = [
@@ -224,60 +215,6 @@ export function ManagementRooms() {
     <>
       <RoomsStats />
       <TabsLine />
-    </>
-  );
-}
-
-function RoomActionDropdownMenu({ room }: { room: Room }) {
-  const [isViewModal, setIsViewModal] = useState(false);
-  const [isUpdateModal, setIsUpdateModal] = useState(false);
-  const { handleDelete, isDeleting } = useDeleteRoom();
-
-  return (
-    <>
-      <DropdownMenu>
-        <DropdownMenuTrigger>
-          <IconBtn size={"sm"} variant={"ghost"} shape="square">
-            <EllipsisVertical />
-          </IconBtn>
-        </DropdownMenuTrigger>
-
-        <DropdownMenuContent align="end">
-          <DropdownMenuItem
-            onClick={() => setIsViewModal(true)}
-            disabled={isDeleting}
-          >
-            View
-          </DropdownMenuItem>
-          <DropdownMenuItem
-            onClick={() => setIsUpdateModal(true)}
-            disabled={isDeleting}
-          >
-            Edit
-          </DropdownMenuItem>
-          <DropdownMenuItem
-            className={"text-destructive"}
-            onClick={() => handleDelete(room.id)}
-            disabled={isDeleting}
-          >
-            Delete
-          </DropdownMenuItem>
-        </DropdownMenuContent>
-      </DropdownMenu>
-      {isUpdateModal && (
-        <UpdateRoomDialog
-          open={isUpdateModal}
-          onOpenChange={setIsUpdateModal}
-          room={room}
-        />
-      )}
-      {isViewModal && (
-        <ViewRoomDialog
-          open={isViewModal}
-          onOpenChange={setIsViewModal}
-          room={room}
-        />
-      )}
     </>
   );
 }

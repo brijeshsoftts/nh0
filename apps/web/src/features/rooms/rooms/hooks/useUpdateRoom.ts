@@ -12,7 +12,7 @@ import {
   UpdateRoomSchema,
 } from "../schemas/updateRoom.schema";
 
-function useUpdateRoom(id: string) {
+export function useUpdateRoomMutation(id: string) {
   const queryClient = useQueryClient();
 
   return useMutation({
@@ -23,7 +23,7 @@ function useUpdateRoom(id: string) {
       toast.success(res?.message || "Room updated successfully.");
 
       queryClient.invalidateQueries({
-        queryKey: roomsKeys.lists(),
+        queryKey: roomsKeys.all,
       });
     },
 
@@ -32,7 +32,7 @@ function useUpdateRoom(id: string) {
 }
 
 export function useUpdateRoomFacade(id: string) {
-  const { mutate, isPending, isSuccess } = useUpdateRoom(id);
+  const { mutate, isPending, isSuccess } = useUpdateRoomMutation(id);
 
   const {
     handleSubmit,

@@ -462,6 +462,7 @@ export class RoomsService {
             name: true,
             slug: true,
             basePrice: true,
+            currency: true,
             isActive: true,
             images: {
               where: {

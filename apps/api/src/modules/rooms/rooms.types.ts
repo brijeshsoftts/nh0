@@ -35,13 +35,23 @@ export type RoomListItemResponse = RoomBase & {
 };
 
 export type RoomDetailsResponse = {
+  id: string;
+  name: string | null;
+  roomNumber: string;
+  roomTypeId: string;
+  floor: number;
   description: string | null;
+  occupancyStatus: OccupancyStatus;
+  housekeepingStatus: HousekeepingStatus;
+  isActive: boolean;
   createdAt: Date | null;
   updatedAt: Date | null;
   roomType: {
     id: string;
     name: string;
     slug: string;
+    basePrice: number;
+    currency: string;
     isActive: boolean;
     image: {
       id: string;

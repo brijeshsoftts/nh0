@@ -15,7 +15,7 @@ export function useDeleteRoom() {
     onSuccess: (res) => {
       toast.success(res?.message || "Room deleted successfully.");
       queryClient.invalidateQueries({
-        queryKey: roomsKeys.lists(),
+        queryKey: roomsKeys.all,
       });
     },
     onError: notifyError,
@@ -23,6 +23,6 @@ export function useDeleteRoom() {
 
   return {
     isDeleting: isPending,
-    handleDelete: (id: string) => mutate(id),
+    handleDelete: mutate,
   };
 }

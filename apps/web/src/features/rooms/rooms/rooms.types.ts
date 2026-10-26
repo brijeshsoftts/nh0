@@ -14,3 +14,30 @@ export type Room = {
     name: string;
   };
 };
+
+export type RoomDetails = {
+  id: string;
+  name: string | null;
+  roomNumber: string;
+  roomTypeId: string;
+  floor: number;
+  description: string | null;
+  occupancyStatus: OccupancyStatus;
+  housekeepingStatus: HousekeepingStatus;
+  isActive: boolean;
+  createdAt: string | null;
+  updatedAt: string | null;
+  roomType: {
+    id: string;
+    name: string;
+    slug: string;
+    basePrice: number;
+    currency: string;
+    isActive: boolean;
+    image: {
+      id: string;
+      url: string;
+      altText: string | null;
+    } | null;
+  };
+};

@@ -20,3 +20,13 @@ export function useRooms(params?: ListParams) {
     refetch,
   };
 }
+
+export function useRoomDetails(id: string, enabled: boolean) {
+  const { data, isLoading, isError, refetch } = useQuery({
+    queryKey: roomsKeys.detail(id),
+    queryFn: () => roomsService.findOne(id),
+    enabled: !!id && enabled,
+  });
+
+  return { room: data, isLoading, isError, refetch };
+}

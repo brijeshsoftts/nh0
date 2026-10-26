@@ -1,4 +1,5 @@
 import { Check, Sparkles } from "lucide-react";
+import { useEffect } from "react";
 
 import { InputField } from "@/components/common/InputField";
 import { SelectField } from "@/components/common/SelectField";
@@ -14,7 +15,7 @@ import {
 } from "@/components/ui/dialog";
 import { Spinner } from "@/components/ui/spinner";
 
-import { housekeepingStatus, occupancyStatus } from "../../rooms.constants";
+import { occupancyStatus } from "../../rooms.constants";
 import { useRoomTypes } from "../../roomTypes/hooks/useRoomTypes";
 import { useUpdateRoomFacade } from "../hooks/useUpdateRoom";
 import type { Room } from "../rooms.types";
@@ -28,13 +29,24 @@ export function UpdateRoomDialog({
   onOpenChange: (open: boolean) => void;
   room: Room;
 }) {
-  const { handleSubmit, submit, register, errors, isPending, control } =
-    useUpdateRoomFacade(room.id);
+  const {
+    handleSubmit,
+    submit,
+    register,
+    errors,
+    isPending,
+    isSuccess,
+    control,
+  } = useUpdateRoomFacade(room.id);
   const { items } = useRoomTypes({ limit: 20 });
   const roomTypeOptions = items?.map((i) => ({
     id: i.id,
     name: i.name,
   }));
+
+  useEffect(() => {
+    if (isSuccess) onOpenChange(false);
+  }, [isSuccess, onOpenChange]);
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
@@ -101,15 +113,6 @@ export function UpdateRoomDialog({
               control={control}
               options={occupancyStatus}
               error={errors.occupancyStatus?.message}
-              disabled={isPending}
-            />
-
-            <SelectField
-              name="housekeepingStatus"
-              label="Housekeeping Status"
-              control={control}
-              options={housekeepingStatus}
-              error={errors.housekeepingStatus?.message}
               disabled={isPending}
             />
 
