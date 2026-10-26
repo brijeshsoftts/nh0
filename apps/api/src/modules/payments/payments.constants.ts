@@ -26,4 +26,6 @@ export const PAYMENTS_ERROR_MSG = {
   INVALID_REFUND_STATUS: 'Only completed payments can be refunded.',
   PAYMENT_CHANGED: 'Payment changed before this operation could be applied.',
   PAYMENT_REFERENCE_CONFLICT: 'Could not create a unique payment reference.',
+  CHECKOUT_EXPIRED:
+    'This checkout session has expired. Start a new reservation.',
 } as const;

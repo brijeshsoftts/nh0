@@ -8,6 +8,15 @@ import { notifyError } from "@/lib/notification";
 
 import { paymentsKeys } from "../payments.keys";
 import { paymentsService } from "../payments.service";
+import type { PaymentItem, PublicPaymentStatus } from "../payments.types";
+
+type PaymentCheckoutContext = {
+  paymentId?: string;
+  checkoutToken?: string;
+  onStatus?: (status: PaymentItem | PublicPaymentStatus) => void;
+};
+
+export type { PaymentCheckoutContext };
 
 export function useRazorpayPayment() {
   const queryClient = useQueryClient();
@@ -19,8 +28,14 @@ export function useRazorpayPayment() {
   const [isCheckoutOpen, setIsCheckoutOpen] = useState(false);
   const paymentLock = useRef(false);
   const createOrder = useMutation({ mutationFn: paymentsService.createOrder });
+  const createPublicOrder = useMutation({
+    mutationFn: paymentsService.createPublicOrder,
+  });
   const verifyPayment = useMutation({
     mutationFn: paymentsService.verifyPayment,
+  });
+  const verifyPublicPayment = useMutation({
+    mutationFn: paymentsService.verifyPublicPayment,
   });
 
   const invalidatePaymentData = async () => {
@@ -30,14 +45,24 @@ export function useRazorpayPayment() {
     ]);
   };
 
-  const reconcile = async (paymentId: string) => {
+  const reconcile = async (
+    paymentId: string,
+    context?: PaymentCheckoutContext
+  ) => {
     try {
-      const payment = await paymentsService.findOne(paymentId);
+      const payment = context?.checkoutToken
+        ? await paymentsService.getPublicPaymentStatus(
+            paymentId,
+            context.checkoutToken
+          )
+        : await paymentsService.findOne(paymentId);
       await invalidatePaymentData();
+      context?.onStatus?.(payment);
 
-      if (payment.paymentStatus === "COMPLETED") {
+      const status = payment.paymentStatus;
+      if (status === "COMPLETED") {
         toast.success("Payment confirmed.");
-      } else if (payment.paymentStatus === "FAILED") {
+      } else if (status === "FAILED") {
         toast.error("Payment failed. You can try again.");
       } else {
         toast.message("Payment is still being confirmed. Check back shortly.");
@@ -47,7 +72,11 @@ export function useRazorpayPayment() {
     }
   };
 
-  const startPayment = async (bookingId: string, bookingReference?: string) => {
+  const startPayment = async (
+    bookingId: string,
+    bookingReference?: string,
+    context?: PaymentCheckoutContext
+  ) => {
     if (scriptError) {
       toast.error("Checkout could not be loaded. Please try again.");
       return;
@@ -58,7 +87,15 @@ export function useRazorpayPayment() {
     paymentLock.current = true;
 
     try {
-      const order = await createOrder.mutateAsync({ bookingId });
+      const order = context?.checkoutToken
+        ? await createPublicOrder.mutateAsync({
+            bookingId,
+            checkoutToken: context.checkoutToken,
+          })
+        : await createOrder.mutateAsync({
+            bookingId,
+            paymentId: context?.paymentId,
+          });
       let verificationStarted = false;
 
       const options: RazorpayOrderOptions = {
@@ -74,7 +111,9 @@ export function useRazorpayPayment() {
           ondismiss: () => {
             paymentLock.current = false;
             setIsCheckoutOpen(false);
-            if (!verificationStarted) void reconcile(order.paymentId);
+            if (!verificationStarted) {
+              void reconcile(order.paymentId, context);
+            }
           },
         },
         handler: async (response) => {
@@ -85,22 +124,30 @@ export function useRazorpayPayment() {
           setIsVerifying(true);
 
           try {
-            const payment = await verifyPayment.mutateAsync({
+            const verificationInput = {
               paymentId: order.paymentId,
               razorpayPaymentId: response.razorpay_payment_id,
               razorpayOrderId: response.razorpay_order_id,
               razorpaySignature: response.razorpay_signature,
-            });
+            };
+            const payment = context?.checkoutToken
+              ? await verifyPublicPayment.mutateAsync({
+                  ...verificationInput,
+                  checkoutToken: context.checkoutToken,
+                })
+              : await verifyPayment.mutateAsync(verificationInput);
             await invalidatePaymentData();
+            context?.onStatus?.(payment);
 
-            if (payment.paymentStatus === "COMPLETED") {
+            const status = payment.paymentStatus;
+            if (status === "COMPLETED") {
               toast.success("Payment confirmed.");
             } else {
               toast.message("Payment is awaiting confirmation.");
             }
           } catch (error) {
             notifyError(error);
-            await reconcile(order.paymentId);
+            await reconcile(order.paymentId, context);
           } finally {
             setIsVerifying(false);
           }
@@ -110,7 +157,7 @@ export function useRazorpayPayment() {
       const checkout = new Razorpay(options);
       checkout.on("payment.failed", () => {
         toast.message("Payment was not confirmed. Checking its status.");
-        void reconcile(order.paymentId);
+        void reconcile(order.paymentId, context);
       });
       setIsCheckoutOpen(true);
       checkout.open();
@@ -123,7 +170,12 @@ export function useRazorpayPayment() {
 
   return {
     startPayment,
-    isPending: isScriptLoading || createOrder.isPending || isVerifying,
+    isPending:
+      isScriptLoading ||
+      createOrder.isPending ||
+      createPublicOrder.isPending ||
+      verifyPublicPayment.isPending ||
+      isVerifying,
     isCheckoutOpen,
   };
 }

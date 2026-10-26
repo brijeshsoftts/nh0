@@ -9,6 +9,9 @@ import type {
   CreatePaymentOrderInput,
   CreatePaymentOrderResponse,
   PaymentItem,
+  PublicPaymentAccessInput,
+  PublicPaymentStatus,
+  PublicVerifyPaymentInput,
   VerifyPaymentInput,
 } from "./payments.types";
 
@@ -21,6 +24,25 @@ export const paymentsService = {
     apiClient.post("/payments/orders", input).then((r) => r.data.data),
   verifyPayment: (input: VerifyPaymentInput): Promise<PaymentItem> =>
     apiClient.post("/payments/verify", input).then((r) => r.data.data),
+  createPublicOrder: (
+    input: PublicPaymentAccessInput
+  ): Promise<CreatePaymentOrderResponse> =>
+    apiClient
+      .post("/payments/public/orders", input)
+      .then((response) => response.data.data),
+  verifyPublicPayment: (
+    input: PublicVerifyPaymentInput
+  ): Promise<PublicPaymentStatus> =>
+    apiClient
+      .post("/payments/public/verify", input)
+      .then((response) => response.data.data),
+  getPublicPaymentStatus: (
+    paymentId: string,
+    checkoutToken: string
+  ): Promise<PublicPaymentStatus> =>
+    apiClient
+      .post("/payments/public/status", { paymentId, checkoutToken })
+      .then((response) => response.data.data),
   findOne: (paymentId: string): Promise<PaymentItem> =>
     apiClient.get(`/payments/${paymentId}`).then((r) => r.data.data),
   createCashPayment: async (input: CreateCashPaymentInput): Promise<void> => {

@@ -25,7 +25,7 @@ export const guestSchema = z
 
 export const CreateBookingSchema = z
   .object({
-    customerId: z.string().trim().min(1, 'Customer is required'),
+    customerId: z.string().trim().min(1, 'Customer is required').optional(),
     checkInDate: z.coerce.date('Check-in date is required'),
     checkOutDate: z.coerce.date('Check-out date is required'),
     adults: z.coerce

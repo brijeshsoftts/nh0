@@ -240,7 +240,7 @@ export type BookingAvailabilityParams = {
 };
 
 export type CreateBookingInput = BookingAvailabilityParams & {
-  customerId: string;
+  customerId?: string;
   roomId: string;
   guests: BookingGuestInput[];
   specialRequest?: string;
@@ -253,11 +253,34 @@ export type CreateBookingResult = {
   bookingReference: string;
   paymentMethod: PaymentMethod;
   paymentStatus: PaymentStatus;
-  paymentReference: string;
+  paymentReference: string | null;
   subtotal: number;
   taxAmount: number;
   amount: number;
   paymentMessage: string;
+};
+
+export type CreatePublicBookingInput = {
+  checkoutToken: string;
+  guestName: string;
+  guestEmail: string;
+  guestPhone: string;
+  roomId: string;
+  checkInDate: string;
+  checkOutDate: string;
+  adults: number;
+  children: number;
+  guests: BookingGuestInput[];
+  specialRequest?: string;
+  paymentMethod: PaymentMethod;
+};
+
+export type CreatePublicBookingResult = {
+  id: string;
+  bookingReference: string;
+  totalAmount: number;
+  checkoutExpiresAt: string | null;
+  checkoutToken: string;
 };
 
 // CUSTOMER TYPES

@@ -12,7 +12,6 @@ import {
   Check,
   CheckCircle2,
   ChevronLeft,
-  ChevronRight,
   CreditCard,
   FileCheck2,
   Lock,
@@ -33,6 +32,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { bookingsService } from "@/features/bookings/bookings.service";
 import type { BookingGuestInput } from "@/features/bookings/bookings.types";
+import { useRazorpayPayment } from "@/features/payments/hooks/useRazorpayPayment";
 import PageHero from "@/features/public/components/PageHero";
 import { useAvailableRoom } from "@/features/public/useAvailableRooms";
 import { useAuth } from "@/hooks/useAuth";
@@ -195,6 +195,7 @@ export default function BookingCheckout() {
   const [searchParams] = useSearchParams();
   const { user } = useAuth();
   const formId = useId();
+  const { startPayment, isPending: isPaymentPending } = useRazorpayPayment();
 
   const today = startOfToday();
   const todayString = format(today, "yyyy-MM-dd");
@@ -370,7 +371,6 @@ export default function BookingCheckout() {
     setFormErrors({});
 
     try {
-      // Step 1: Query backend available rooms to locate a bookable room instance
       const availableRooms = await bookingsService.findAvailableRooms({
         checkInDate: checkIn,
         checkOutDate: checkOut,
@@ -378,13 +378,19 @@ export default function BookingCheckout() {
         children,
       });
 
-      // Filter rooms matching this room type
       const matchingRoom =
         availableRooms.find((r) => r.roomType.id === room.id) ??
         availableRooms[0];
 
-      // Prepare guest array
-      const guestsPayload: BookingGuestInput[] = [
+      if (!matchingRoom) {
+        setFormErrors({
+          general:
+            "No specific room inventory found matching your criteria. Please choose another date or room category.",
+        });
+        return;
+      }
+
+      const guestPayload: BookingGuestInput[] = [
         {
           fullName: leadGuest.fullName.trim(),
           age: 30,
@@ -398,48 +404,79 @@ export default function BookingCheckout() {
         })),
       ];
 
-      // Step 2: Attempt reservation creation through API service
-      // Note: If calling as guest without an active staff session, the backend requires customerId
-      if (matchingRoom) {
-        try {
-          const result = await bookingsService.create({
-            customerId: user?.id ?? "guest-checkout",
-            checkInDate: checkIn,
-            checkOutDate: checkOut,
-            adults,
-            children,
-            roomId: matchingRoom.id,
-            guests: guestsPayload,
-            specialRequest: specialRequest.trim() || undefined,
-            paymentMethod,
-          });
+      const bookingPayload = {
+        checkoutToken: crypto.randomUUID(),
+        guestName: leadGuest.fullName.trim(),
+        guestEmail: leadGuest.email.trim().toLowerCase(),
+        guestPhone: leadGuest.phone.trim(),
+        roomId: matchingRoom.id,
+        checkInDate: checkIn,
+        checkOutDate: checkOut,
+        adults,
+        children,
+        guests: guestPayload,
+        specialRequest: specialRequest.trim() || undefined,
+        paymentMethod,
+      } as const;
 
-          // Transition to confirmation view upon verified booking
-          setConfirmedBooking({
-            bookingReference: result.bookingReference,
-            roomName: room.name,
-            checkInDate: checkIn,
-            checkOutDate: checkOut,
-            nights,
-            totalGuests,
-            leadGuest,
-            paymentMethod,
-            totalAmount: result.amount || pricing.totalAmount,
-          });
-          return;
-        } catch {
-          // If backend create requires staff auth or customer account, inform guest clearly with contact channels
+      const result = await bookingsService.createPublic(bookingPayload);
+
+      if (paymentMethod === "CASH") {
+        setConfirmedBooking({
+          bookingReference: result.bookingReference,
+          roomName: room.name,
+          checkInDate: checkIn,
+          checkOutDate: checkOut,
+          nights,
+          totalGuests,
+          leadGuest,
+          paymentMethod: "CASH",
+          totalAmount: result.totalAmount,
+        });
+        return;
+      }
+
+      await startPayment(result.id, result.bookingReference, {
+        checkoutToken: result.checkoutToken,
+        onStatus: (paymentStatus) => {
+          const status =
+            "paymentStatus" in paymentStatus
+              ? paymentStatus.paymentStatus
+              : paymentStatus.status;
+          const totalAmount =
+            "totalAmount" in paymentStatus
+              ? paymentStatus.totalAmount
+              : result.totalAmount;
+
+          if (status === "COMPLETED") {
+            setConfirmedBooking({
+              bookingReference: result.bookingReference,
+              roomName: room.name,
+              checkInDate: checkIn,
+              checkOutDate: checkOut,
+              nights,
+              totalGuests,
+              leadGuest,
+              paymentMethod: "ONLINE",
+              totalAmount,
+            });
+            return;
+          }
+
+          if (status === "FAILED") {
+            setFormErrors({
+              general:
+                "Your online payment was not completed. The reservation remains pending and you can retry the payment when ready.",
+            });
+            return;
+          }
+
           setFormErrors({
             general:
-              "Direct public booking reservation API is awaiting final backend guest-account enablement. Your room and dates are confirmed available. Please contact Nivara Reservations at +91 98765 43210 or reservations@nivarahotels.com to guarantee your reservation with zero deposit.",
+              "Your payment is still being confirmed. Please check the booking status or retry once the checkout finishes.",
           });
-        }
-      } else {
-        setFormErrors({
-          general:
-            "No specific room inventory found matching your criteria. Please choose another date or room category.",
-        });
-      }
+        },
+      });
     } catch {
       setFormErrors({
         general:
@@ -1168,12 +1205,11 @@ export default function BookingCheckout() {
                         </span>
                       </div>
                       <p className="mt-1 text-xs leading-relaxed text-muted-foreground">
-                        Secure digital checkout. (Note: Online gateway
-                        integration is currently in progress; please choose Pay
-                        upon Arrival to confirm immediately).
+                        Secure digital checkout powered by Razorpay for card,
+                        UPI and net banking payments.
                       </p>
                       <Badge variant="secondary" className="mt-2 text-[10px]">
-                        Gateway Integration in Progress
+                        Secure Online Checkout
                       </Badge>
                     </div>
                   </label>
@@ -1253,13 +1289,21 @@ export default function BookingCheckout() {
                 <div className="pt-2">
                   <Button
                     type="submit"
-                    disabled={isSubmitting || !room.availability.isAvailable}
-                    className="flex h-12 w-full items-center justify-center gap-2 rounded-none bg-gold text-xs font-medium tracking-widest text-primary-foreground uppercase shadow-md transition-colors hover:bg-gold/90"
+                    disabled={
+                      isSubmitting ||
+                      isPaymentPending ||
+                      !room.availability.isAvailable
+                    }
+                    className="flex h-12 w-full items-center justify-center gap-2 rounded-none bg-gold text-xs font-medium tracking-widest text-primary-foreground uppercase shadow-md transition-colors hover:bg-gold/90 disabled:cursor-not-allowed disabled:opacity-70"
                   >
-                    {isSubmitting ? (
+                    {isSubmitting || isPaymentPending ? (
                       <>
                         <RotateCw className="size-4 animate-spin" />
-                        <span>Confirming Reservation…</span>
+                        <span>
+                          {paymentMethod === "CASH"
+                            ? "Confirming Reservation…"
+                            : "Processing Payment…"}
+                        </span>
                       </>
                     ) : (
                       <>

@@ -1,4 +1,9 @@
-import { PaymentMethod, PaymentStatus } from '../../types/prisma.types';
+import {
+  BookingStatus,
+  InvoiceStatus,
+  PaymentMethod,
+  PaymentStatus,
+} from '../../types/prisma.types';
 
 export type CreateOrder = {
   paymentId: string;
@@ -6,6 +11,17 @@ export type CreateOrder = {
   amount: number;
   currency: string;
   keyId: string;
+};
+
+export type PublicPaymentStatus = {
+  paymentId: string;
+  paymentStatus: PaymentStatus;
+  invoiceStatus: InvoiceStatus;
+  bookingId: string;
+  bookingReference: string;
+  bookingStatus: BookingStatus;
+  totalAmount: number;
+  paidAmount: number;
 };
 
 export type PaymentItem = {

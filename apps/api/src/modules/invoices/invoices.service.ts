@@ -31,7 +31,13 @@ const INVOICE_LIST_SELECT = {
   totalAmount: true,
   status: true,
   issuedAt: true,
-  booking: { select: { bookingReference: true, checkOutDate: true } },
+  booking: {
+    select: {
+      bookingReference: true,
+      checkOutDate: true,
+      guestName: true,
+    },
+  },
   customer: { select: { fullName: true } },
   payments: {
     where: { paymentStatus: PaymentStatus.COMPLETED },
@@ -55,6 +61,9 @@ const INVOICE_DETAILS_SELECT = {
     select: {
       id: true,
       bookingReference: true,
+      guestName: true,
+      guestEmail: true,
+      guestPhone: true,
       status: true,
       checkInDate: true,
       checkOutDate: true,
@@ -357,7 +366,8 @@ export class InvoicesService {
       id: invoice.id,
       invoiceNumber: invoice.invoiceNumber,
       bookingReference: invoice.booking.bookingReference,
-      customerName: invoice.customer.fullName,
+      customerName:
+        invoice.customer?.fullName ?? invoice.booking.guestName ?? 'Guest',
       totalAmount: invoice.totalAmount,
       paidAmount,
       balanceDue: Math.max(0, invoice.totalAmount - paidAmount),
@@ -414,7 +424,12 @@ export class InvoicesService {
       invoiceNumber: invoice.invoiceNumber,
       status: invoice.status,
       issuedAt: invoice.issuedAt.toISOString(),
-      customer: invoice.customer,
+      customer: invoice.customer ?? {
+        id: '',
+        fullName: invoice.booking.guestName ?? 'Guest',
+        email: invoice.booking.guestEmail ?? '',
+        phone: invoice.booking.guestPhone ?? '',
+      },
       booking: {
         id: invoice.booking.id,
         bookingReference: invoice.booking.bookingReference,

@@ -1,4 +1,9 @@
-import type { PaymentMethod, PaymentStatus } from "@/types/enum.types";
+import type {
+  BookingStatus,
+  InvoiceStatus,
+  PaymentMethod,
+  PaymentStatus,
+} from "@/types/enum.types";
 
 export type PaymentItem = {
   id: string;
@@ -18,6 +23,7 @@ export type PaymentItem = {
 
 export type CreatePaymentOrderInput = {
   bookingId: string;
+  paymentId?: string;
 };
 
 export type CreatePaymentOrderResponse = {
@@ -33,6 +39,26 @@ export type VerifyPaymentInput = {
   razorpayPaymentId: string;
   razorpayOrderId: string;
   razorpaySignature: string;
+};
+
+export type PublicPaymentAccessInput = {
+  bookingId: string;
+  checkoutToken: string;
+};
+
+export type PublicVerifyPaymentInput = VerifyPaymentInput & {
+  checkoutToken: string;
+};
+
+export type PublicPaymentStatus = {
+  paymentId: string;
+  paymentStatus: PaymentStatus;
+  invoiceStatus: InvoiceStatus;
+  bookingId: string;
+  bookingReference: string;
+  bookingStatus: BookingStatus;
+  totalAmount: number;
+  paidAmount: number;
 };
 
 export type CreateCashPaymentInput = {

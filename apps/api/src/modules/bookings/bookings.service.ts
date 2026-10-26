@@ -1,6 +1,9 @@
+import { createHash } from 'node:crypto';
+
 import {
   BadRequestException,
   ConflictException,
+  ForbiddenException,
   Injectable,
   NotFoundException,
 } from '@nestjs/common';
@@ -9,6 +12,7 @@ import { PrismaService } from '../../prisma/prisma.service';
 import { ListResponse } from '../../types/api.types';
 import {
   BookingStatus,
+  Category,
   InvoiceStatus,
   PaymentMethod,
   PaymentStatus,
@@ -20,6 +24,7 @@ import { StatItem } from '../../types/shared.types';
 import { BookingAvailabilityQueryDto } from './dto/available-rooms-query.dto';
 import { BookingsQueryDto } from './dto/bookings-query.dto';
 import { CreateBookingDto } from './dto/create-booking.dto';
+import { CreatePublicBookingDto } from './dto/create-public-booking.dto';
 import {
   BookingDetails,
   BookingListItem,
@@ -53,7 +58,12 @@ export function calculateBookingTotals({
 export class BookingsService {
   constructor(private readonly prismaService: PrismaService) {}
 
-  async getStats(userId: string, role: UserRole): Promise<StatItem[]> {
+  async getStats(
+    userId: string,
+    role: UserRole,
+    category?: Category,
+  ): Promise<StatItem[]> {
+    this.assertBookingAccess(role, category);
     const where: Prisma.BookingWhereInput = {
       ...(role === UserRole.CUSTOMER && { customerId: userId }),
     };
@@ -137,7 +147,9 @@ export class BookingsService {
     query: BookingsQueryDto,
     userId: string,
     role: UserRole,
+    category?: Category,
   ): Promise<ListResponse<BookingListItem | CustomerBooking>> {
+    this.assertBookingAccess(role, category);
     const { search, status, paymentMethod, page, limit } = query;
     const where: Prisma.BookingWhereInput = {
       ...(role === UserRole.CUSTOMER && { customerId: userId }),
@@ -204,6 +216,9 @@ export class BookingsService {
           totalGuests: true,
           totalAmount: true,
           bookedAt: true,
+          guestName: true,
+          guestEmail: true,
+          guestPhone: true,
           customer: {
             select: { id: true, fullName: true, email: true, phone: true },
           },
@@ -238,6 +253,12 @@ export class BookingsService {
 
       return {
         ...booking,
+        customer: booking.customer ?? {
+          id: booking.id,
+          fullName: booking.guestName ?? 'Guest',
+          email: booking.guestEmail ?? '',
+          phone: booking.guestPhone ?? '',
+        },
         bookingRoom: booking.bookingRoom
           ? {
               id: booking.bookingRoom.id,
@@ -260,7 +281,10 @@ export class BookingsService {
   async updateStatus(
     id: string,
     nextStatus: BookingStatus,
+    role: UserRole,
+    category?: Category,
   ): Promise<{ id: string; status: BookingStatus }> {
+    this.assertBookingAccess(role, category);
     const allowedTransitions: Record<BookingStatus, BookingStatus[]> = {
       [BookingStatus.PENDING]: [
         BookingStatus.CONFIRMED,
@@ -325,7 +349,9 @@ export class BookingsService {
     id: string,
     userId: string,
     role: UserRole,
+    category?: Category,
   ): Promise<BookingDetails | CustomerBookingDetails> {
+    this.assertBookingAccess(role, category);
     if (role === UserRole.CUSTOMER) {
       const customerBooking = await this.prismaService.booking.findUnique({
         where: { id, customerId: userId },
@@ -385,6 +411,9 @@ export class BookingsService {
         id: true,
         bookingReference: true,
         customerId: true,
+        guestName: true,
+        guestEmail: true,
+        guestPhone: true,
         checkInDate: true,
         checkOutDate: true,
         totalGuests: true,
@@ -508,6 +537,8 @@ export class BookingsService {
 
     return {
       ...booking,
+      customerId: booking.customerId ?? '',
+      createdBy: booking.createdBy ?? '',
       checkInDate: booking.checkInDate.toISOString(),
       checkOutDate: booking.checkOutDate.toISOString(),
       totalGuests: booking.totalGuests,
@@ -519,11 +550,11 @@ export class BookingsService {
       createdAt: booking.createdAt.toISOString(),
       updatedAt: booking.updatedAt.toISOString(),
       customer: {
-        id: booking.customer.id,
-        fullName: booking.customer.fullName,
-        email: booking.customer.email,
-        phone: booking.customer.phone,
-        profileImage: booking.customer.profile ?? null,
+        id: booking.customer?.id ?? booking.id,
+        fullName: booking.customer?.fullName ?? booking.guestName ?? 'Guest',
+        email: booking.customer?.email ?? booking.guestEmail ?? '',
+        phone: booking.customer?.phone ?? booking.guestPhone ?? '',
+        profileImage: booking.customer?.profile ?? null,
         profile: customerProfile
           ? {
               idProofNumber: customerProfile.idProofNumber,
@@ -532,11 +563,11 @@ export class BookingsService {
           : null,
       },
       creator: {
-        id: booking.creator.id,
-        fullName: booking.creator.fullName,
-        email: booking.creator.email,
-        phone: booking.creator.phone,
-        profileImage: booking.creator.profile ?? null,
+        id: booking.creator?.id ?? '',
+        fullName: booking.creator?.fullName ?? 'Guest checkout',
+        email: booking.creator?.email ?? '',
+        phone: booking.creator?.phone ?? '',
+        profileImage: booking.creator?.profile ?? null,
       },
       bookingRoom: booking.bookingRoom
         ? {
@@ -585,15 +616,7 @@ export class BookingsService {
           bookingRooms: {
             some: {
               booking: {
-                status: {
-                  in: [
-                    BookingStatus.PENDING,
-                    BookingStatus.CONFIRMED,
-                    BookingStatus.CHECKED_IN,
-                  ],
-                },
-                checkInDate: { lt: endDate },
-                checkOutDate: { gt: startDate },
+                ...this.buildActiveBookingWhere(startDate, endDate),
               },
             },
           },
@@ -650,7 +673,21 @@ export class BookingsService {
     }));
   }
 
-  async create(createdBy: string, dto: CreateBookingDto) {
+  async create(
+    createdBy: string,
+    role: UserRole,
+    category: Category | undefined,
+    dto: CreateBookingDto,
+  ) {
+    if (role === UserRole.STAFF && category !== Category.RECEPTIONIST) {
+      throw new ForbiddenException('Only reception staff can create bookings.');
+    }
+
+    const customerId = role === UserRole.CUSTOMER ? createdBy : dto.customerId;
+    if (!customerId) {
+      throw new BadRequestException('Select a customer for this booking.');
+    }
+
     const checkInDate = new Date(dto.checkInDate);
     const checkOutDate = new Date(dto.checkOutDate);
     const nights = Math.max(
@@ -660,7 +697,7 @@ export class BookingsService {
 
     const customer = await this.prismaService.user.findFirst({
       where: {
-        id: dto.customerId,
+        id: customerId,
         role: UserRole.CUSTOMER,
         softDeletedAt: null,
       },
@@ -706,32 +743,6 @@ export class BookingsService {
       );
     }
 
-    const overlappingBooking = await this.prismaService.booking.findFirst({
-      where: {
-        status: {
-          in: [
-            BookingStatus.PENDING,
-            BookingStatus.CONFIRMED,
-            BookingStatus.CHECKED_IN,
-          ],
-        },
-        bookingRoom: {
-          assignedRoomId: dto.roomId,
-        },
-        AND: [
-          { checkInDate: { lt: checkOutDate } },
-          { checkOutDate: { gt: checkInDate } },
-        ],
-      },
-      select: { id: true },
-    });
-
-    if (overlappingBooking) {
-      throw new ConflictException(
-        'This room is no longer available for the selected dates',
-      );
-    }
-
     const { subtotal, taxAmount, totalAmount } = calculateBookingTotals({
       roomPricePerNight: room.roomType.basePrice,
       nights,
@@ -741,27 +752,48 @@ export class BookingsService {
     const bookingReference = `BK-${Date.now()}-${Math.random().toString(36).slice(2, 6).toUpperCase()}`;
     const paymentReference = `PAY-${Date.now()}-${Math.random().toString(36).slice(2, 7).toUpperCase()}`;
 
-    const paymentStatus =
-      dto.paymentMethod === PaymentMethod.CASH
-        ? PaymentStatus.COMPLETED
-        : PaymentStatus.PENDING;
+    const recordsCashPayment =
+      dto.paymentMethod === PaymentMethod.CASH && role !== UserRole.CUSTOMER;
+    const createsPayment =
+      dto.paymentMethod === PaymentMethod.ONLINE || recordsCashPayment;
+    const paymentStatus = recordsCashPayment
+      ? PaymentStatus.COMPLETED
+      : PaymentStatus.PENDING;
 
-    const invoiceStatus =
-      dto.paymentMethod === PaymentMethod.CASH
-        ? InvoiceStatus.PAID
-        : InvoiceStatus.UNPAID;
+    const invoiceStatus = recordsCashPayment
+      ? InvoiceStatus.PAID
+      : InvoiceStatus.UNPAID;
 
     const result = await this.prismaService.$transaction(async (tx) => {
+      await tx.$queryRaw`SELECT "id" FROM "Room" WHERE "id" = ${dto.roomId} FOR UPDATE`;
+
+      const overlappingBooking = await tx.booking.findFirst({
+        where: {
+          bookingRoom: { assignedRoomId: dto.roomId },
+          ...this.buildActiveBookingWhere(checkInDate, checkOutDate),
+        },
+        select: { id: true },
+      });
+
+      if (overlappingBooking) {
+        throw new ConflictException(
+          'This room is no longer available for the selected dates.',
+        );
+      }
+
       const booking = await tx.booking.create({
         data: {
           bookingReference,
-          customerId: dto.customerId,
+          customerId,
           checkInDate,
           checkOutDate,
           totalGuests,
           totalAmount,
           specialRequest: dto.specialRequest,
-          status: BookingStatus.PENDING,
+          status:
+            dto.paymentMethod === PaymentMethod.CASH
+              ? BookingStatus.CONFIRMED
+              : BookingStatus.PENDING,
           bookedAt: new Date(),
           createdBy,
         },
@@ -791,7 +823,7 @@ export class BookingsService {
         data: {
           invoiceNumber: `INV-${Date.now()}-${Math.random().toString(36).slice(2, 6).toUpperCase()}`,
           bookingId: booking.id,
-          customerId: dto.customerId,
+          customerId,
           subtotal,
           taxAmount,
           discountAmount: 0,
@@ -802,42 +834,244 @@ export class BookingsService {
         select: { id: true },
       });
 
-      const payment = await tx.payment.create({
-        data: {
-          paymentReference,
-          invoiceId: invoice.id,
-          bookingId: booking.id,
-          customerId: dto.customerId,
-          amount: totalAmount,
-          paymentMethod: dto.paymentMethod,
-          paymentStatus,
-          paidAt: dto.paymentMethod === PaymentMethod.CASH ? new Date() : null,
-          recordedBy:
-            dto.paymentMethod === PaymentMethod.CASH ? dto.customerId : null,
-        },
-        select: {
-          paymentMethod: true,
-          paymentStatus: true,
-          paymentReference: true,
-        },
-      });
+      const payment = createsPayment
+        ? await tx.payment.create({
+            data: {
+              paymentReference,
+              invoiceId: invoice.id,
+              bookingId: booking.id,
+              customerId,
+              amount: totalAmount,
+              paymentMethod: dto.paymentMethod,
+              paymentStatus,
+              paidAt: recordsCashPayment ? new Date() : null,
+              recordedBy: recordsCashPayment ? createdBy : null,
+            },
+            select: {
+              paymentMethod: true,
+              paymentStatus: true,
+              paymentReference: true,
+            },
+          })
+        : null;
 
       return {
         id: booking.id,
+        bookingId: booking.id,
         bookingReference: booking.bookingReference,
-        paymentMethod: payment.paymentMethod,
-        paymentStatus: payment.paymentStatus,
-        paymentReference: payment.paymentReference,
+        paymentMethod: dto.paymentMethod,
+        paymentStatus: payment?.paymentStatus ?? PaymentStatus.PENDING,
+        paymentReference: payment?.paymentReference ?? null,
         subtotal,
         taxAmount,
         amount: totalAmount,
         paymentMessage:
-          payment.paymentStatus === PaymentStatus.COMPLETED
+          payment?.paymentStatus === PaymentStatus.COMPLETED
             ? 'Cash payment recorded successfully.'
-            : 'Online payment is pending confirmation.',
+            : 'Payment is pending.',
       };
     });
 
     return result;
+  }
+
+  private buildActiveBookingWhere(
+    checkInDate: Date,
+    checkOutDate: Date,
+  ): Prisma.BookingWhereInput {
+    return {
+      OR: [
+        {
+          status: {
+            in: [BookingStatus.CONFIRMED, BookingStatus.CHECKED_IN],
+          },
+        },
+        {
+          status: BookingStatus.PENDING,
+          OR: [
+            { checkoutExpiresAt: null },
+            { checkoutExpiresAt: { gt: new Date() } },
+            {
+              invoice: {
+                is: {
+                  payments: { some: { paymentStatus: PaymentStatus.PENDING } },
+                },
+              },
+            },
+          ],
+        },
+      ],
+      checkInDate: { lt: checkOutDate },
+      checkOutDate: { gt: checkInDate },
+    };
+  }
+
+  async createPublic(dto: CreatePublicBookingDto) {
+    const tokenHash = createHash('sha256')
+      .update(dto.checkoutToken)
+      .digest('hex');
+    const existing = await this.findPublicBooking(tokenHash);
+    if (existing) {
+      return { ...existing, checkoutToken: dto.checkoutToken };
+    }
+
+    const checkInDate = new Date(dto.checkInDate);
+    const checkOutDate = new Date(dto.checkOutDate);
+    const nights = Math.ceil(
+      (checkOutDate.getTime() - checkInDate.getTime()) / 86400000,
+    );
+    const totalGuests = dto.adults + dto.children;
+    const now = new Date();
+
+    try {
+      const booking = await this.prismaService.$transaction(async (tx) => {
+        await tx.$queryRaw`SELECT "id" FROM "Room" WHERE "id" = ${dto.roomId} FOR UPDATE`;
+
+        const room = await tx.room.findFirst({
+          where: {
+            id: dto.roomId,
+            isActive: true,
+            roomType: { isActive: true },
+          },
+          select: {
+            id: true,
+            roomType: {
+              select: { id: true, maxGuests: true, basePrice: true },
+            },
+          },
+        });
+        if (!room) throw new NotFoundException('Room is not available.');
+        if (totalGuests > room.roomType.maxGuests) {
+          throw new BadRequestException('Guest count exceeds room capacity.');
+        }
+
+        const overlappingBooking = await tx.booking.findFirst({
+          where: {
+            bookingRoom: { assignedRoomId: room.id },
+            checkInDate: { lt: checkOutDate },
+            checkOutDate: { gt: checkInDate },
+            OR: [
+              {
+                status: {
+                  in: [BookingStatus.CONFIRMED, BookingStatus.CHECKED_IN],
+                },
+              },
+              {
+                status: BookingStatus.PENDING,
+                OR: [
+                  { checkoutExpiresAt: null },
+                  { checkoutExpiresAt: { gt: now } },
+                ],
+              },
+            ],
+          },
+          select: { id: true },
+        });
+        if (overlappingBooking) {
+          throw new ConflictException(
+            'This room is no longer available for the selected dates.',
+          );
+        }
+
+        const { subtotal, taxAmount, totalAmount } = calculateBookingTotals({
+          roomPricePerNight: room.roomType.basePrice,
+          nights,
+        });
+        const bookingReference = `BK-${Date.now()}-${Math.random().toString(36).slice(2, 6).toUpperCase()}`;
+        const checkoutExpiresAt =
+          dto.paymentMethod === PaymentMethod.ONLINE
+            ? new Date(now.getTime() + 15 * 60_000)
+            : null;
+        const createdBooking = await tx.booking.create({
+          data: {
+            bookingReference,
+            customerId: null,
+            guestName: dto.guestName,
+            guestEmail: dto.guestEmail,
+            guestPhone: dto.guestPhone,
+            publicCheckoutTokenHash: tokenHash,
+            checkoutExpiresAt,
+            checkInDate,
+            checkOutDate,
+            totalGuests,
+            totalAmount,
+            specialRequest: dto.specialRequest || null,
+            status:
+              dto.paymentMethod === PaymentMethod.CASH
+                ? BookingStatus.CONFIRMED
+                : BookingStatus.PENDING,
+            bookedAt: now,
+            createdBy: null,
+          },
+          select: { id: true, bookingReference: true, totalAmount: true },
+        });
+
+        await tx.bookingRoom.create({
+          data: {
+            bookingId: createdBooking.id,
+            roomTypeId: room.roomType.id,
+            assignedRoomId: room.id,
+            pricePerNight: room.roomType.basePrice,
+          },
+        });
+        await tx.bookingGuest.createMany({
+          data: dto.guests.map((guest) => ({
+            bookingId: createdBooking.id,
+            fullName: guest.fullName,
+            age: guest.age,
+            gender: guest.gender,
+            idProofNumber: guest.idProofNumber ?? null,
+          })),
+        });
+        await tx.invoice.create({
+          data: {
+            invoiceNumber: `INV-${Date.now()}-${Math.random().toString(36).slice(2, 6).toUpperCase()}`,
+            bookingId: createdBooking.id,
+            customerId: null,
+            subtotal,
+            taxAmount,
+            discountAmount: 0,
+            totalAmount,
+            status: InvoiceStatus.UNPAID,
+            issuedAt: now,
+          },
+        });
+
+        return { ...createdBooking, checkoutExpiresAt };
+      });
+
+      return { ...booking, checkoutToken: dto.checkoutToken };
+    } catch (error) {
+      if (
+        error instanceof Prisma.PrismaClientKnownRequestError &&
+        error.code === 'P2002'
+      ) {
+        const duplicate = await this.findPublicBooking(tokenHash);
+        if (duplicate) {
+          return { ...duplicate, checkoutToken: dto.checkoutToken };
+        }
+      }
+      throw error;
+    }
+  }
+
+  private findPublicBooking(tokenHash: string) {
+    return this.prismaService.booking.findUnique({
+      where: { publicCheckoutTokenHash: tokenHash },
+      select: {
+        id: true,
+        bookingReference: true,
+        totalAmount: true,
+        checkoutExpiresAt: true,
+      },
+    });
+  }
+
+  private assertBookingAccess(role: UserRole, category?: Category): void {
+    if (role === UserRole.STAFF && category !== Category.RECEPTIONIST) {
+      throw new ForbiddenException(
+        'Booking access is restricted to reception staff.',
+      );
+    }
   }
 }

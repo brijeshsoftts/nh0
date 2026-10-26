@@ -15,7 +15,7 @@ import { CurrentUser, Roles } from '../../common/decorators';
 import { AuthGuard, RoleGuard } from '../../common/guards';
 import { apiListResponse, apiResponse } from '../../common/helpers';
 import { ValidationPipe } from '../../common/pipes';
-import { UserRole } from '../../types/prisma.types';
+import { Category, UserRole } from '../../types/prisma.types';
 
 import {
   BookingAvailabilityQueryDto,
@@ -29,6 +29,10 @@ import {
   CreateBookingDto,
   CreateBookingSchema,
 } from './dto/create-booking.dto';
+import {
+  CreatePublicBookingDto,
+  CreatePublicBookingSchema,
+} from './dto/create-public-booking.dto';
 import {
   UpdateBookingStatusDto,
   UpdateBookingStatusSchema,
@@ -47,11 +51,13 @@ export class BookingsController {
     @Query(new ValidationPipe(BookingsQuerySchema)) query: BookingsQueryDto,
     @CurrentUser('id') userId: string,
     @CurrentUser('role') role: UserRole,
+    @CurrentUser('category') category: Category | undefined,
   ) {
     const { data, meta } = await this.bookingsService.findAll(
       query,
       userId,
       role,
+      category,
     );
     return apiListResponse({ data, meta });
   }
@@ -63,8 +69,9 @@ export class BookingsController {
   async getStats(
     @CurrentUser('id') userId: string,
     @CurrentUser('role') role: UserRole,
+    @CurrentUser('category') category: Category | undefined,
   ) {
-    const data = await this.bookingsService.getStats(userId, role);
+    const data = await this.bookingsService.getStats(userId, role, category);
     return apiResponse({ data });
   }
 
@@ -76,8 +83,15 @@ export class BookingsController {
     @Param('id') id: string,
     @Body(new ValidationPipe(UpdateBookingStatusSchema))
     body: UpdateBookingStatusDto,
+    @CurrentUser('role') role: UserRole,
+    @CurrentUser('category') category: Category | undefined,
   ) {
-    const data = await this.bookingsService.updateStatus(id, body.status);
+    const data = await this.bookingsService.updateStatus(
+      id,
+      body.status,
+      role,
+      category,
+    );
     return apiResponse({ data });
   }
 
@@ -91,6 +105,16 @@ export class BookingsController {
     return apiResponse({ data });
   }
 
+  @Post('public')
+  @HttpCode(HttpStatus.CREATED)
+  async createPublic(
+    @Body(new ValidationPipe(CreatePublicBookingSchema))
+    body: CreatePublicBookingDto,
+  ) {
+    const data = await this.bookingsService.createPublic(body);
+    return apiResponse({ data });
+  }
+
   @UseGuards(AuthGuard, RoleGuard)
   @Roles('ADMIN', 'MANAGER', 'STAFF', 'CUSTOMER')
   @Get(':id')
@@ -99,20 +123,28 @@ export class BookingsController {
     @Param('id') id: string,
     @CurrentUser('id') userId: string,
     @CurrentUser('role') role: UserRole,
+    @CurrentUser('category') category: Category | undefined,
   ) {
-    const data = await this.bookingsService.findOne(id, userId, role);
+    const data = await this.bookingsService.findOne(id, userId, role, category);
     return apiResponse({ data });
   }
 
   @UseGuards(AuthGuard, RoleGuard)
-  @Roles('ADMIN', 'MANAGER', 'STAFF')
+  @Roles('ADMIN', 'MANAGER', 'STAFF', 'CUSTOMER')
   @Post()
   @HttpCode(HttpStatus.CREATED)
   async create(
     @Body(new ValidationPipe(CreateBookingSchema)) body: CreateBookingDto,
     @CurrentUser('id') userId: string,
+    @CurrentUser('role') role: UserRole,
+    @CurrentUser('category') category: Category | undefined,
   ) {
-    const data = await this.bookingsService.create(userId, body);
+    const data = await this.bookingsService.create(
+      userId,
+      role,
+      category,
+      body,
+    );
     return apiResponse({ data });
   }
 }

@@ -44,8 +44,11 @@ export class PaymentsController {
   @Roles('ADMIN', 'MANAGER', 'STAFF')
   @Get('stats')
   @HttpCode(HttpStatus.OK)
-  async getStats() {
-    const data = await this.paymentsService.getStats();
+  async getStats(
+    @CurrentUser('role') role: UserRole,
+    @CurrentUser('category') category: Category | undefined,
+  ) {
+    const data = await this.paymentsService.getStats(role, category);
     return apiResponse({ data });
   }
 
@@ -56,11 +59,13 @@ export class PaymentsController {
     @Query(new ValidationPipe(PaymentsQuerySchema)) query: PaymentsQueryDto,
     @CurrentUser('id') userId: string,
     @CurrentUser('role') role: UserRole,
+    @CurrentUser('category') category: Category | undefined,
   ) {
     const { data, meta } = await this.paymentsService.findAll(
       query,
       userId,
       role,
+      category,
     );
     return apiListResponse({ data, meta });
   }
@@ -72,8 +77,9 @@ export class PaymentsController {
     @Param('id') id: string,
     @CurrentUser('id') userId: string,
     @CurrentUser('role') role: UserRole,
+    @CurrentUser('category') category: Category | undefined,
   ) {
-    const data = await this.paymentsService.findOne(id, userId, role);
+    const data = await this.paymentsService.findOne(id, userId, role, category);
     return apiResponse({ data });
   }
 
@@ -95,7 +101,7 @@ export class PaymentsController {
     return apiResponse({ data, message: PAYMENTS_SUCCESS_MSG.CASH_RECORDED });
   }
 
-  @Roles('CUSTOMER', 'STAFF', 'ADMIN')
+  @Roles('CUSTOMER', 'STAFF', 'ADMIN', 'MANAGER')
   @Post('orders')
   @HttpCode(HttpStatus.CREATED)
   async createOrder(
@@ -109,6 +115,7 @@ export class PaymentsController {
       userId,
       role,
       category,
+      body.paymentId,
     );
     return apiResponse({
       data,
@@ -116,7 +123,7 @@ export class PaymentsController {
     });
   }
 
-  @Roles('CUSTOMER', 'STAFF')
+  @Roles('CUSTOMER', 'STAFF', 'ADMIN', 'MANAGER')
   @Post('verify')
   @HttpCode(HttpStatus.OK)
   async verifyPayment(

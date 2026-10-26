@@ -1,4 +1,4 @@
-import { createHmac, timingSafeEqual } from 'node:crypto';
+import { createHash, createHmac, timingSafeEqual } from 'node:crypto';
 
 import {
   BadRequestException,
@@ -33,6 +33,7 @@ import {
   CreatePayment,
   CustomerPayment,
   PaymentItem,
+  PublicPaymentStatus,
 } from './payments.types';
 
 const PAYMENT_SELECT = {
@@ -99,7 +100,8 @@ export class PaymentsService {
     });
   }
 
-  async getStats(): Promise<StatItem[]> {
+  async getStats(role: UserRole, category?: Category): Promise<StatItem[]> {
+    this.assertPaymentReader(role, category);
     const [completed, pending, refunded] = await Promise.all([
       this.prismaService.payment.aggregate({
         where: { paymentStatus: PaymentStatus.COMPLETED },
@@ -160,7 +162,9 @@ export class PaymentsService {
     query: PaymentsQueryDto,
     userId: string,
     role: UserRole,
+    category?: Category,
   ): Promise<ListResponse<PaymentItem | CustomerPayment>> {
+    this.assertPaymentReader(role, category);
     const { page, limit, search, status, paymentMethod } = query;
     const where: Prisma.PaymentWhereInput = {
       ...(role === UserRole.CUSTOMER && { customerId: userId }),
@@ -214,7 +218,9 @@ export class PaymentsService {
     id: string,
     userId: string,
     role: UserRole,
+    category?: Category,
   ): Promise<PaymentItem> {
+    this.assertPaymentReader(role, category);
     const payment = await this.prismaService.payment.findUnique({
       where: { id },
       select: { ...PAYMENT_SELECT, customerId: true },
@@ -248,8 +254,13 @@ export class PaymentsService {
     userId: string,
     role: UserRole,
     category?: Category,
+    paymentId?: string,
+    checkoutToken?: string,
   ): Promise<CreateOrder> {
-    this.assertPaymentInitiator(role, category);
+    if (!checkoutToken) this.assertPaymentInitiator(role, category);
+    const publicTokenHash = checkoutToken
+      ? this.hashPublicToken(checkoutToken)
+      : undefined;
 
     const attempt = await this.prismaService.$transaction(async (tx) => {
       await tx.$queryRaw`SELECT "id" FROM "Booking" WHERE "id" = ${bookingId} FOR UPDATE`;
@@ -257,13 +268,18 @@ export class PaymentsService {
       const booking = await tx.booking.findFirst({
         where: {
           id: bookingId,
-          ...(role === UserRole.CUSTOMER && { customerId: userId }),
+          ...(publicTokenHash
+            ? { customerId: null, publicCheckoutTokenHash: publicTokenHash }
+            : role === UserRole.CUSTOMER
+              ? { customerId: userId }
+              : {}),
         },
         select: {
           id: true,
           bookingReference: true,
           customerId: true,
           status: true,
+          checkoutExpiresAt: true,
           invoice: {
             select: {
               id: true,
@@ -283,6 +299,12 @@ export class PaymentsService {
       }
 
       this.assertBookingPayable(booking.status);
+      if (
+        booking.checkoutExpiresAt &&
+        booking.checkoutExpiresAt <= new Date()
+      ) {
+        throw new BadRequestException(PAYMENTS_ERROR_MSG.CHECKOUT_EXPIRED);
+      }
 
       if (!booking.invoice) {
         throw new NotFoundException(PAYMENTS_ERROR_MSG.INVOICE_NOT_FOUND);
@@ -306,6 +328,7 @@ export class PaymentsService {
 
       const currentAttempt = await tx.payment.findFirst({
         where: {
+          ...(paymentId && { id: paymentId }),
           bookingId,
           paymentMethod: PaymentMethod.ONLINE,
           paymentStatus: { in: [PaymentStatus.PENDING, PaymentStatus.FAILED] },
@@ -321,6 +344,10 @@ export class PaymentsService {
           paymentStatus: true,
         },
       });
+
+      if (paymentId && !currentAttempt) {
+        throw new NotFoundException(PAYMENTS_ERROR_MSG.PAYMENT_NOT_FOUND);
+      }
 
       if (currentAttempt) {
         if (currentAttempt.amount !== outstandingAmount) {
@@ -348,7 +375,8 @@ export class PaymentsService {
           currency: 'INR',
           paymentMethod: PaymentMethod.ONLINE,
           paymentStatus: PaymentStatus.PENDING,
-          recordedBy: role === UserRole.STAFF ? userId : null,
+          recordedBy:
+            role === UserRole.CUSTOMER || publicTokenHash ? null : userId,
           orderCreationStartedAt: new Date(),
         },
         select: {
@@ -391,6 +419,20 @@ export class PaymentsService {
     return this.createOrRecoverOrder(attempt.attempt, !attempt.isNew);
   }
 
+  async createPublicOrder(
+    bookingId: string,
+    checkoutToken: string,
+  ): Promise<CreateOrder> {
+    return this.createOrder(
+      bookingId,
+      '',
+      UserRole.CUSTOMER,
+      undefined,
+      undefined,
+      checkoutToken,
+    );
+  }
+
   async verifyPayment(
     dto: VerifyPaymentDto,
     userId: string,
@@ -423,6 +465,121 @@ export class PaymentsService {
       throw new BadRequestException(PAYMENTS_ERROR_MSG.PAYMENT_ORDER_MISMATCH);
     }
 
+    await this.verifyGatewayPayment(dto, attempt);
+
+    return this.findOne(attempt.id, userId, role);
+  }
+
+  async verifyPublicPayment(
+    dto: VerifyPaymentDto,
+    checkoutToken: string,
+  ): Promise<PublicPaymentStatus> {
+    const attempt = await this.prismaService.payment.findUnique({
+      where: { id: dto.paymentId },
+      select: {
+        id: true,
+        bookingId: true,
+        customerId: true,
+        amount: true,
+        amountPaise: true,
+        currency: true,
+        orderId: true,
+        invoice: {
+          select: {
+            booking: { select: { publicCheckoutTokenHash: true } },
+          },
+        },
+      },
+    });
+
+    if (
+      !attempt ||
+      attempt.customerId !== null ||
+      attempt.invoice.booking.publicCheckoutTokenHash !==
+        this.hashPublicToken(checkoutToken)
+    ) {
+      throw new NotFoundException(PAYMENTS_ERROR_MSG.PAYMENT_NOT_FOUND);
+    }
+
+    await this.verifyGatewayPayment(dto, attempt);
+    return this.getPublicPaymentStatus(dto.paymentId, checkoutToken);
+  }
+
+  async getPublicPaymentStatus(
+    paymentId: string,
+    checkoutToken: string,
+  ): Promise<PublicPaymentStatus> {
+    const payment = await this.prismaService.payment.findFirst({
+      where: {
+        id: paymentId,
+        customerId: null,
+        invoice: {
+          is: {
+            booking: {
+              is: {
+                publicCheckoutTokenHash: this.hashPublicToken(checkoutToken),
+              },
+            },
+          },
+        },
+      },
+      select: {
+        id: true,
+        paymentStatus: true,
+        invoice: {
+          select: {
+            status: true,
+            payments: {
+              where: { paymentStatus: PaymentStatus.COMPLETED },
+              select: { amount: true },
+            },
+            booking: {
+              select: {
+                id: true,
+                bookingReference: true,
+                status: true,
+                totalAmount: true,
+              },
+            },
+          },
+        },
+      },
+    });
+
+    if (!payment) {
+      throw new NotFoundException(PAYMENTS_ERROR_MSG.PAYMENT_NOT_FOUND);
+    }
+
+    return {
+      paymentId: payment.id,
+      paymentStatus: payment.paymentStatus,
+      invoiceStatus: payment.invoice.status,
+      bookingId: payment.invoice.booking.id,
+      bookingReference: payment.invoice.booking.bookingReference,
+      bookingStatus: payment.invoice.booking.status,
+      totalAmount: payment.invoice.booking.totalAmount,
+      paidAmount: payment.invoice.payments.reduce(
+        (total, completedPayment) => total + completedPayment.amount,
+        0,
+      ),
+    };
+  }
+
+  private async verifyGatewayPayment(
+    dto: VerifyPaymentDto,
+    attempt: {
+      id: string;
+      bookingId: string;
+      amount: number;
+      amountPaise: number | null;
+      currency: string;
+      orderId: string | null;
+    },
+  ): Promise<void> {
+    if (attempt.orderId !== dto.razorpayOrderId) {
+      throw new BadRequestException(PAYMENTS_ERROR_MSG.PAYMENT_ORDER_MISMATCH);
+    }
+
     const expectedSignature = createHmac('sha256', env.RAZORPAY_KEY_SECRET)
       .update(`${dto.razorpayOrderId}|${dto.razorpayPaymentId}`)
       .digest();
@@ -442,8 +599,6 @@ export class PaymentsService {
     );
     this.assertPaymentMatchesAttempt(gatewayPayment, attempt);
     await this.persistGatewayPayment(attempt.id, gatewayPayment);
-
-    return this.findOne(attempt.id, userId, role);
   }
 
   async handleWebhook(
@@ -754,8 +909,16 @@ export class PaymentsService {
   private assertPaymentInitiator(role: UserRole, category?: Category): void {
     if (
       role !== UserRole.CUSTOMER &&
+      role !== UserRole.ADMIN &&
+      role !== UserRole.MANAGER &&
       !(role === UserRole.STAFF && category === Category.RECEPTIONIST)
     ) {
+      throw new ForbiddenException(PAYMENTS_ERROR_MSG.PAYMENT_NOT_ALLOWED);
+    }
+  }
+
+  private assertPaymentReader(role: UserRole, category?: Category): void {
+    if (role === UserRole.STAFF && category !== Category.RECEPTIONIST) {
       throw new ForbiddenException(PAYMENTS_ERROR_MSG.PAYMENT_NOT_ALLOWED);
     }
   }
@@ -768,6 +931,10 @@ export class PaymentsService {
     ) {
       throw new BadRequestException(PAYMENTS_ERROR_MSG.BOOKING_NOT_PAYABLE);
     }
+  }
+
+  private hashPublicToken(token: string): string {
+    return createHash('sha256').update(token).digest('hex');
   }
 
   private assertOrderMatchesAttempt(
@@ -1056,6 +1223,16 @@ export class PaymentsService {
               : InvoiceStatus.PARTIALLY_PAID,
         },
       });
+
+      if ((completedPayments._sum.amount ?? 0) >= invoice.totalAmount) {
+        await tx.booking.updateMany({
+          where: { id: current.bookingId, status: BookingStatus.PENDING },
+          data: {
+            status: BookingStatus.CONFIRMED,
+            checkoutExpiresAt: null,
+          },
+        });
+      }
     };
 
     if (transaction) {
@@ -1074,7 +1251,7 @@ export class PaymentsService {
       transactionId: payment.transactionId,
       invoiceNumber: payment.invoice.invoiceNumber,
       bookingReference: payment.invoice.booking.bookingReference,
-      customerName: payment.customer.fullName,
+      customerName: payment.customer?.fullName ?? 'Guest',
       amount: payment.amount,
       paymentMethod: payment.paymentMethod,
       paymentStatus: payment.paymentStatus,

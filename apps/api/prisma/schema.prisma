@@ -287,7 +287,12 @@ model Amenity {
 model Booking {
   id               String        @id @default(cuid())
   bookingReference String        @unique
-  customerId       String
+  customerId       String?
+  guestName        String?
+  guestEmail       String?
+  guestPhone       String?
+  publicCheckoutTokenHash String? @unique
+  checkoutExpiresAt DateTime?
   checkInDate      DateTime
   checkOutDate     DateTime
   totalGuests      Int
@@ -298,12 +303,12 @@ model Booking {
   checkedInAt      DateTime?
   checkedOutAt     DateTime?
   cancelledAt      DateTime?
-  createdBy        String
+  createdBy        String?
   createdAt        DateTime      @default(now()) @db.Timestamp
   updatedAt        DateTime      @updatedAt @db.Timestamp
 
-  customer      User           @relation("BookingCustomer", fields: [customerId], references: [id])
-  creator       User           @relation("BookingCreatedBy", fields: [createdBy], references: [id])
+  customer      User?          @relation("BookingCustomer", fields: [customerId], references: [id])
+  creator       User?          @relation("BookingCreatedBy", fields: [createdBy], references: [id])
   bookingRoom   BookingRoom?
   bookingGuests BookingGuest[]
 
@@ -370,7 +375,7 @@ model Invoice {
   id             String        @id @default(cuid())
   invoiceNumber  String        @unique
   bookingId      String        @unique
-  customerId     String
+  customerId     String?
   subtotal       Int
   taxAmount      Int
   discountAmount Int
@@ -380,7 +385,7 @@ model Invoice {
   createdAt      DateTime      @default(now())
 
   booking  Booking   @relation(fields: [bookingId], references: [id])
-  customer User      @relation(fields: [customerId], references: [id])
+  customer User?     @relation(fields: [customerId], references: [id])
   payments Payment[]
 }
 
@@ -390,7 +395,7 @@ model Payment {
   transactionId    String?       @unique
   invoiceId        String
   bookingId        String
-  customerId       String
+  customerId       String?
   amount           Int
   amountPaise      Int?
   currency         String        @default("INR")
@@ -403,7 +408,7 @@ model Payment {
   createdAt        DateTime      @default(now()) @db.Timestamp
 
   invoice  Invoice @relation(fields: [invoiceId], references: [id])
-  customer User    @relation("PaymentCustomer", fields: [customerId], references: [id])
+  customer User?   @relation("PaymentCustomer", fields: [customerId], references: [id])
   recorder User?   @relation("PaymentRecordedBy", fields: [recordedBy], references: [id])
 }
 

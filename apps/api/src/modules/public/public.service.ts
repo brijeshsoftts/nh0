@@ -2,7 +2,7 @@ import { Injectable, NotFoundException } from '@nestjs/common';
 
 import { PrismaService } from '../../prisma/prisma.service';
 import { ListResponse } from '../../types/api.types';
-import { BookingStatus } from '../../types/prisma.types';
+import { BookingStatus, PaymentStatus, Prisma } from '../../types/prisma.types';
 
 import { AmenitiesQueryDto } from './dto/amenities-query.dto';
 import { AvailableRoomQueryDto } from './dto/available-room-query.dot';
@@ -71,6 +71,7 @@ export class PublicService {
     const checkOut = checkOutDate
       ? new Date(`${checkOutDate}T00:00:00.000Z`)
       : undefined;
+    const activeBookingWhere = this.buildActiveBookingWhere();
 
     const roomType = await this.prismaService.roomType.findFirst({
       where: { slug, isActive: true },
@@ -109,13 +110,7 @@ export class PublicService {
             bookingRooms: {
               where: {
                 booking: {
-                  status: {
-                    in: [
-                      BookingStatus.PENDING,
-                      BookingStatus.CONFIRMED,
-                      BookingStatus.CHECKED_IN,
-                    ],
-                  },
+                  ...activeBookingWhere,
                   ...(checkIn &&
                     checkOut && {
                       checkInDate: { lt: checkOut },
@@ -172,6 +167,7 @@ export class PublicService {
     const checkOut = checkOutDate
       ? new Date(`${checkOutDate}T00:00:00.000Z`)
       : undefined;
+    const activeBookingWhere = this.buildActiveBookingWhere();
 
     const where = {
       isActive: true,
@@ -214,20 +210,14 @@ export class PublicService {
               bookingRooms: {
                 where: {
                   booking: {
-                    status: {
-                      in: [
-                        BookingStatus.PENDING,
-                        BookingStatus.CONFIRMED,
-                        BookingStatus.CHECKED_IN,
-                      ],
-                    },
+                    ...activeBookingWhere,
                     ...(checkIn &&
                       checkOut && {
                         checkInDate: {
-                          lt: checkIn,
+                          lt: checkOut,
                         },
                         checkOutDate: {
-                          gt: checkOut,
+                          gt: checkIn,
                         },
                       }),
                   },
@@ -272,7 +262,9 @@ export class PublicService {
         basePrice: roomType.basePrice,
         bedType: roomType.bedType,
         bedCount: roomType.bedCount,
-        availableRooms: roomType.rooms.length,
+        availableRooms: roomType.rooms.filter(
+          (room) => room.bookingRooms.length === 0,
+        ).length,
         image: roomType.images[0] ?? null,
         amenities: roomType.amenities ?? [],
       };
@@ -285,6 +277,32 @@ export class PublicService {
         limit,
         total,
       },
+    };
+  }
+
+  private buildActiveBookingWhere(): Prisma.BookingWhereInput {
+    return {
+      OR: [
+        {
+          status: {
+            in: [BookingStatus.CONFIRMED, BookingStatus.CHECKED_IN],
+          },
+        },
+        {
+          status: BookingStatus.PENDING,
+          OR: [
+            { checkoutExpiresAt: null },
+            { checkoutExpiresAt: { gt: new Date() } },
+            {
+              invoice: {
+                is: {
+                  payments: { some: { paymentStatus: PaymentStatus.PENDING } },
+                },
+              },
+            },
+          ],
+        },
+      ],
     };
   }
 }

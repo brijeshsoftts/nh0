@@ -11,6 +11,8 @@ import type {
   BookingListItem,
   CreateBookingInput,
   CreateBookingResult,
+  CreatePublicBookingInput,
+  CreatePublicBookingResult,
   UpdateBookingStatusInput,
 } from "./bookings.types";
 
@@ -31,6 +33,12 @@ export const bookingsService = {
       .then((response) => response.data?.data),
   create: (data: CreateBookingInput): Promise<CreateBookingResult> =>
     apiClient.post("/bookings", data).then((response) => response.data?.data),
+  createPublic: (
+    data: CreatePublicBookingInput
+  ): Promise<CreatePublicBookingResult> =>
+    apiClient
+      .post("/bookings/public", data)
+      .then((response) => response.data?.data),
   getStats: (): Promise<DashboardStat[]> =>
     apiClient
       .get("/bookings/stats")

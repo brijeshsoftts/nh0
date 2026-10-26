@@ -159,6 +159,7 @@ export class DashboardService {
             bookingReference: true,
             checkInDate: true,
             status: true,
+            guestName: true,
             customer: { select: { fullName: true } },
             bookingRoom: {
               select: {
@@ -177,6 +178,7 @@ export class DashboardService {
             id: true,
             bookingReference: true,
             checkOutDate: true,
+            guestName: true,
             customer: { select: { fullName: true } },
             bookingRoom: {
               select: {
@@ -230,7 +232,8 @@ export class DashboardService {
         items: arrivalBookings.map((booking) => ({
           bookingId: booking.id,
           bookingReference: booking.bookingReference,
-          customerName: booking.customer.fullName,
+          customerName:
+            booking.customer?.fullName ?? booking.guestName ?? 'Guest',
           roomTypeName: booking.bookingRoom?.roomType.name ?? 'Unassigned',
           roomNumber: booking.bookingRoom?.assignedRoom?.roomNumber ?? null,
           checkIn: booking.checkInDate.toISOString(),
@@ -253,7 +256,8 @@ export class DashboardService {
           return {
             bookingId: booking.id,
             bookingReference: booking.bookingReference,
-            customerName: booking.customer.fullName,
+            customerName:
+              booking.customer?.fullName ?? booking.guestName ?? 'Guest',
             roomTypeName: booking.bookingRoom?.roomType.name ?? 'Unassigned',
             roomNumber: booking.bookingRoom?.assignedRoom?.roomNumber ?? null,
             checkOut: booking.checkOutDate.toISOString(),
@@ -381,6 +385,7 @@ export class DashboardService {
             select: {
               id: true,
               bookingReference: true,
+              guestName: true,
               customer: { select: { fullName: true } },
             },
           },
@@ -411,7 +416,10 @@ export class DashboardService {
         invoiceId: invoice.id,
         bookingId: invoice.booking.id,
         bookingReference: invoice.booking.bookingReference,
-        guestName: invoice.booking.customer.fullName,
+        guestName:
+          invoice.booking.customer?.fullName ??
+          invoice.booking.guestName ??
+          'Guest',
         total: invoice.totalAmount,
         due: Math.max(
           0,
