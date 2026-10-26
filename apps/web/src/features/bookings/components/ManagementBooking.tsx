@@ -1,38 +1,18 @@
-import { EllipsisVertical, Eye, Plus, Users } from "lucide-react";
-import { useState } from "react";
+import { Plus, Users } from "lucide-react";
 import { Link } from "react-router-dom";
 
 import { type ColumnDef, DataTable } from "@/components/common/DataTable";
 import { BookingBadge, InvoiceBadge } from "@/components/common/EnumBadges";
 import { Header } from "@/components/common/Header";
-import { IconBtn } from "@/components/common/IconBtn";
 import { Button } from "@/components/ui/button";
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuSeparator,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
 import { useListParams } from "@/hooks/useListParams";
-import type { BookingStatus } from "@/types/enum.types";
 
-import { getBookingStatusActions } from "../booking-status";
+import { bookingFilters } from "../booking-filters";
 import type { BookingListItem } from "../bookings.types";
 import { useBookings } from "../hooks/useBookings";
-import { useUpdateBookingStatus } from "../hooks/useUpdateBookingStatus";
 
-import { BookingDetailsSheet } from "./BookingDetailsSheet";
+import { BookingRowActions } from "./BookingRowActions";
 import { BookingsStats } from "./BookingsStats";
-
-const BOOKING_STATUSES: BookingStatus[] = [
-  "PENDING",
-  "CONFIRMED",
-  "CHECKED_IN",
-  "CHECKED_OUT",
-  "CANCELLED",
-  "NO_SHOW",
-];
 
 function formatDate(date: string) {
   const [year, month, day] = date.slice(0, 10).split("-").map(Number);
@@ -50,23 +30,6 @@ function formatCurrency(amount: number) {
     maximumFractionDigits: 0,
   }).format(amount);
 }
-const invoiceStatus = ["UNPAID", "PARTIALLY_PAID", "PAID", "REFUNDED"];
-export const filters = [
-  {
-    key: "status",
-    label: "Booking status",
-    options: BOOKING_STATUSES.map((value) => ({ value, label: value })),
-  },
-  {
-    key: "invoiceStatus",
-    label: "Invoice status",
-    options: invoiceStatus.map((status) => ({
-      label: status,
-      value: status,
-    })),
-  },
-];
-
 export function ManagementBooking() {
   const { params, setPage, setSearch, setFilter } = useListParams();
   const { items, pagination, isLoading, isError, refetch } =
@@ -198,72 +161,13 @@ export function ManagementBooking() {
         onPageChange={setPage}
         onSearchChange={setSearch}
         searchPlaceholder="Search booking, customer, or room…"
-        filters={filters}
+        filters={bookingFilters}
         onFilterChange={(key, value) => setFilter({ [key]: value })}
         isLoading={isLoading}
         isError={isError}
         refetch={() => void refetch()}
         errorMessage="Bookings could not be loaded. Try again."
         emptyMessage="No bookings match these filters. Try another search or create a booking."
-      />
-    </>
-  );
-}
-
-function BookingRowActions({ booking }: { booking: BookingListItem }) {
-  const [isDetailsOpen, setIsDetailsOpen] = useState(false);
-  const { mutate: updateStatus, isPending } = useUpdateBookingStatus();
-  const statusActions = getBookingStatusActions(booking.status);
-
-  return (
-    <>
-      <DropdownMenu>
-        <DropdownMenuTrigger
-          render={
-            <IconBtn
-              size="sm"
-              variant="ghost"
-              shape="square"
-              aria-label={`Actions for ${booking.bookingReference}`}
-            />
-          }
-        >
-          <EllipsisVertical />
-        </DropdownMenuTrigger>
-        <DropdownMenuContent
-          align="end"
-          className="rounded-none **:data-[slot=dropdown-menu-item]:rounded-none"
-        >
-          <DropdownMenuItem onClick={() => setIsDetailsOpen(true)}>
-            <Eye />
-            View booking
-          </DropdownMenuItem>
-          {statusActions.length > 0 && <DropdownMenuSeparator />}
-          {statusActions.map((action) => (
-            <DropdownMenuItem
-              key={action.status}
-              disabled={isPending}
-              className={action.destructive ? "text-destructive" : undefined}
-              onClick={() => {
-                if (
-                  action.confirmMessage &&
-                  !window.confirm(action.confirmMessage)
-                ) {
-                  return;
-                }
-
-                updateStatus({ id: booking.id, status: action.status });
-              }}
-            >
-              {action.label}
-            </DropdownMenuItem>
-          ))}
-        </DropdownMenuContent>
-      </DropdownMenu>
-      <BookingDetailsSheet
-        open={isDetailsOpen}
-        onOpenChange={setIsDetailsOpen}
-        bookingId={booking.id}
       />
     </>
   );

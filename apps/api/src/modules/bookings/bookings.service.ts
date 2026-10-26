@@ -229,7 +229,7 @@ export class BookingsService {
               roomType: { select: { name: true } },
             },
           },
-          invoice: { select: { status: true } },
+          invoice: { select: { id: true, status: true } },
         },
       }),
       this.prismaService.booking.count({ where }),
@@ -248,6 +248,7 @@ export class BookingsService {
           checkOut: booking.checkOutDate.toISOString(),
           totalAmount: booking.totalAmount,
           status: booking.status,
+          invoice: booking.invoice,
         } satisfies CustomerBooking;
       }
 

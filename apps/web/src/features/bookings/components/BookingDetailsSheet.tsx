@@ -33,9 +33,7 @@ import type {
   PaymentStatus,
 } from "@/types/enum.types";
 
-import { getBookingStatusActions } from "../booking-status";
 import { useBooking } from "../hooks/useBooking";
-import { useUpdateBookingStatus } from "../hooks/useUpdateBookingStatus";
 
 interface BookingDetailsSheetProps {
   open: boolean;
@@ -170,7 +168,6 @@ export function BookingDetailsSheet({
   bookingId,
 }: BookingDetailsSheetProps) {
   const { booking, isLoading, isError, refetch } = useBooking(bookingId, open);
-  const { mutate: updateStatus, isPending } = useUpdateBookingStatus();
   const { user } = useAuth();
   const isReceptionist =
     user?.role === "STAFF" && user.category === "RECEPTIONIST";
@@ -250,16 +247,6 @@ export function BookingDetailsSheet({
               </SheetDescription>
             </div>
           </div>
-
-          {/* Actions */}
-          <BookingActions
-            status={booking.status}
-            isPending={isPending}
-            onChangeStatus={(status, confirmMessage) => {
-              if (confirmMessage && !window.confirm(confirmMessage)) return;
-              updateStatus({ id: booking.id, status });
-            }}
-          />
         </SheetHeader>
 
         {/* Scrollable body */}
@@ -376,57 +363,63 @@ export function BookingDetailsSheet({
             <Separator />
 
             {/* Rooms */}
-            <Section icon={BedDouble} title={`Rooms (${booking.bookingRoom})`}>
-              <div className="space-y-2">
-                <div className="rounded-lg border p-3">
-                  <div className="flex items-start justify-between gap-3">
-                    <div className="flex min-w-0 items-center gap-3">
-                      <div className="flex size-9 shrink-0 items-center justify-center rounded-md bg-muted">
-                        <BedDouble className="size-4 text-muted-foreground" />
+            <Section icon={BedDouble} title="Room">
+              {booking.bookingRoom ? (
+                <div className="space-y-2">
+                  <div className="rounded-lg border p-3">
+                    <div className="flex items-start justify-between gap-3">
+                      <div className="flex min-w-0 items-center gap-3">
+                        <div className="flex size-9 shrink-0 items-center justify-center rounded-md bg-muted">
+                          <BedDouble className="size-4 text-muted-foreground" />
+                        </div>
+
+                        <div className="min-w-0">
+                          <p className="text-sm font-semibold">
+                            Room {booking.bookingRoom.roomNumber}
+                          </p>
+
+                          <p className="truncate text-xs text-muted-foreground">
+                            {booking.bookingRoom.roomType?.name ??
+                              "Room type unavailable"}
+                          </p>
+                        </div>
                       </div>
 
-                      <div className="min-w-0">
-                        <p className="text-sm font-semibold">
-                          Room {booking.bookingRoom.roomNumber}
-                        </p>
-
-                        <p className="truncate text-xs text-muted-foreground">
-                          {booking.bookingRoom.roomType?.name ??
-                            "Room type unavailable"}
-                        </p>
-                      </div>
-                    </div>
-
-                    <p className="shrink-0 text-sm font-semibold">
-                      {formatCurrency(
-                        booking.bookingRoom.pricePerNight,
-                        booking.bookingRoom.roomType?.currency
-                      )}
-                      <span className="ml-1 text-xs font-normal text-muted-foreground">
-                        /night
-                      </span>
-                    </p>
-                  </div>
-
-                  <div className="mt-3 grid grid-cols-2 gap-2 border-t pt-3">
-                    <div>
-                      <p className="text-xs text-muted-foreground">Floor</p>
-
-                      <p className="mt-1 text-sm font-medium">
-                        {booking.bookingRoom.floor}
+                      <p className="shrink-0 text-sm font-semibold">
+                        {formatCurrency(
+                          booking.bookingRoom.pricePerNight,
+                          booking.bookingRoom.roomType?.currency
+                        )}
+                        <span className="ml-1 text-xs font-normal text-muted-foreground">
+                          /night
+                        </span>
                       </p>
                     </div>
 
-                    <div>
-                      <p className="text-xs text-muted-foreground">Bed</p>
+                    <div className="mt-3 grid grid-cols-2 gap-2 border-t pt-3">
+                      <div>
+                        <p className="text-xs text-muted-foreground">Floor</p>
 
-                      <p className="mt-1 text-sm font-medium">
-                        {booking.bookingRoom.roomType?.bedType ?? "—"}
-                      </p>
+                        <p className="mt-1 text-sm font-medium">
+                          {booking.bookingRoom.floor}
+                        </p>
+                      </div>
+
+                      <div>
+                        <p className="text-xs text-muted-foreground">Bed</p>
+
+                        <p className="mt-1 text-sm font-medium">
+                          {booking.bookingRoom.roomType?.bedType ?? "—"}
+                        </p>
+                      </div>
                     </div>
                   </div>
                 </div>
-              </div>
+              ) : (
+                <p className="rounded-lg border p-3 text-sm text-muted-foreground">
+                  No room is assigned to this booking.
+                </p>
+              )}
             </Section>
 
             <Separator />
@@ -714,37 +707,6 @@ export function BookingDetailsSheet({
         </div>
       </SheetContent>
     </Sheet>
-  );
-}
-
-function BookingActions({
-  status,
-  isPending,
-  onChangeStatus,
-}: {
-  status: BookingStatus;
-  isPending: boolean;
-  onChangeStatus: (status: BookingStatus, confirmMessage?: string) => void;
-}) {
-  const actions = getBookingStatusActions(status);
-  if (actions.length === 0) return null;
-  return (
-    <div className="mt-4 flex flex-wrap gap-2">
-      {actions.map((action) => (
-        <Button
-          key={action.status}
-          size="sm"
-          variant={action.destructive ? "destructive" : "default"}
-          disabled={isPending}
-          onClick={() => onChangeStatus(action.status, action.confirmMessage)}
-        >
-          {action.status === "CONFIRMED" && (
-            <CheckCircle2 className="size-3.5" />
-          )}
-          {action.label}
-        </Button>
-      ))}
-    </div>
   );
 }
 

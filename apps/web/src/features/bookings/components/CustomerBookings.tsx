@@ -1,12 +1,11 @@
 import { formatDate } from "date-fns";
 import {
-  Ban,
   BedDouble,
   CalendarDays,
   Clock3,
-  Download,
   EllipsisVertical,
   Eye,
+  Receipt,
   Users,
 } from "lucide-react";
 import { useState } from "react";
@@ -29,15 +28,16 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import { ViewInvoiceDetails } from "@/features/invoices/components/ViewInvoiceDetails";
+import { PaymentPopup } from "@/features/payments/components/PaymentPopup";
 import { useListParams } from "@/hooks/useListParams";
 import { formatPrice } from "@/lib/format";
-import { PaymentPopup } from "@/features/payments/components/PaymentPopup";
 
+import { bookingFilters } from "../booking-filters";
 import { useBookingDetails, useBookings } from "../bookings.crud";
 import type { CustomerBooking } from "../bookings.types";
 
 import { BookingsStats } from "./BookingsStats";
-import { filters } from "./ManagementBooking";
 
 export const columns: ColumnDef<CustomerBooking>[] = [
   {
@@ -110,7 +110,7 @@ function BookingsTable() {
       searchPlaceholder="Search by booking number"
       searchableKeys={["bookingReference", "customerName"]}
       onSearchChange={setSearch}
-      filters={filters}
+      filters={bookingFilters}
       onFilterChange={(key, value) => setFilter({ [key]: value })}
       onPageChange={setPage}
       pagination={pagination}
@@ -126,6 +126,10 @@ function BookingsTable() {
 
 function ActionDropdownMenu({ booking }: { booking: CustomerBooking }) {
   const [detailsOpen, setDetailsOpen] = useState(false);
+  const [invoiceOpen, setInvoiceOpen] = useState(false);
+  const canViewInvoice =
+    (booking.status === "CHECKED_OUT" || booking.status === "CANCELLED") &&
+    booking.invoice !== null;
 
   return (
     <>
@@ -146,18 +150,14 @@ function ActionDropdownMenu({ booking }: { booking: CustomerBooking }) {
         >
           <DropdownMenuItem onClick={() => setDetailsOpen(true)}>
             <Eye />
-            View
+            View Details
           </DropdownMenuItem>
-
-          <DropdownMenuItem>
-            <Ban />
-            Cancel
-          </DropdownMenuItem>
-
-          <DropdownMenuItem>
-            <Download />
-            Download
-          </DropdownMenuItem>
+          {canViewInvoice && (
+            <DropdownMenuItem onClick={() => setInvoiceOpen(true)}>
+              <Receipt />
+              View Invoice
+            </DropdownMenuItem>
+          )}
         </DropdownMenuContent>
       </DropdownMenu>
       <BookingDetailsDialog
@@ -165,6 +165,13 @@ function ActionDropdownMenu({ booking }: { booking: CustomerBooking }) {
         open={detailsOpen}
         onOpenChange={setDetailsOpen}
       />
+      {canViewInvoice && booking.invoice && invoiceOpen && (
+        <ViewInvoiceDetails
+          id={booking.invoice.id}
+          open={invoiceOpen}
+          onOpenChange={setInvoiceOpen}
+        />
+      )}
     </>
   );
 }

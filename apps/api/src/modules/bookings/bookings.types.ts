@@ -25,7 +25,7 @@ export type BookingListItem = {
     assignedRoom: { roomNumber: string } | null;
     roomType: { name: string };
   } | null;
-  invoice: { status: InvoiceStatus } | null;
+  invoice: { id: string; status: InvoiceStatus } | null;
 };
 
 export type BookingDetails = {
@@ -137,7 +137,7 @@ export type AvailableRoom = {
     sizeSqFt: number | null;
     image: { url: string; altText: string | null } | null;
     amenities: { id: string; name: string; icon: string | null }[];
-  };
+  } | null;
 };
 
 export type BookingBase = {
@@ -166,6 +166,7 @@ export interface CustomerBooking {
   checkOut: string;
   totalAmount: number;
   status: BookingStatus;
+  invoice: { id: string; status: InvoiceStatus } | null;
 }
 
 export interface CustomerBookingDetails {

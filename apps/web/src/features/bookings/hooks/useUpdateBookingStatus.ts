@@ -16,6 +16,7 @@ export function useUpdateBookingStatus() {
       toast.success("Booking status updated.");
       void queryClient.invalidateQueries({ queryKey: bookingsKeys.lists() });
       void queryClient.invalidateQueries({ queryKey: bookingsKeys.details() });
+      void queryClient.invalidateQueries({ queryKey: bookingsKeys.stats() });
     },
     onError: notifyError,
   });

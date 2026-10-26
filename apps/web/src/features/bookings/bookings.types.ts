@@ -93,12 +93,12 @@ export type BookingListItem = {
   totalAmount: number;
   bookedAt: string;
   customer: Pick<BookingDetailsCustomer, "id" | "fullName" | "email" | "phone">;
-  bookingRoom?: {
+  bookingRoom: {
     id: string;
     assignedRoom: { roomNumber: string } | null;
     roomType: { name: string };
-  };
-  invoice: { status: InvoiceStatus } | null;
+  } | null;
+  invoice: { id: string; status: InvoiceStatus } | null;
 };
 
 export type BookingDetails = {
@@ -159,7 +159,7 @@ export type BookingDetails = {
       bedCount: number;
     };
     pricePerNight: number;
-  };
+  } | null;
   bookingGuests: {
     id: string;
     fullName: string;
@@ -191,7 +191,7 @@ export type BookingDetails = {
         fullName: string;
       };
     }[];
-  };
+  } | null;
 };
 
 export type BookingListParams = {
@@ -293,6 +293,7 @@ export interface CustomerBooking {
   checkOut: string;
   totalAmount: number;
   status: BookingStatus;
+  invoice: { id: string; status: InvoiceStatus } | null;
 }
 
 export interface CustomerBookingDetails {

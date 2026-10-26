@@ -9,34 +9,24 @@ export type BookingStatusAction = {
 
 const STATUS_ACTIONS: Record<BookingStatus, BookingStatusAction[]> = {
   PENDING: [
-    { label: "Confirm booking", status: "CONFIRMED" },
+    { label: "Confirm", status: "CONFIRMED" },
     {
-      label: "Mark as no-show",
-      status: "NO_SHOW",
-      confirmMessage: "Mark this booking as a no-show?",
-    },
-    {
-      label: "Cancel booking",
+      label: "Cancel",
       status: "CANCELLED",
       destructive: true,
       confirmMessage: "Cancel this booking? This action cannot be undone.",
     },
   ],
   CONFIRMED: [
-    { label: "Check in guest", status: "CHECKED_IN" },
+    { label: "Check In", status: "CHECKED_IN" },
     {
-      label: "Mark as no-show",
-      status: "NO_SHOW",
-      confirmMessage: "Mark this booking as a no-show?",
-    },
-    {
-      label: "Cancel booking",
+      label: "Cancel",
       status: "CANCELLED",
       destructive: true,
       confirmMessage: "Cancel this booking? This action cannot be undone.",
     },
   ],
-  CHECKED_IN: [{ label: "Check out guest", status: "CHECKED_OUT" }],
+  CHECKED_IN: [{ label: "Check Out", status: "CHECKED_OUT" }],
   CHECKED_OUT: [],
   CANCELLED: [],
   NO_SHOW: [],
