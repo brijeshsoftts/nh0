@@ -6,6 +6,8 @@ export const customersKeys = {
   lists: () => ["customers", "list"] as const,
   list: (params?: ListParams) => ["customers", "list", params] as const,
   detail: (id: string) => ["customers", "detail", id] as const,
+  bookings: (id: string, params: ListParams) =>
+    [...customersKeys.detail(id), "bookings", params] as const,
   search: (search?: string) => ["customers", "search", search] as const,
 } as const;
 

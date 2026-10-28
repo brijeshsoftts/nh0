@@ -35,6 +35,10 @@ import {
   CustomersQuerySchema,
 } from './dto/customers-query.dto';
 import {
+  CustomerBookingsQueryDto,
+  CustomerBookingsQuerySchema,
+} from './dto/customer-bookings-query.dto';
+import {
   UpdateCustomerDto,
   UpdateCustomerSchema,
 } from './dto/update-customer.dto';
@@ -112,6 +116,19 @@ export class CustomersController {
   async getOne(@Param('id') id: string) {
     const data = await this.customersService.getOne(id);
     return apiResponse({ data });
+  }
+
+  @UseGuards(AuthGuard, RoleGuard)
+  @Roles('ADMIN', 'MANAGER', 'STAFF')
+  @Get(':id/bookings')
+  @HttpCode(HttpStatus.OK)
+  async getBookings(
+    @Param('id') id: string,
+    @Query(new ValidationPipe(CustomerBookingsQuerySchema))
+    query: CustomerBookingsQueryDto,
+  ) {
+    const { data, meta } = await this.customersService.getBookings(id, query);
+    return apiListResponse({ data, meta });
   }
 
   @UseGuards(AuthGuard, RoleGuard)

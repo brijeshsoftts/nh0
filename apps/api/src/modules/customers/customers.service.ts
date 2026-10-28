@@ -9,14 +9,26 @@ import { hashPassword } from '../../common/helpers';
 import { uploadFile } from '../../config';
 import { PrismaService } from '../../prisma/prisma.service';
 import { ListResponse } from '../../types/api.types';
-import { BookingStatus, UserRole } from '../../types/prisma.types';
+import {
+  BookingStatus,
+  InvoiceStatus,
+  PaymentStatus,
+  Prisma,
+  UserRole,
+} from '../../types/prisma.types';
 import { StatItem } from '../../types/shared.types';
 
 import { CreateCustomerDto } from './dto/create-customer.dto';
+import { CustomerBookingsQueryDto } from './dto/customer-bookings-query.dto';
 import { CustomersQueryDto } from './dto/customers-query.dto';
 import { UpdateCustomerDto } from './dto/update-customer.dto';
 import { CUSTOMER_ERROR_MSG } from './customers.constants';
-import { Customer, CustomerDetails, SearchCustomer } from './customers.types';
+import {
+  Customer,
+  CustomerBookingItem,
+  CustomerDetails,
+  SearchCustomer,
+} from './customers.types';
 
 export type CustomerUploadFile = {
   buffer: Buffer;
@@ -211,6 +223,117 @@ export class CustomersService {
       idProof: customer.customer.idProofImage,
       signature: customer.customer.signatureImage,
       profile: customer.profile,
+    };
+  }
+
+  async getBookings(
+    id: string,
+    query: CustomerBookingsQueryDto,
+  ): Promise<ListResponse<CustomerBookingItem>> {
+    const customer = await this.prismaService.user.findFirst({
+      where: { id, role: UserRole.CUSTOMER, softDeletedAt: null },
+      select: { id: true },
+    });
+
+    if (!customer) {
+      throw new NotFoundException(CUSTOMER_ERROR_MSG.NOT_FOUND);
+    }
+
+    const where: Prisma.BookingWhereInput = { customerId: customer.id };
+    const [bookings, total] = await this.prismaService.$transaction([
+      this.prismaService.booking.findMany({
+        where,
+        skip: (query.page - 1) * query.limit,
+        take: query.limit,
+        orderBy: { bookedAt: 'desc' },
+        select: {
+          id: true,
+          bookingReference: true,
+          status: true,
+          checkInDate: true,
+          checkOutDate: true,
+          totalGuests: true,
+          totalAmount: true,
+          bookingRoom: {
+            select: {
+              assignedRoom: {
+                select: { roomNumber: true, name: true },
+              },
+              roomType: { select: { name: true } },
+            },
+          },
+          invoice: {
+            select: {
+              id: true,
+              invoiceNumber: true,
+              status: true,
+              totalAmount: true,
+              payments: {
+                orderBy: { createdAt: 'desc' },
+                take: 1,
+                select: { paymentStatus: true },
+              },
+            },
+          },
+        },
+      }),
+      this.prismaService.booking.count({ where }),
+    ]);
+
+    const invoiceIds = bookings.flatMap((booking) =>
+      booking.invoice ? [booking.invoice.id] : [],
+    );
+    const paidTotals = invoiceIds.length
+      ? await this.prismaService.payment.groupBy({
+          by: ['invoiceId'],
+          where: {
+            invoiceId: { in: invoiceIds },
+            paymentStatus: PaymentStatus.COMPLETED,
+          },
+          _sum: { amount: true },
+        })
+      : [];
+    const paidByInvoice = new Map(
+      paidTotals.map((payment) => [
+        payment.invoiceId,
+        payment._sum.amount ?? 0,
+      ]),
+    );
+
+    return {
+      data: bookings.map((booking) => {
+        const invoice = booking.invoice;
+        const paidAmount = invoice ? (paidByInvoice.get(invoice.id) ?? 0) : 0;
+
+        return {
+          id: booking.id,
+          bookingReference: booking.bookingReference,
+          status: booking.status,
+          checkInDate: booking.checkInDate.toISOString(),
+          checkOutDate: booking.checkOutDate.toISOString(),
+          totalGuests: booking.totalGuests,
+          totalAmount: booking.totalAmount,
+          bookingRoom: booking.bookingRoom
+            ? {
+                roomNumber:
+                  booking.bookingRoom.assignedRoom?.roomNumber ?? null,
+                roomName: booking.bookingRoom.assignedRoom?.name ?? null,
+                roomTypeName: booking.bookingRoom.roomType.name,
+              }
+            : null,
+          invoice: invoice
+            ? {
+                invoiceNumber: invoice.invoiceNumber,
+                status: invoice.status,
+                totalAmount: invoice.totalAmount,
+                paidAmount,
+                balanceDue: Math.max(invoice.totalAmount - paidAmount, 0),
+                latestPaymentStatus: invoice.payments[0]?.paymentStatus ?? null,
+              }
+            : null,
+        };
+      }),
+      meta: { page: query.page, limit: query.limit, total },
     };
   }
 

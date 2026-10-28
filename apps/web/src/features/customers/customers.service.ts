@@ -12,6 +12,7 @@ import type { CreateCustomer } from "./schema/createCustomer.schema";
 import type { UpdateCustomer } from "./schema/updateCustomer.schema";
 import type {
   Customer,
+  CustomerBookingItem,
   CustomerDetails,
   SearchCustomer,
 } from "./customers.types";
@@ -53,6 +54,11 @@ export const customersService = {
     apiClient.delete(`/customers/${id}`).then((r) => r.data),
   findOne: (id: string): Promise<CustomerDetails> =>
     apiClient.get(`/customers/${id}`).then((r) => r.data?.data),
+  findBookings: (
+    id: string,
+    params: ListParams
+  ): Promise<ApiListResponse<CustomerBookingItem>> =>
+    apiClient.get(`/customers/${id}/bookings`, { params }).then((r) => r.data),
   getStats: (): Promise<DashboardStat[]> =>
     apiClient
       .get("/customers/stats")

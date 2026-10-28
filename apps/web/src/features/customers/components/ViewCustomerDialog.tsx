@@ -19,6 +19,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import type { CustomerDetails } from "../customers.types";
 import { useCustomer } from "../hooks/useCustomer";
 
+import { CustomerBookingsTab } from "./CustomerBookingsTab";
 import { UpdateCustomerDialog } from "./UpdateCustomerDialog";
 
 type ViewCustomerDialogProps = {
@@ -34,6 +35,7 @@ export function ViewCustomerDialog({
 }: ViewCustomerDialogProps) {
   const { data, isLoading, isError, refetch } = useCustomer(id);
   const [isUpdateModal, setIsUpdateModal] = useState(false);
+  const [activeTab, setActiveTab] = useState("profile");
 
   if (isLoading) {
     return <FullScreenLoader />;
@@ -83,7 +85,11 @@ export function ViewCustomerDialog({
 
           <Separator />
 
-          <Tabs defaultValue="profile" className="w-full flex-col">
+          <Tabs
+            value={activeTab}
+            onValueChange={setActiveTab}
+            className="w-full flex-col"
+          >
             <TabsList className="grid w-full grid-cols-3">
               <TabsTrigger value="profile">Profile</TabsTrigger>
               <TabsTrigger value="bookings">Bookings</TabsTrigger>
@@ -172,9 +178,11 @@ export function ViewCustomerDialog({
             </TabsContent>
 
             <TabsContent value="bookings" className="mt-6">
-              <div className="rounded-md border p-6 text-center text-sm text-muted-foreground">
-                No booking details available.
-              </div>
+              <CustomerBookingsTab
+                key={id}
+                customerId={id}
+                enabled={open && activeTab === "bookings"}
+              />
             </TabsContent>
 
             <TabsContent value="payments" className="mt-6">

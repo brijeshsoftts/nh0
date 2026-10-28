@@ -1,3 +1,9 @@
+import {
+  BookingStatus,
+  InvoiceStatus,
+  PaymentStatus,
+} from '../../types/prisma.types';
+
 export type Customer = {
   id: string;
   name: string;
@@ -44,4 +50,27 @@ export type SearchCustomer = {
   fullName: string;
   email: string;
   phone: string;
+};
+
+export type CustomerBookingItem = {
+  id: string;
+  bookingReference: string;
+  status: BookingStatus;
+  checkInDate: string;
+  checkOutDate: string;
+  totalGuests: number;
+  totalAmount: number;
+  bookingRoom: {
+    roomNumber: string | null;
+    roomName: string | null;
+    roomTypeName: string;
+  } | null;
+  invoice: {
+    invoiceNumber: string;
+    status: InvoiceStatus;
+    totalAmount: number;
+    paidAmount: number;
+    balanceDue: number;
+    latestPaymentStatus: PaymentStatus | null;
+  } | null;
 };
