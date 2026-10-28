@@ -4,6 +4,7 @@ import type { ApiListResponse, ListParams } from "@/types/api.types";
 
 import { toDashboardStats } from "../shared/stat-response";
 
+import type { RecordQrPaymentInput } from "./schemas/record-qr-payment.schema";
 import type {
   CreateCashPaymentInput,
   CreateCashPaymentResponse,
@@ -13,6 +14,7 @@ import type {
   PublicPaymentAccessInput,
   PublicPaymentStatus,
   PublicVerifyPaymentInput,
+  RecordQrPaymentResponse,
   VerifyPaymentInput,
 } from "./payments.types";
 
@@ -51,6 +53,12 @@ export const paymentsService = {
   ): Promise<CreateCashPaymentResponse> =>
     apiClient
       .post("/payments/cash", input)
+      .then((response) => response.data.data),
+  recordQrPayment: (
+    input: RecordQrPaymentInput
+  ): Promise<RecordQrPaymentResponse> =>
+    apiClient
+      .post("/payments/qr", input)
       .then((response) => response.data.data),
   getStats: (): Promise<DashboardStat[]> =>
     apiClient

@@ -7,6 +7,7 @@ import {
   LoaderCircle,
   LogIn,
   LogOut,
+  QrCode,
   Receipt,
   UserRound,
 } from "lucide-react";
@@ -22,6 +23,7 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { ViewInvoiceDetails } from "@/features/invoices/components/ViewInvoiceDetails";
 import { CollectCashDialog } from "@/features/payments/components/CollectCashDialog";
+import { RecordQrPaymentDialog } from "@/features/payments/components/RecordQrPaymentDialog";
 import { useAuth } from "@/hooks/useAuth";
 import type { BookingStatus } from "@/types/enum.types";
 
@@ -46,6 +48,7 @@ export function BookingRowActions({ booking }: { booking: BookingListItem }) {
   const [isCustomerOpen, setIsCustomerOpen] = useState(false);
   const [isInvoiceOpen, setIsInvoiceOpen] = useState(false);
   const [isCashDialogOpen, setIsCashDialogOpen] = useState(false);
+  const [isQrDialogOpen, setIsQrDialogOpen] = useState(false);
   const [confirmation, setConfirmation] = useState<{
     status: BookingStatus;
     message: string;
@@ -65,6 +68,13 @@ export function BookingRowActions({ booking }: { booking: BookingListItem }) {
     canUpdate &&
     booking.paymentMethod === "CASH" &&
     ["PENDING", "CONFIRMED"].includes(booking.status) &&
+    booking.invoice !== null &&
+    booking.invoice.status !== "PAID" &&
+    booking.invoice.status !== "REFUNDED";
+  const canRecordQrPayment =
+    canUpdate &&
+    booking.paymentMethod === "ONLINE" &&
+    booking.status === "PENDING" &&
     booking.invoice !== null &&
     booking.invoice.status !== "PAID" &&
     booking.invoice.status !== "REFUNDED";
@@ -123,6 +133,16 @@ export function BookingRowActions({ booking }: { booking: BookingListItem }) {
               <DropdownMenuItem onClick={() => setIsCashDialogOpen(true)}>
                 <Banknote aria-hidden="true" />
                 Collect Cash
+              </DropdownMenuItem>
+            </>
+          )}
+
+          {canRecordQrPayment && (
+            <>
+              <DropdownMenuSeparator />
+              <DropdownMenuItem onClick={() => setIsQrDialogOpen(true)}>
+                <QrCode aria-hidden="true" />
+                Record QR Pay
               </DropdownMenuItem>
             </>
           )}
@@ -188,6 +208,13 @@ export function BookingRowActions({ booking }: { booking: BookingListItem }) {
           bookingId={booking.id}
           open={isCashDialogOpen}
           onOpenChange={setIsCashDialogOpen}
+        />
+      )}
+      {isQrDialogOpen && (
+        <RecordQrPaymentDialog
+          bookingId={booking.id}
+          open={isQrDialogOpen}
+          onOpenChange={setIsQrDialogOpen}
         />
       )}
       {canViewInvoice && booking.invoice && isInvoiceOpen && (

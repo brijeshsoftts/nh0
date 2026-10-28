@@ -7,11 +7,13 @@ import {
   FileText,
   Mail,
   Phone,
+  QrCode,
   Receipt,
   UserRound,
   Users,
 } from "lucide-react";
 import type { ReactNode } from "react";
+import { useState } from "react";
 
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -26,6 +28,7 @@ import {
 import { Spinner } from "@/components/ui/spinner";
 import { ManualCashPaymentButton } from "@/features/payments/components/ManualCashPaymentButton";
 import { PaymentPopup } from "@/features/payments/components/PaymentPopup";
+import { RecordQrPaymentDialog } from "@/features/payments/components/RecordQrPaymentDialog";
 import { useAuth } from "@/hooks/useAuth";
 import type {
   BookingStatus,
@@ -167,6 +170,7 @@ export function BookingDetailsSheet({
   onOpenChange,
   bookingId,
 }: BookingDetailsSheetProps) {
+  const [isQrDialogOpen, setIsQrDialogOpen] = useState(false);
   const { booking, isLoading, isError, refetch } = useBooking(bookingId, open);
   const { user } = useAuth();
   const isReceptionist =
@@ -221,6 +225,8 @@ export function BookingDetailsSheet({
     0,
     (booking.invoice?.totalAmount ?? booking.totalAmount) - totalPaid
   );
+  const isStaffCreatedBooking =
+    Boolean(booking.createdBy) && booking.createdBy !== booking.customerId;
 
   return (
     <Sheet open={open} onOpenChange={onOpenChange}>
@@ -627,12 +633,23 @@ export function BookingDetailsSheet({
                 remainingAmount > 0 &&
                 ["PENDING", "CONFIRMED"].includes(booking.status) && (
                   <div className="flex flex-wrap gap-2">
-                    {booking.paymentMethod === "ONLINE" && (
-                      <PaymentPopup
-                        bookingId={booking.id}
-                        bookingReference={booking.bookingReference}
-                      />
-                    )}
+                    {booking.paymentMethod === "ONLINE" &&
+                      (isStaffCreatedBooking ? (
+                        <Button
+                          type="button"
+                          variant="outline"
+                          className="rounded-none"
+                          onClick={() => setIsQrDialogOpen(true)}
+                        >
+                          <QrCode aria-hidden="true" />
+                          Record QR Pay
+                        </Button>
+                      ) : (
+                        <PaymentPopup
+                          bookingId={booking.id}
+                          bookingReference={booking.bookingReference}
+                        />
+                      ))}
                     {booking.paymentMethod === "CASH" && (
                       <ManualCashPaymentButton
                         invoiceId={booking.invoice.id}
@@ -707,6 +724,13 @@ export function BookingDetailsSheet({
             Close
           </Button>
         </div>
+        {isStaffCreatedBooking && (
+          <RecordQrPaymentDialog
+            bookingId={booking.id}
+            open={isQrDialogOpen}
+            onOpenChange={setIsQrDialogOpen}
+          />
+        )}
       </SheetContent>
     </Sheet>
   );

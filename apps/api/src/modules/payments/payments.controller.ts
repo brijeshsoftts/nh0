@@ -30,6 +30,10 @@ import {
   PaymentsQuerySchema,
 } from './dto/payments-query.dto';
 import {
+  RecordQrPaymentDto,
+  RecordQrPaymentSchema,
+} from './dto/record-qr-payment.dto';
+import {
   VerifyPaymentDto,
   VerifyPaymentSchema,
 } from './dto/verify-payment.dto';
@@ -99,6 +103,24 @@ export class PaymentsController {
       category,
     );
     return apiResponse({ data, message: PAYMENTS_SUCCESS_MSG.CASH_RECORDED });
+  }
+
+  @Roles('ADMIN', 'MANAGER', 'STAFF')
+  @Post('qr')
+  @HttpCode(HttpStatus.CREATED)
+  async recordQrPayment(
+    @Body(new ValidationPipe(RecordQrPaymentSchema)) body: RecordQrPaymentDto,
+    @CurrentUser('id') userId: string,
+    @CurrentUser('role') role: UserRole,
+    @CurrentUser('category') category: Category | undefined,
+  ) {
+    const data = await this.paymentsService.recordQrPayment(
+      body,
+      userId,
+      role,
+      category,
+    );
+    return apiResponse({ data, message: PAYMENTS_SUCCESS_MSG.QR_RECORDED });
   }
 
   @Roles('CUSTOMER', 'STAFF', 'ADMIN', 'MANAGER')

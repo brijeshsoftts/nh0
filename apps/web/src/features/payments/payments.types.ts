@@ -84,6 +84,8 @@ export type CreateCashPaymentResponse = {
   };
 };
 
+export type RecordQrPaymentResponse = CreateCashPaymentResponse;
+
 export interface CustomerPayment {
   id: string;
   bookingId: string;

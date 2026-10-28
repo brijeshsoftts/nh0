@@ -36,3 +36,20 @@ export function useCollectCash() {
     onError: notifyError,
   });
 }
+
+export function useRecordQrPayment() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: paymentsService.recordQrPayment,
+    onSuccess: async () => {
+      await Promise.all([
+        queryClient.invalidateQueries({ queryKey: paymentsKeys.all }),
+        queryClient.invalidateQueries({ queryKey: bookingsKeys.all }),
+        queryClient.invalidateQueries({ queryKey: invoicesKeys.all }),
+      ]);
+      toast.success("QR payment recorded. Verify it against the bank/app.");
+    },
+    onError: notifyError,
+  });
+}

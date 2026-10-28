@@ -1,5 +1,6 @@
 export const PAYMENTS_SUCCESS_MSG = {
   CASH_RECORDED: 'Cash payment recorded successfully.',
+  QR_RECORDED: 'QR payment was manually recorded successfully.',
   ONLINE_INITIATED: 'Online payment initiated successfully.',
   ONLINE_VERIFIED: 'Online payment status verified.',
   WEBHOOK_PROCESSED: 'Webhook processed successfully.',
@@ -26,6 +27,12 @@ export const PAYMENTS_ERROR_MSG = {
   FULL_BALANCE_REQUIRED:
     'Cash collection must cover the full outstanding balance.',
   CASH_METHOD_REQUIRED: 'This booking is not eligible for cash collection.',
+  QR_METHOD_REQUIRED: 'This booking is not eligible for QR payment recording.',
+  QR_PAYMENT_NOT_AVAILABLE:
+    'No unlinked pending online payment attempt is available for QR recording.',
+  WALK_IN_QR_REQUIRED:
+    'Staff-created online bookings must use the general QR recording flow.',
+  TRANSACTION_ID_DUPLICATE: 'This transaction ID has already been recorded.',
   INVALID_REFUND_STATUS: 'Only completed payments can be refunded.',
   PAYMENT_CHANGED: 'Payment changed before this operation could be applied.',
   PAYMENT_REFERENCE_CONFLICT: 'Could not create a unique payment reference.',

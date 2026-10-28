@@ -26,6 +26,7 @@ import { StatItem } from '../../types/shared.types';
 
 import { CreatePaymentDto } from './dto/create-payment.dto';
 import { PaymentsQueryDto } from './dto/payments-query.dto';
+import { RecordQrPaymentDto } from './dto/record-qr-payment.dto';
 import { VerifyPaymentDto } from './dto/verify-payment.dto';
 import { PAYMENTS_ERROR_MSG } from './payments.constants';
 import {
@@ -253,6 +254,237 @@ export class PaymentsService {
     return this.createPayment(dto, PaymentMethod.CASH, recordedBy);
   }
 
+  async recordQrPayment(
+    dto: RecordQrPaymentDto,
+    recordedBy: string,
+    role: UserRole,
+    category?: Category,
+  ): Promise<CreatePayment> {
+    this.assertQrPaymentRecorder(role, category);
+
+    try {
+      return await this.prismaService.$transaction(async (tx) => {
+        const invoiceRef = await tx.invoice.findUnique({
+          where: { id: dto.invoiceId },
+          select: { bookingId: true },
+        });
+
+        if (!invoiceRef) {
+          throw new NotFoundException(PAYMENTS_ERROR_MSG.INVOICE_NOT_FOUND);
+        }
+
+        await tx.$queryRaw`SELECT "id" FROM "Booking" WHERE "id" = ${invoiceRef.bookingId} FOR UPDATE`;
+
+        const invoice = await tx.invoice.findUnique({
+          where: { id: dto.invoiceId },
+          select: {
+            id: true,
+            bookingId: true,
+            customerId: true,
+            totalAmount: true,
+            status: true,
+            booking: {
+              select: {
+                id: true,
+                status: true,
+                paymentMethod: true,
+                bookingRoom: { select: { assignedRoomId: true } },
+              },
+            },
+          },
+        });
+
+        if (!invoice || invoice.bookingId !== invoice.booking.id) {
+          throw new NotFoundException(PAYMENTS_ERROR_MSG.INVOICE_NOT_FOUND);
+        }
+
+        if (invoice.booking.paymentMethod !== PaymentMethod.ONLINE) {
+          throw new BadRequestException(PAYMENTS_ERROR_MSG.QR_METHOD_REQUIRED);
+        }
+
+        if (
+          invoice.booking.status !== BookingStatus.PENDING &&
+          invoice.booking.status !== BookingStatus.CONFIRMED
+        ) {
+          throw new BadRequestException(PAYMENTS_ERROR_MSG.BOOKING_NOT_PAYABLE);
+        }
+
+        if (!invoice.booking.bookingRoom?.assignedRoomId) {
+          throw new BadRequestException(
+            'An assigned room is required before payment can be recorded.',
+          );
+        }
+
+        if (
+          invoice.status === InvoiceStatus.PAID ||
+          invoice.status === InvoiceStatus.REFUNDED
+        ) {
+          throw new BadRequestException(
+            PAYMENTS_ERROR_MSG.NO_OUTSTANDING_BALANCE,
+          );
+        }
+
+        const duplicateTransaction = await tx.payment.findUnique({
+          where: { transactionId: dto.transactionId },
+          select: { id: true },
+        });
+
+        if (duplicateTransaction) {
+          throw new ConflictException(
+            PAYMENTS_ERROR_MSG.TRANSACTION_ID_DUPLICATE,
+          );
+        }
+
+        const [completedPayments, pendingAttempts] = await Promise.all([
+          tx.payment.aggregate({
+            where: {
+              invoiceId: invoice.id,
+              bookingId: invoice.bookingId,
+              paymentStatus: PaymentStatus.COMPLETED,
+            },
+            _sum: { amount: true },
+          }),
+          tx.payment.findMany({
+            where: {
+              invoiceId: invoice.id,
+              bookingId: invoice.bookingId,
+              paymentMethod: PaymentMethod.ONLINE,
+              paymentStatus: PaymentStatus.PENDING,
+            },
+            orderBy: { createdAt: 'asc' },
+            select: {
+              id: true,
+              transactionId: true,
+              orderId: true,
+            },
+          }),
+        ]);
+
+        const completedAmount = completedPayments._sum.amount ?? 0;
+        if (
+          invoice.totalAmount <= 0 ||
+          completedAmount < 0 ||
+          completedAmount >= invoice.totalAmount
+        ) {
+          throw new BadRequestException('The invoice balance is invalid.');
+        }
+
+        const outstandingAmount = invoice.totalAmount - completedAmount;
+        if (dto.amount !== outstandingAmount) {
+          throw new BadRequestException(
+            PAYMENTS_ERROR_MSG.FULL_BALANCE_REQUIRED,
+          );
+        }
+
+        if (pendingAttempts.length !== 1) {
+          throw new ConflictException(
+            PAYMENTS_ERROR_MSG.QR_PAYMENT_NOT_AVAILABLE,
+          );
+        }
+
+        const pendingAttempt = pendingAttempts[0];
+        if (pendingAttempt.transactionId || pendingAttempt.orderId) {
+          throw new ConflictException(
+            PAYMENTS_ERROR_MSG.QR_PAYMENT_NOT_AVAILABLE,
+          );
+        }
+
+        const paidAt = new Date();
+        const updateResult = await tx.payment.updateMany({
+          where: {
+            id: pendingAttempt.id,
+            invoiceId: invoice.id,
+            bookingId: invoice.bookingId,
+            paymentMethod: PaymentMethod.ONLINE,
+            paymentStatus: PaymentStatus.PENDING,
+            transactionId: null,
+            orderId: null,
+          },
+          data: {
+            amount: outstandingAmount,
+            amountPaise: null,
+            transactionId: dto.transactionId,
+            paymentStatus: PaymentStatus.COMPLETED,
+            paidAt,
+            recordedBy,
+          },
+        });
+
+        if (updateResult.count !== 1) {
+          throw new ConflictException(PAYMENTS_ERROR_MSG.PAYMENT_CHANGED);
+        }
+
+        const payment = await tx.payment.findUniqueOrThrow({
+          where: { id: pendingAttempt.id },
+          select: {
+            id: true,
+            paymentReference: true,
+            invoiceId: true,
+            amount: true,
+            paymentMethod: true,
+            paymentStatus: true,
+            paidAt: true,
+          },
+        });
+
+        const paidAmount = completedAmount + outstandingAmount;
+        if (paidAmount < invoice.totalAmount) {
+          throw new BadRequestException(
+            PAYMENTS_ERROR_MSG.FULL_BALANCE_REQUIRED,
+          );
+        }
+
+        await tx.invoice.update({
+          where: { id: invoice.id },
+          data: { status: InvoiceStatus.PAID },
+        });
+
+        if (invoice.booking.status === BookingStatus.PENDING) {
+          const bookingUpdated = await tx.booking.updateMany({
+            where: {
+              id: invoice.bookingId,
+              status: BookingStatus.PENDING,
+              paymentMethod: PaymentMethod.ONLINE,
+            },
+            data: {
+              status: BookingStatus.CONFIRMED,
+              checkoutExpiresAt: null,
+            },
+          });
+
+          if (bookingUpdated.count !== 1) {
+            throw new ConflictException(PAYMENTS_ERROR_MSG.PAYMENT_CHANGED);
+          }
+        }
+
+        return {
+          payment: {
+            ...payment,
+            paidAt: payment.paidAt?.toISOString() ?? null,
+          },
+          booking: {
+            id: invoice.bookingId,
+            totalAmount: invoice.totalAmount,
+            paidAmount,
+            balance: Math.max(invoice.totalAmount - paidAmount, 0),
+          },
+        };
+      });
+    } catch (error) {
+      if (
+        error instanceof Prisma.PrismaClientKnownRequestError &&
+        error.code === 'P2002' &&
+        this.isTransactionIdUniqueConflict(error)
+      ) {
+        throw new ConflictException(
+          PAYMENTS_ERROR_MSG.TRANSACTION_ID_DUPLICATE,
+        );
+      }
+
+      this.handlePrismaConflict(error);
+    }
+  }
+
   async createOrder(
     bookingId: string,
     userId: string,
@@ -282,6 +514,7 @@ export class PaymentsService {
           id: true,
           bookingReference: true,
           customerId: true,
+          createdBy: true,
           status: true,
           paymentMethod: true,
           checkoutExpiresAt: true,
@@ -305,6 +538,14 @@ export class PaymentsService {
 
       if (booking.paymentMethod === PaymentMethod.CASH) {
         throw new BadRequestException(PAYMENTS_ERROR_MSG.BOOKING_NOT_PAYABLE);
+      }
+
+      if (
+        booking.customerId !== null &&
+        booking.createdBy !== null &&
+        booking.createdBy !== booking.customerId
+      ) {
+        throw new BadRequestException(PAYMENTS_ERROR_MSG.WALK_IN_QR_REQUIRED);
       }
 
       this.assertBookingPayable(booking.status);
@@ -1060,6 +1301,34 @@ export class PaymentsService {
     ) {
       throw new ForbiddenException(PAYMENTS_ERROR_MSG.PAYMENT_NOT_ALLOWED);
     }
+  }
+
+  private assertQrPaymentRecorder(role: UserRole, category?: Category): void {
+    if (
+      role !== UserRole.ADMIN &&
+      role !== UserRole.MANAGER &&
+      !(role === UserRole.STAFF && category === Category.RECEPTIONIST)
+    ) {
+      throw new ForbiddenException(PAYMENTS_ERROR_MSG.PAYMENT_NOT_ALLOWED);
+    }
+  }
+
+  private isTransactionIdUniqueConflict(
+    error: Prisma.PrismaClientKnownRequestError,
+  ): boolean {
+    const target = error.meta?.target;
+    if (typeof target === 'string') {
+      return target.toLowerCase().includes('transactionid');
+    }
+
+    return (
+      Array.isArray(target) &&
+      target.some(
+        (field) =>
+          typeof field === 'string' &&
+          field.toLowerCase().includes('transactionid'),
+      )
+    );
   }
 
   private assertPaymentReader(role: UserRole, category?: Category): void {
