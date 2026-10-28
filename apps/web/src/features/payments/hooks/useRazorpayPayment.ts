@@ -1,6 +1,6 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { type RazorpayOrderOptions, useRazorpay } from "react-razorpay";
 import { useRef, useState } from "react";
+import { type RazorpayOrderOptions, useRazorpay } from "react-razorpay";
 import { toast } from "sonner";
 
 import { bookingsKeys } from "@/features/bookings/bookings.keys";

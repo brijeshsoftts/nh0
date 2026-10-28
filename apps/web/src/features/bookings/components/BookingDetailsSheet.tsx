@@ -625,19 +625,21 @@ export function BookingDetailsSheet({
               {isReceptionist &&
                 booking.invoice &&
                 remainingAmount > 0 &&
-                ["PENDING", "CONFIRMED", "CHECKED_IN"].includes(
-                  booking.status
-                ) && (
+                ["PENDING", "CONFIRMED"].includes(booking.status) && (
                   <div className="flex flex-wrap gap-2">
-                    <PaymentPopup
-                      bookingId={booking.id}
-                      bookingReference={booking.bookingReference}
-                    />
-                    <ManualCashPaymentButton
-                      invoiceId={booking.invoice.id}
-                      amount={remainingAmount}
-                      onRecorded={() => void refetch()}
-                    />
+                    {booking.paymentMethod === "ONLINE" && (
+                      <PaymentPopup
+                        bookingId={booking.id}
+                        bookingReference={booking.bookingReference}
+                      />
+                    )}
+                    {booking.paymentMethod === "CASH" && (
+                      <ManualCashPaymentButton
+                        invoiceId={booking.invoice.id}
+                        amount={remainingAmount}
+                        onRecorded={() => void refetch()}
+                      />
+                    )}
                   </div>
                 )}
             </Section>

@@ -242,7 +242,11 @@ export class PaymentsService {
     role: UserRole,
     category?: Category,
   ): Promise<CreatePayment> {
-    if (role === UserRole.STAFF && category !== Category.RECEPTIONIST) {
+    if (
+      role !== UserRole.ADMIN &&
+      role !== UserRole.MANAGER &&
+      !(role === UserRole.STAFF && category === Category.RECEPTIONIST)
+    ) {
       throw new ForbiddenException(PAYMENTS_ERROR_MSG.PAYMENT_NOT_ALLOWED);
     }
 
@@ -279,6 +283,7 @@ export class PaymentsService {
           bookingReference: true,
           customerId: true,
           status: true,
+          paymentMethod: true,
           checkoutExpiresAt: true,
           invoice: {
             select: {
@@ -296,6 +301,10 @@ export class PaymentsService {
 
       if (!booking) {
         throw new NotFoundException(PAYMENTS_ERROR_MSG.BOOKING_NOT_FOUND);
+      }
+
+      if (booking.paymentMethod === PaymentMethod.CASH) {
+        throw new BadRequestException(PAYMENTS_ERROR_MSG.BOOKING_NOT_PAYABLE);
       }
 
       this.assertBookingPayable(booking.status);
@@ -796,6 +805,17 @@ export class PaymentsService {
   ): Promise<CreatePayment> {
     try {
       return await this.prismaService.$transaction(async (tx) => {
+        const invoiceRef = await tx.invoice.findUnique({
+          where: { id: dto.invoiceId },
+          select: { bookingId: true },
+        });
+
+        if (!invoiceRef) {
+          throw new NotFoundException(PAYMENTS_ERROR_MSG.INVOICE_NOT_FOUND);
+        }
+
+        await tx.$queryRaw`SELECT "id" FROM "Booking" WHERE "id" = ${invoiceRef.bookingId} FOR UPDATE`;
+
         const invoice = await tx.invoice.findUnique({
           where: { id: dto.invoiceId },
           select: {
@@ -803,6 +823,15 @@ export class PaymentsService {
             bookingId: true,
             customerId: true,
             totalAmount: true,
+            status: true,
+            booking: {
+              select: {
+                id: true,
+                status: true,
+                paymentMethod: true,
+                bookingRoom: { select: { assignedRoomId: true } },
+              },
+            },
           },
         });
 
@@ -810,95 +839,211 @@ export class PaymentsService {
           throw new NotFoundException(PAYMENTS_ERROR_MSG.INVOICE_NOT_FOUND);
         }
 
-        await tx.$queryRaw`SELECT "id" FROM "Booking" WHERE "id" = ${invoice.bookingId} FOR UPDATE`;
-
-        const booking = await tx.booking.findUnique({
-          where: { id: invoice.bookingId },
-          select: { status: true },
-        });
-
-        if (!booking) {
-          throw new NotFoundException(PAYMENTS_ERROR_MSG.BOOKING_NOT_FOUND);
-        }
-
-        this.assertBookingPayable(booking.status);
-
-        if (paymentMethod === PaymentMethod.CASH) {
-          const activeOnlinePayment = await tx.payment.findFirst({
-            where: {
-              invoiceId: invoice.id,
-              paymentMethod: PaymentMethod.ONLINE,
-              paymentStatus: PaymentStatus.PENDING,
-            },
-            select: { id: true },
-          });
-
-          if (activeOnlinePayment) {
-            throw new ConflictException(
-              PAYMENTS_ERROR_MSG.PAYMENT_ALREADY_ACTIVE,
-            );
-          }
-        }
-
-        const completedPayments = await tx.payment.aggregate({
-          where: {
-            invoiceId: invoice.id,
-            paymentStatus: PaymentStatus.COMPLETED,
-          },
-          _sum: { amount: true },
-        });
-        const outstandingAmount =
-          invoice.totalAmount - (completedPayments._sum.amount ?? 0);
-
-        if (dto.amount > outstandingAmount) {
+        if (invoice.booking.paymentMethod !== PaymentMethod.CASH) {
           throw new BadRequestException(
-            PAYMENTS_ERROR_MSG.AMOUNT_EXCEEDS_BALANCE,
+            PAYMENTS_ERROR_MSG.CASH_METHOD_REQUIRED,
           );
         }
 
-        const paidAt = paymentMethod === PaymentMethod.CASH ? new Date() : null;
-        const payment = await tx.payment.create({
-          data: {
-            paymentReference: this.createPaymentReference(),
-            invoiceId: invoice.id,
-            bookingId: invoice.bookingId,
-            customerId: invoice.customerId,
-            amount: dto.amount,
-            paymentMethod,
-            paymentStatus:
-              paymentMethod === PaymentMethod.CASH
-                ? PaymentStatus.COMPLETED
-                : PaymentStatus.PENDING,
-            paidAt,
-            recordedBy,
-          },
-          select: {
-            id: true,
-            paymentReference: true,
-            invoiceId: true,
-            amount: true,
-            paymentMethod: true,
-            paymentStatus: true,
-            paidAt: true,
-          },
-        });
+        if (
+          invoice.booking.status !== BookingStatus.PENDING &&
+          invoice.booking.status !== BookingStatus.CONFIRMED
+        ) {
+          throw new BadRequestException(PAYMENTS_ERROR_MSG.BOOKING_NOT_PAYABLE);
+        }
 
-        if (payment.paymentStatus === PaymentStatus.COMPLETED) {
-          const paidAmount = (completedPayments._sum.amount ?? 0) + dto.amount;
-          await tx.invoice.update({
-            where: { id: invoice.id },
+        if (!invoice.booking.bookingRoom?.assignedRoomId) {
+          throw new BadRequestException(
+            'An assigned room is required before cash can be collected.',
+          );
+        }
+
+        if (invoice.status === InvoiceStatus.REFUNDED) {
+          throw new BadRequestException(PAYMENTS_ERROR_MSG.BOOKING_NOT_PAYABLE);
+        }
+
+        if (invoice.status === InvoiceStatus.PAID) {
+          throw new BadRequestException(
+            PAYMENTS_ERROR_MSG.NO_OUTSTANDING_BALANCE,
+          );
+        }
+
+        const [completedPayments, activeOnlinePayment, pendingCashPayments] =
+          await Promise.all([
+            tx.payment.aggregate({
+              where: {
+                invoiceId: invoice.id,
+                paymentStatus: PaymentStatus.COMPLETED,
+              },
+              _sum: { amount: true },
+            }),
+            tx.payment.findFirst({
+              where: {
+                invoiceId: invoice.id,
+                paymentMethod: PaymentMethod.ONLINE,
+                paymentStatus: PaymentStatus.PENDING,
+              },
+              select: { id: true },
+            }),
+            tx.payment.findMany({
+              where: {
+                invoiceId: invoice.id,
+                bookingId: invoice.bookingId,
+                paymentMethod: PaymentMethod.CASH,
+                paymentStatus: PaymentStatus.PENDING,
+              },
+              orderBy: { createdAt: 'asc' },
+              select: {
+                id: true,
+                transactionId: true,
+                orderId: true,
+              },
+            }),
+          ]);
+
+        if (activeOnlinePayment) {
+          throw new ConflictException(
+            PAYMENTS_ERROR_MSG.PAYMENT_ALREADY_ACTIVE,
+          );
+        }
+
+        const completedAmount = completedPayments._sum.amount ?? 0;
+        if (
+          invoice.totalAmount <= 0 ||
+          completedAmount < 0 ||
+          completedAmount > invoice.totalAmount
+        ) {
+          throw new BadRequestException('The invoice balance is invalid.');
+        }
+
+        const outstandingAmount = invoice.totalAmount - completedAmount;
+        if (outstandingAmount <= 0) {
+          throw new BadRequestException(
+            PAYMENTS_ERROR_MSG.NO_OUTSTANDING_BALANCE,
+          );
+        }
+
+        if (pendingCashPayments.length > 1) {
+          throw new ConflictException(PAYMENTS_ERROR_MSG.PAYMENT_CHANGED);
+        }
+
+        const collectedAt = new Date();
+        let payment: {
+          id: string;
+          paymentReference: string;
+          invoiceId: string;
+          amount: number;
+          paymentMethod: PaymentMethod;
+          paymentStatus: PaymentStatus;
+          paidAt: Date | null;
+        };
+
+        const pendingCash = pendingCashPayments[0];
+        if (pendingCash) {
+          if (pendingCash.transactionId || pendingCash.orderId) {
+            throw new ConflictException(PAYMENTS_ERROR_MSG.PAYMENT_CHANGED);
+          }
+
+          const updated = await tx.payment.updateMany({
+            where: {
+              id: pendingCash.id,
+              invoiceId: invoice.id,
+              bookingId: invoice.bookingId,
+              paymentMethod: PaymentMethod.CASH,
+              paymentStatus: PaymentStatus.PENDING,
+              transactionId: null,
+              orderId: null,
+            },
             data: {
-              status:
-                paidAmount >= invoice.totalAmount
-                  ? InvoiceStatus.PAID
-                  : InvoiceStatus.PARTIALLY_PAID,
+              amount: outstandingAmount,
+              amountPaise: null,
+              paymentStatus: PaymentStatus.COMPLETED,
+              paidAt: collectedAt,
+              recordedBy,
+            },
+          });
+
+          if (updated.count !== 1) {
+            throw new ConflictException(PAYMENTS_ERROR_MSG.PAYMENT_CHANGED);
+          }
+
+          payment = await tx.payment.findUniqueOrThrow({
+            where: { id: pendingCash.id },
+            select: {
+              id: true,
+              paymentReference: true,
+              invoiceId: true,
+              amount: true,
+              paymentMethod: true,
+              paymentStatus: true,
+              paidAt: true,
+            },
+          });
+        } else {
+          payment = await tx.payment.create({
+            data: {
+              paymentReference: this.createPaymentReference(),
+              invoiceId: invoice.id,
+              bookingId: invoice.bookingId,
+              customerId: invoice.customerId,
+              amount: outstandingAmount,
+              paymentMethod,
+              paymentStatus: PaymentStatus.COMPLETED,
+              paidAt: collectedAt,
+              recordedBy,
+            },
+            select: {
+              id: true,
+              paymentReference: true,
+              invoiceId: true,
+              amount: true,
+              paymentMethod: true,
+              paymentStatus: true,
+              paidAt: true,
             },
           });
         }
 
+        const paidAmount = completedAmount + outstandingAmount;
+        const invoiceStatus =
+          paidAmount >= invoice.totalAmount
+            ? InvoiceStatus.PAID
+            : InvoiceStatus.PARTIALLY_PAID;
+
+        await tx.invoice.update({
+          where: { id: invoice.id },
+          data: { status: invoiceStatus },
+        });
+
+        if (
+          invoiceStatus === InvoiceStatus.PAID &&
+          invoice.booking.status === BookingStatus.PENDING
+        ) {
+          const bookingUpdated = await tx.booking.updateMany({
+            where: {
+              id: invoice.bookingId,
+              status: BookingStatus.PENDING,
+              paymentMethod: PaymentMethod.CASH,
+            },
+            data: { status: BookingStatus.CONFIRMED, checkoutExpiresAt: null },
+          });
+
+          if (bookingUpdated.count !== 1) {
+            throw new ConflictException(PAYMENTS_ERROR_MSG.PAYMENT_CHANGED);
+          }
+        }
+
         return {
-          ...payment,
-          paidAt: payment.paidAt?.toISOString() ?? null,
+          payment: {
+            ...payment,
+            paidAt: payment.paidAt?.toISOString() ?? null,
+          },
+          booking: {
+            id: invoice.bookingId,
+            totalAmount: invoice.totalAmount,
+            paidAmount,
+            balance: Math.max(invoice.totalAmount - paidAmount, 0),
+          },
         };
       });
     } catch (error) {

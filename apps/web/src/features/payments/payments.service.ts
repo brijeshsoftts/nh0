@@ -6,6 +6,7 @@ import { toDashboardStats } from "../shared/stat-response";
 
 import type {
   CreateCashPaymentInput,
+  CreateCashPaymentResponse,
   CreatePaymentOrderInput,
   CreatePaymentOrderResponse,
   PaymentItem,
@@ -45,9 +46,12 @@ export const paymentsService = {
       .then((response) => response.data.data),
   findOne: (paymentId: string): Promise<PaymentItem> =>
     apiClient.get(`/payments/${paymentId}`).then((r) => r.data.data),
-  createCashPayment: async (input: CreateCashPaymentInput): Promise<void> => {
-    await apiClient.post("/payments/cash", input);
-  },
+  createCashPayment: (
+    input: CreateCashPaymentInput
+  ): Promise<CreateCashPaymentResponse> =>
+    apiClient
+      .post("/payments/cash", input)
+      .then((response) => response.data.data),
   getStats: (): Promise<DashboardStat[]> =>
     apiClient
       .get("/payments/stats")

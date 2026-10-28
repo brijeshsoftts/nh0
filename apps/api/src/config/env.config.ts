@@ -5,6 +5,17 @@ import 'dotenv/config';
 const envSchema = z.object({
   NODE_ENV: z.enum(['development', 'production']).default('development'),
   PORT: z.coerce.number().default(3000),
+  HOTEL_TIME_ZONE: z
+    .string()
+    .refine((timeZone) => {
+      try {
+        new Intl.DateTimeFormat('en', { timeZone });
+        return true;
+      } catch {
+        return false;
+      }
+    }, 'HOTEL_TIME_ZONE must be a valid IANA timezone')
+    .default('Asia/Kolkata'),
   CORS_ORIGIN: z.url(),
   HOST_NAME: z.string(),
   JWT_ACCESS_SECRET: z.string().min(32),

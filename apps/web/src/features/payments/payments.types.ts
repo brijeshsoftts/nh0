@@ -63,7 +63,25 @@ export type PublicPaymentStatus = {
 
 export type CreateCashPaymentInput = {
   invoiceId: string;
-  amount: number;
+  amount?: number;
+};
+
+export type CreateCashPaymentResponse = {
+  payment: {
+    id: string;
+    paymentReference: string;
+    invoiceId: string;
+    amount: number;
+    paymentMethod: PaymentMethod;
+    paymentStatus: PaymentStatus;
+    paidAt: string | null;
+  };
+  booking: {
+    id: string;
+    totalAmount: number;
+    paidAmount: number;
+    balance: number;
+  };
 };
 
 export interface CustomerPayment {

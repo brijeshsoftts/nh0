@@ -124,6 +124,19 @@ export function ManagementBooking() {
       ),
     },
     {
+      key: "paymentMethod",
+      header: "Payment",
+      cell: (booking) => (
+        <span className="text-sm">
+          {booking.paymentMethod === "CASH"
+            ? "Cash"
+            : booking.paymentMethod === "ONLINE"
+              ? "Online"
+              : "—"}
+        </span>
+      ),
+    },
+    {
       key: "actions",
       header: "Action",
       align: "right",

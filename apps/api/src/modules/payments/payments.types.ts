@@ -41,13 +41,21 @@ export type PaymentItem = {
 };
 
 export type CreatePayment = {
-  id: string;
-  paymentReference: string;
-  invoiceId: string;
-  amount: number;
-  paymentMethod: PaymentMethod;
-  paymentStatus: PaymentStatus;
-  paidAt: string | null;
+  payment: {
+    id: string;
+    paymentReference: string;
+    invoiceId: string;
+    amount: number;
+    paymentMethod: PaymentMethod;
+    paymentStatus: PaymentStatus;
+    paidAt: string | null;
+  };
+  booking: {
+    id: string;
+    totalAmount: number;
+    paidAmount: number;
+    balance: number;
+  };
 };
 
 export interface CustomerPayment {

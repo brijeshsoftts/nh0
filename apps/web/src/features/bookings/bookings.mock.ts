@@ -4,6 +4,7 @@ export const BOOKING_DETAILS: BookingDetails = {
   id: "booking-001",
   bookingReference: "BK-2026-1001",
   status: "CONFIRMED",
+  paymentMethod: "ONLINE",
   checkInDate: "2026-10-10",
   checkOutDate: "2026-10-13",
   totalGuests: 2,

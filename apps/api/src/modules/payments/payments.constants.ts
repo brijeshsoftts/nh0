@@ -23,6 +23,9 @@ export const PAYMENTS_ERROR_MSG = {
   WEBHOOK_SIGNATURE_INVALID: 'Webhook signature is invalid.',
   WEBHOOK_EVENT_INVALID: 'Webhook event could not be processed.',
   AMOUNT_EXCEEDS_BALANCE: 'Payment amount exceeds the outstanding balance.',
+  FULL_BALANCE_REQUIRED:
+    'Cash collection must cover the full outstanding balance.',
+  CASH_METHOD_REQUIRED: 'This booking is not eligible for cash collection.',
   INVALID_REFUND_STATUS: 'Only completed payments can be refunded.',
   PAYMENT_CHANGED: 'Payment changed before this operation could be applied.',
   PAYMENT_REFERENCE_CONFLICT: 'Could not create a unique payment reference.',

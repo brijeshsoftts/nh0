@@ -297,6 +297,7 @@ model Booking {
   checkOutDate     DateTime
   totalGuests      Int
   totalAmount      Int
+  paymentMethod    PaymentMethod?
   specialRequest   String?
   status           BookingStatus @default(PENDING)
   bookedAt         DateTime

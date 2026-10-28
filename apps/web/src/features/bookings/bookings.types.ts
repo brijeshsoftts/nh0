@@ -76,6 +76,7 @@ export interface BookingDetailsInvoice {
   taxAmount: number;
   discountAmount: number;
   totalAmount: number;
+  paymentMethod: PaymentMethod | null;
 
   status: InvoiceStatus;
   issuedAt: string;
@@ -87,6 +88,7 @@ export type BookingListItem = {
   id: string;
   bookingReference: string;
   status: BookingStatus;
+  paymentMethod: PaymentMethod | null;
   checkInDate: string;
   checkOutDate: string;
   totalGuests: number;
@@ -99,6 +101,7 @@ export type BookingListItem = {
     roomType: { name: string };
   } | null;
   invoice: { id: string; status: InvoiceStatus } | null;
+  canCheckIn?: boolean;
 };
 
 export type BookingDetails = {
@@ -111,6 +114,7 @@ export type BookingDetails = {
   totalAmount: number;
   specialRequest?: string;
   status: BookingStatus;
+  paymentMethod: PaymentMethod | null;
   bookedAt: string;
   checkedInAt?: string;
   checkedOutAt?: string;

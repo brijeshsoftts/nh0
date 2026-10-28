@@ -13,6 +13,7 @@ export type BookingListItem = {
   checkOutDate: string;
   totalGuests: number;
   totalAmount: number;
+  paymentMethod: PaymentMethod | null;
   bookedAt: string;
   customer: {
     id: string;
@@ -26,6 +27,7 @@ export type BookingListItem = {
     roomType: { name: string };
   } | null;
   invoice: { id: string; status: InvoiceStatus } | null;
+  canCheckIn: boolean;
 };
 
 export type BookingDetails = {
@@ -36,6 +38,7 @@ export type BookingDetails = {
   checkOutDate: string;
   totalGuests: number;
   totalAmount: number;
+  paymentMethod: PaymentMethod | null;
   specialRequest: string | null;
   status: BookingStatus;
   bookedAt: string;

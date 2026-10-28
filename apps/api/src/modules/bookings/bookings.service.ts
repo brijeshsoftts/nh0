@@ -8,6 +8,7 @@ import {
   NotFoundException,
 } from '@nestjs/common';
 
+import { env } from '../../config';
 import { PrismaService } from '../../prisma/prisma.service';
 import { ListResponse } from '../../types/api.types';
 import {
@@ -52,6 +53,28 @@ export function calculateBookingTotals({
     taxAmount,
     totalAmount,
   };
+}
+
+function hotelCalendarDate(date: Date): string {
+  const parts = new Intl.DateTimeFormat('en', {
+    timeZone: env.HOTEL_TIME_ZONE,
+    year: 'numeric',
+    month: '2-digit',
+    day: '2-digit',
+  }).formatToParts(date);
+  const values: Partial<Record<'year' | 'month' | 'day', string>> = {};
+
+  for (const part of parts) {
+    if (part.type === 'year' || part.type === 'month' || part.type === 'day') {
+      values[part.type] = part.value;
+    }
+  }
+
+  return `${values.year}-${values.month}-${values.day}`;
+}
+
+function bookingCalendarDate(date: Date): string {
+  return date.toISOString().slice(0, 10);
 }
 
 @Injectable()
@@ -150,17 +173,12 @@ export class BookingsService {
     category?: Category,
   ): Promise<ListResponse<BookingListItem | CustomerBooking>> {
     this.assertBookingAccess(role, category);
+    const hotelToday = hotelCalendarDate(new Date());
     const { search, status, paymentMethod, page, limit } = query;
     const where: Prisma.BookingWhereInput = {
       ...(role === UserRole.CUSTOMER && { customerId: userId }),
       ...(status && { status }),
-      ...(paymentMethod && {
-        invoice: {
-          is: {
-            payments: { some: { paymentMethod } },
-          },
-        },
-      }),
+      ...(paymentMethod && { paymentMethod }),
       ...(search && {
         OR: [
           {
@@ -211,6 +229,7 @@ export class BookingsService {
           id: true,
           bookingReference: true,
           status: true,
+          paymentMethod: true,
           checkInDate: true,
           checkOutDate: true,
           totalGuests: true,
@@ -225,11 +244,28 @@ export class BookingsService {
           bookingRoom: {
             select: {
               id: true,
-              assignedRoom: { select: { roomNumber: true } },
+              assignedRoom: {
+                select: {
+                  roomNumber: true,
+                  isActive: true,
+                  occupancyStatus: true,
+                  housekeepingStatus: true,
+                },
+              },
               roomType: { select: { name: true } },
             },
           },
-          invoice: { select: { id: true, status: true } },
+          invoice: {
+            select: {
+              id: true,
+              status: true,
+              totalAmount: true,
+              payments: {
+                where: { paymentStatus: PaymentStatus.COMPLETED },
+                select: { amount: true },
+              },
+            },
+          },
         },
       }),
       this.prismaService.booking.count({ where }),
@@ -248,12 +284,32 @@ export class BookingsService {
           checkOut: booking.checkOutDate.toISOString(),
           totalAmount: booking.totalAmount,
           status: booking.status,
-          invoice: booking.invoice,
+          invoice: booking.invoice
+            ? { id: booking.invoice.id, status: booking.invoice.status }
+            : null,
         } satisfies CustomerBooking;
       }
 
+      const completedAmount =
+        booking.invoice?.payments.reduce(
+          (total, payment) => total + payment.amount,
+          0,
+        ) ?? 0;
+      const room = booking.bookingRoom?.assignedRoom;
+      const canCheckIn =
+        booking.status === BookingStatus.CONFIRMED &&
+        booking.invoice?.status === InvoiceStatus.PAID &&
+        (booking.invoice.totalAmount ?? 0) > 0 &&
+        completedAmount >= (booking.invoice.totalAmount ?? 0) &&
+        bookingCalendarDate(booking.checkInDate) === hotelToday &&
+        room?.isActive === true &&
+        (room.occupancyStatus === 'VACANT' ||
+          room.occupancyStatus === 'RESERVED') &&
+        room.housekeepingStatus === 'CLEAN';
+
       return {
         ...booking,
+        canCheckIn,
         customer: booking.customer ?? {
           id: booking.id,
           fullName: booking.guestName ?? 'Guest',
@@ -263,9 +319,12 @@ export class BookingsService {
         bookingRoom: booking.bookingRoom
           ? {
               id: booking.bookingRoom.id,
-              assignedRoom: booking.bookingRoom.assignedRoom,
+              assignedRoom: room ? { roomNumber: room.roomNumber } : null,
               roomType: booking.bookingRoom.roomType,
             }
+          : null,
+        invoice: booking.invoice
+          ? { id: booking.invoice.id, status: booking.invoice.status }
           : null,
         checkInDate: booking.checkInDate.toISOString(),
         checkOutDate: booking.checkOutDate.toISOString(),
@@ -285,7 +344,15 @@ export class BookingsService {
     role: UserRole,
     category?: Category,
   ): Promise<{ id: string; status: BookingStatus }> {
-    this.assertBookingAccess(role, category);
+    if (
+      role !== UserRole.ADMIN &&
+      role !== UserRole.MANAGER &&
+      !(role === UserRole.STAFF && category === Category.RECEPTIONIST)
+    ) {
+      throw new ForbiddenException(
+        'Booking status updates are restricted to reception staff.',
+      );
+    }
     const allowedTransitions: Record<BookingStatus, BookingStatus[]> = {
       [BookingStatus.PENDING]: [
         BookingStatus.CONFIRMED,
@@ -304,9 +371,27 @@ export class BookingsService {
     };
 
     return this.prismaService.$transaction(async (tx) => {
+      await tx.$queryRaw`SELECT "id" FROM "Booking" WHERE "id" = ${id} FOR UPDATE`;
+
       const booking = await tx.booking.findUnique({
         where: { id },
-        select: { id: true, status: true },
+        select: {
+          id: true,
+          status: true,
+          checkInDate: true,
+          paymentMethod: true,
+          bookingRoom: { select: { assignedRoomId: true } },
+          invoice: {
+            select: {
+              totalAmount: true,
+              status: true,
+              payments: {
+                where: { paymentStatus: PaymentStatus.COMPLETED },
+                select: { amount: true },
+              },
+            },
+          },
+        },
       });
 
       if (!booking) {
@@ -320,6 +405,85 @@ export class BookingsService {
       }
 
       const timestamp = new Date();
+
+      if (nextStatus === BookingStatus.CONFIRMED) {
+        const totalAmount = booking.invoice?.totalAmount ?? 0;
+        const paidAmount =
+          booking.invoice?.payments.reduce(
+            (total, payment) => total + payment.amount,
+            0,
+          ) ?? 0;
+
+        if (
+          !booking.invoice ||
+          booking.invoice.status === InvoiceStatus.REFUNDED ||
+          booking.invoice.status !== InvoiceStatus.PAID ||
+          totalAmount <= 0 ||
+          paidAmount < totalAmount ||
+          !booking.bookingRoom?.assignedRoomId
+        ) {
+          throw new BadRequestException(
+            'Full payment and an assigned room are required before confirmation.',
+          );
+        }
+      }
+
+      if (nextStatus === BookingStatus.CHECKED_IN) {
+        const totalAmount = booking.invoice?.totalAmount ?? 0;
+        const paidAmount =
+          booking.invoice?.payments.reduce(
+            (total, payment) => total + payment.amount,
+            0,
+          ) ?? 0;
+
+        if (
+          totalAmount <= 0 ||
+          paidAmount < totalAmount ||
+          booking.invoice?.status !== InvoiceStatus.PAID
+        ) {
+          throw new BadRequestException(
+            'Full payment is required before check-in.',
+          );
+        }
+
+        if (
+          bookingCalendarDate(booking.checkInDate) !==
+          hotelCalendarDate(timestamp)
+        ) {
+          throw new BadRequestException(
+            'Check-in is only available on the booking check-in date.',
+          );
+        }
+
+        const assignedRoomId = booking.bookingRoom?.assignedRoomId;
+        if (!assignedRoomId) {
+          throw new BadRequestException(
+            'An assigned room is required to check in.',
+          );
+        }
+
+        await tx.$queryRaw`SELECT "id" FROM "Room" WHERE "id" = ${assignedRoomId} FOR UPDATE`;
+        const room = await tx.room.findUnique({
+          where: { id: assignedRoomId },
+          select: {
+            isActive: true,
+            occupancyStatus: true,
+            housekeepingStatus: true,
+          },
+        });
+
+        if (
+          !room?.isActive ||
+          (room.occupancyStatus !== 'VACANT' &&
+            room.occupancyStatus !== 'RESERVED') ||
+          room.housekeepingStatus !== 'CLEAN'
+        ) {
+          throw new BadRequestException(
+            'The assigned room is not ready for check-in.',
+          );
+        }
+      }
+
       const updateResult = await tx.booking.updateMany({
         where: { id, status: booking.status },
         data: {
@@ -419,6 +583,7 @@ export class BookingsService {
         checkOutDate: true,
         totalGuests: true,
         totalAmount: true,
+        paymentMethod: true,
         specialRequest: true,
         status: true,
         bookedAt: true,
@@ -753,17 +918,8 @@ export class BookingsService {
     const bookingReference = `BK-${Date.now()}-${Math.random().toString(36).slice(2, 6).toUpperCase()}`;
     const paymentReference = `PAY-${Date.now()}-${Math.random().toString(36).slice(2, 7).toUpperCase()}`;
 
-    const recordsCashPayment =
-      dto.paymentMethod === PaymentMethod.CASH && role !== UserRole.CUSTOMER;
-    const createsPayment =
-      dto.paymentMethod === PaymentMethod.ONLINE || recordsCashPayment;
-    const paymentStatus = recordsCashPayment
-      ? PaymentStatus.COMPLETED
-      : PaymentStatus.PENDING;
-
-    const invoiceStatus = recordsCashPayment
-      ? InvoiceStatus.PAID
-      : InvoiceStatus.UNPAID;
+    const paymentStatus = PaymentStatus.PENDING;
+    const invoiceStatus = InvoiceStatus.UNPAID;
 
     const result = await this.prismaService.$transaction(async (tx) => {
       await tx.$queryRaw`SELECT "id" FROM "Room" WHERE "id" = ${dto.roomId} FOR UPDATE`;
@@ -790,11 +946,9 @@ export class BookingsService {
           checkOutDate,
           totalGuests,
           totalAmount,
+          paymentMethod: dto.paymentMethod,
           specialRequest: dto.specialRequest,
-          status:
-            dto.paymentMethod === PaymentMethod.CASH
-              ? BookingStatus.CONFIRMED
-              : BookingStatus.PENDING,
+          status: BookingStatus.PENDING,
           bookedAt: new Date(),
           createdBy,
         },
@@ -835,26 +989,24 @@ export class BookingsService {
         select: { id: true },
       });
 
-      const payment = createsPayment
-        ? await tx.payment.create({
-            data: {
-              paymentReference,
-              invoiceId: invoice.id,
-              bookingId: booking.id,
-              customerId,
-              amount: totalAmount,
-              paymentMethod: dto.paymentMethod,
-              paymentStatus,
-              paidAt: recordsCashPayment ? new Date() : null,
-              recordedBy: recordsCashPayment ? createdBy : null,
-            },
-            select: {
-              paymentMethod: true,
-              paymentStatus: true,
-              paymentReference: true,
-            },
-          })
-        : null;
+      const payment = await tx.payment.create({
+        data: {
+          paymentReference,
+          invoiceId: invoice.id,
+          bookingId: booking.id,
+          customerId,
+          amount: totalAmount,
+          paymentMethod: dto.paymentMethod,
+          paymentStatus,
+          paidAt: null,
+          recordedBy: null,
+        },
+        select: {
+          paymentMethod: true,
+          paymentStatus: true,
+          paymentReference: true,
+        },
+      });
 
       return {
         id: booking.id,
@@ -862,14 +1014,11 @@ export class BookingsService {
         bookingReference: booking.bookingReference,
         paymentMethod: dto.paymentMethod,
         paymentStatus: payment?.paymentStatus ?? PaymentStatus.PENDING,
-        paymentReference: payment?.paymentReference ?? null,
+        paymentReference: payment.paymentReference,
         subtotal,
         taxAmount,
         amount: totalAmount,
-        paymentMessage:
-          payment?.paymentStatus === PaymentStatus.COMPLETED
-            ? 'Cash payment recorded successfully.'
-            : 'Payment is pending.',
+        paymentMessage: 'Payment is pending.',
       };
     });
 
@@ -996,6 +1145,7 @@ export class BookingsService {
             checkOutDate,
             totalGuests,
             totalAmount,
+            paymentMethod: dto.paymentMethod,
             specialRequest: dto.specialRequest || null,
             status:
               dto.paymentMethod === PaymentMethod.CASH

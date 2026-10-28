@@ -1,5 +1,5 @@
 import { formatDate } from "date-fns";
-import { EllipsisVertical } from "lucide-react";
+import { Banknote, EllipsisVertical } from "lucide-react";
 import { useState } from "react";
 
 import { type ColumnDef, DataTable } from "@/components/common/DataTable";
@@ -18,7 +18,7 @@ import {
 import { useAuth } from "@/hooks/useAuth";
 import { useListParams } from "@/hooks/useListParams";
 import { formatPrice } from "@/lib/format";
-import { BookingDetailsSheet } from "@/features/bookings/components/BookingDetailsSheet";
+import { CollectCashDialog } from "./CollectCashDialog";
 
 import { usePayments } from "../hooks/usePayments";
 import { usePaymentsStats } from "../hooks/usePaymentsStats";
@@ -157,10 +157,15 @@ function PaymentsTable() {
 
 function ActionDropdownMenu({ payment }: { payment: PaymentItem }) {
   const [isViewModal, setIsViewModal] = useState(false);
-  const [isBookingOpen, setIsBookingOpen] = useState(false);
+  const [isCashDialogOpen, setIsCashDialogOpen] = useState(false);
   const { user } = useAuth();
-  const canInitiatePayment =
-    user?.role === "STAFF" && user.category === "RECEPTIONIST";
+  const canCollectCash =
+    (user?.role === "ADMIN" ||
+      user?.role === "MANAGER" ||
+      (user?.role === "STAFF" && user.category === "RECEPTIONIST")) &&
+    payment.paymentMethod === "CASH" &&
+    payment.paymentStatus !== "FAILED" &&
+    payment.paymentStatus !== "REFUNDED";
   const isActiveDownload =
     user?.role === "ADMIN" ||
     user?.role === "MANAGER" ||
@@ -187,9 +192,10 @@ function ActionDropdownMenu({ payment }: { payment: PaymentItem }) {
           <DropdownMenuItem onClick={() => setIsViewModal(true)}>
             View
           </DropdownMenuItem>
-          {canInitiatePayment && (
-            <DropdownMenuItem onClick={() => setIsBookingOpen(true)}>
-              Collect payment
+          {canCollectCash && (
+            <DropdownMenuItem onClick={() => setIsCashDialogOpen(true)}>
+              <Banknote aria-hidden="true" />
+              Collect Cash
             </DropdownMenuItem>
           )}
 
@@ -208,11 +214,11 @@ function ActionDropdownMenu({ payment }: { payment: PaymentItem }) {
           payment={payment}
         />
       )}
-      {isBookingOpen && (
-        <BookingDetailsSheet
-          open={isBookingOpen}
-          onOpenChange={setIsBookingOpen}
+      {isCashDialogOpen && (
+        <CollectCashDialog
           bookingId={payment.bookingId}
+          open={isCashDialogOpen}
+          onOpenChange={setIsCashDialogOpen}
         />
       )}
     </>

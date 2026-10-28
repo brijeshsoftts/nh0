@@ -1,5 +1,6 @@
 import {
   Ban,
+  Banknote,
   CheckCircle2,
   EllipsisVertical,
   Eye,
@@ -20,6 +21,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { ViewInvoiceDetails } from "@/features/invoices/components/ViewInvoiceDetails";
+import { CollectCashDialog } from "@/features/payments/components/CollectCashDialog";
 import { useAuth } from "@/hooks/useAuth";
 import type { BookingStatus } from "@/types/enum.types";
 
@@ -43,6 +45,7 @@ export function BookingRowActions({ booking }: { booking: BookingListItem }) {
   const [isDetailsOpen, setIsDetailsOpen] = useState(false);
   const [isCustomerOpen, setIsCustomerOpen] = useState(false);
   const [isInvoiceOpen, setIsInvoiceOpen] = useState(false);
+  const [isCashDialogOpen, setIsCashDialogOpen] = useState(false);
   const [confirmation, setConfirmation] = useState<{
     status: BookingStatus;
     message: string;
@@ -58,6 +61,14 @@ export function BookingRowActions({ booking }: { booking: BookingListItem }) {
   const canViewInvoice =
     (booking.status === "CHECKED_OUT" || booking.status === "CANCELLED") &&
     booking.invoice !== null;
+  const canCollectCash =
+    canUpdate &&
+    booking.paymentMethod === "CASH" &&
+    ["PENDING", "CONFIRMED"].includes(booking.status) &&
+    booking.invoice !== null &&
+    booking.invoice.status !== "PAID" &&
+    booking.invoice.status !== "REFUNDED";
+  const canCheckIn = booking.canCheckIn === true;
 
   const changeStatus = (status: BookingStatus) => {
     updateStatus(
@@ -106,6 +117,16 @@ export function BookingRowActions({ booking }: { booking: BookingListItem }) {
             View Customer
           </DropdownMenuItem>
 
+          {canCollectCash && (
+            <>
+              <DropdownMenuSeparator />
+              <DropdownMenuItem onClick={() => setIsCashDialogOpen(true)}>
+                <Banknote aria-hidden="true" />
+                Collect Cash
+              </DropdownMenuItem>
+            </>
+          )}
+
           {statusActions.length > 0 && <DropdownMenuSeparator />}
           {statusActions.map((action) => {
             const Icon = STATUS_ICONS[action.status] ?? CheckCircle2;
@@ -114,7 +135,9 @@ export function BookingRowActions({ booking }: { booking: BookingListItem }) {
                 {action.destructive && <DropdownMenuSeparator />}
                 <DropdownMenuItem
                   variant={action.destructive ? "destructive" : "default"}
-                  disabled={isPending}
+                  disabled={
+                    isPending || (action.status === "CHECKED_IN" && !canCheckIn)
+                  }
                   onClick={() => {
                     if (action.confirmMessage) {
                       setConfirmation({
@@ -127,7 +150,9 @@ export function BookingRowActions({ booking }: { booking: BookingListItem }) {
                   }}
                 >
                   <Icon aria-hidden="true" />
-                  {action.label}
+                  {action.status === "CHECKED_IN" && !canCheckIn
+                    ? "Check In (Not eligible)"
+                    : action.label}
                 </DropdownMenuItem>
               </Fragment>
             );
@@ -158,6 +183,13 @@ export function BookingRowActions({ booking }: { booking: BookingListItem }) {
         onOpenChange={setIsCustomerOpen}
         customer={booking.customer}
       />
+      {isCashDialogOpen && (
+        <CollectCashDialog
+          bookingId={booking.id}
+          open={isCashDialogOpen}
+          onOpenChange={setIsCashDialogOpen}
+        />
+      )}
       {canViewInvoice && booking.invoice && isInvoiceOpen && (
         <ViewInvoiceDetails
           id={booking.invoice.id}

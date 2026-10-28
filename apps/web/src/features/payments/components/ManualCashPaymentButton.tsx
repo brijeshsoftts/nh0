@@ -1,12 +1,13 @@
-import { Banknote } from "lucide-react";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { Banknote } from "lucide-react";
 import { toast } from "sonner";
 
 import { Button } from "@/components/ui/button";
 import { Spinner } from "@/components/ui/spinner";
 import { bookingsKeys } from "@/features/bookings/bookings.keys";
-import { notifyError } from "@/lib/notification";
+import { invoicesKeys } from "@/features/invoices/invoices.keys";
 import { formatPrice } from "@/lib/format";
+import { notifyError } from "@/lib/notification";
 
 import { paymentsKeys } from "../payments.keys";
 import { paymentsService } from "../payments.service";
@@ -27,6 +28,7 @@ export function ManualCashPaymentButton({
       await Promise.all([
         queryClient.invalidateQueries({ queryKey: paymentsKeys.all }),
         queryClient.invalidateQueries({ queryKey: bookingsKeys.all }),
+        queryClient.invalidateQueries({ queryKey: invoicesKeys.all }),
       ]);
       toast.success("Cash payment recorded.");
       onRecorded();
