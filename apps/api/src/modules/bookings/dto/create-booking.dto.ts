@@ -25,6 +25,7 @@ export const guestSchema = z
 
 export const CreateBookingSchema = z
   .object({
+    checkoutToken: z.uuid('Checkout token is invalid.').optional(),
     customerId: z.string().trim().min(1, 'Customer is required').optional(),
     checkInDate: z.coerce.date('Check-in date is required'),
     checkOutDate: z.coerce.date('Check-out date is required'),

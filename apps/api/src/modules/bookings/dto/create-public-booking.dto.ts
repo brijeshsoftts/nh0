@@ -26,7 +26,7 @@ export const CreatePublicBookingSchema = z
     children: z.coerce.number().int().min(0).max(10),
     guests: z.array(guestSchema).min(1, 'Add at least one guest.'),
     specialRequest: z.string().trim().max(500).optional(),
-    paymentMethod: z.enum(['CASH', 'ONLINE']),
+    paymentMethod: z.literal('ONLINE'),
   })
   .strict()
   .superRefine((booking, context) => {

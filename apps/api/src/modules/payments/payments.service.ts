@@ -91,6 +91,8 @@ const RazorpayWebhookSchema = z
   })
   .passthrough();
 
+const ORDER_CREATION_LEASE_MS = 2 * 60_000;
+
 @Injectable()
 export class PaymentsService {
   private razorpay: Razorpay;
@@ -580,6 +582,7 @@ export class PaymentsService {
         where: {
           ...(paymentId && { id: paymentId }),
           bookingId,
+          invoiceId: booking.invoice.id,
           paymentMethod: PaymentMethod.ONLINE,
           paymentStatus: { in: [PaymentStatus.PENDING, PaymentStatus.FAILED] },
         },
@@ -591,7 +594,9 @@ export class PaymentsService {
           amountPaise: true,
           currency: true,
           orderId: true,
+          transactionId: true,
           paymentStatus: true,
+          orderCreationStartedAt: true,
         },
       });
 
@@ -599,7 +604,11 @@ export class PaymentsService {
         throw new NotFoundException(PAYMENTS_ERROR_MSG.PAYMENT_NOT_FOUND);
       }
 
-      if (currentAttempt) {
+      const hasTerminalGatewayFailure =
+        currentAttempt?.paymentStatus === PaymentStatus.FAILED &&
+        currentAttempt.transactionId !== null;
+
+      if (currentAttempt && !hasTerminalGatewayFailure) {
         if (currentAttempt.amount !== outstandingAmount) {
           throw new ConflictException(PAYMENTS_ERROR_MSG.PAYMENT_RECONCILING);
         }
@@ -609,6 +618,39 @@ export class PaymentsService {
             where: { id: currentAttempt.id },
             data: { paymentStatus: PaymentStatus.PENDING },
           });
+        }
+
+        if (!currentAttempt.orderId) {
+          const leaseExpiresBefore = new Date(
+            Date.now() - ORDER_CREATION_LEASE_MS,
+          );
+          if (
+            currentAttempt.orderCreationStartedAt &&
+            currentAttempt.orderCreationStartedAt > leaseExpiresBefore
+          ) {
+            throw new ConflictException(PAYMENTS_ERROR_MSG.PAYMENT_RECONCILING);
+          }
+
+          const claimedAt = new Date();
+          const claim = await tx.payment.updateMany({
+            where: {
+              id: currentAttempt.id,
+              bookingId,
+              invoiceId: booking.invoice.id,
+              orderId: null,
+              orderCreationStartedAt: currentAttempt.orderCreationStartedAt,
+            },
+            data: { orderCreationStartedAt: claimedAt },
+          });
+
+          if (claim.count !== 1) {
+            throw new ConflictException(PAYMENTS_ERROR_MSG.PAYMENT_RECONCILING);
+          }
+
+          return {
+            attempt: { ...currentAttempt, orderCreationStartedAt: claimedAt },
+            isNew: false,
+          };
         }
 
         return { attempt: currentAttempt, isNew: false };
@@ -637,6 +679,7 @@ export class PaymentsService {
           currency: true,
           orderId: true,
           paymentStatus: true,
+          orderCreationStartedAt: true,
         },
       });
 
@@ -666,7 +709,19 @@ export class PaymentsService {
       return this.mapCreateOrder(attempt.attempt.id, order);
     }
 
-    return this.createOrRecoverOrder(attempt.attempt, !attempt.isNew);
+    try {
+      return await this.createOrRecoverOrder(attempt.attempt, !attempt.isNew);
+    } catch (error) {
+      await this.prismaService.payment.updateMany({
+        where: {
+          id: attempt.attempt.id,
+          orderId: null,
+          orderCreationStartedAt: attempt.attempt.orderCreationStartedAt,
+        },
+        data: { orderCreationStartedAt: null },
+      });
+      throw error;
+    }
   }
 
   async createPublicOrder(

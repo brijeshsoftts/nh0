@@ -31,7 +31,11 @@ import { Link, useParams, useSearchParams } from "react-router-dom";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { bookingsService } from "@/features/bookings/bookings.service";
-import type { BookingGuestInput } from "@/features/bookings/bookings.types";
+import type {
+  BookingGuestInput,
+  CreateBookingResult,
+  CreatePublicBookingResult,
+} from "@/features/bookings/bookings.types";
 import { useRazorpayPayment } from "@/features/payments/hooks/useRazorpayPayment";
 import PageHero from "@/features/public/components/PageHero";
 import { useAvailableRoom } from "@/features/public/useAvailableRooms";
@@ -84,11 +88,49 @@ function parseValidIsoDate(value: string | null): string | undefined {
     : format(parsed, "yyyy-MM-dd");
 }
 
+function getPublicCheckoutToken(storageKey: string): string {
+  try {
+    const storedToken = window.sessionStorage.getItem(storageKey);
+    if (storedToken) return storedToken;
+
+    const token = crypto.randomUUID();
+    window.sessionStorage.setItem(storageKey, token);
+    return token;
+  } catch {
+    return crypto.randomUUID();
+  }
+}
+
+function getPublicCheckoutRoomId(storageKey: string): string | undefined {
+  try {
+    return window.sessionStorage.getItem(`${storageKey}:room-id`) ?? undefined;
+  } catch {
+    return undefined;
+  }
+}
+
+function storePublicCheckoutRoomId(storageKey: string, roomId: string): void {
+  try {
+    window.sessionStorage.setItem(`${storageKey}:room-id`, roomId);
+  } catch {
+    return;
+  }
+}
+
+function clearPublicCheckoutToken(storageKey: string): void {
+  try {
+    window.sessionStorage.removeItem(storageKey);
+    window.sessionStorage.removeItem(`${storageKey}:room-id`);
+  } catch {
+    return;
+  }
+}
+
 /* -------------------------------------------------------------------------- */
 /* Types                                                                      */
 /* -------------------------------------------------------------------------- */
 
-type PaymentMethodOption = "CASH" | "ONLINE";
+type PaymentMethodOption = "ONLINE";
 
 interface LeadGuestForm {
   fullName: string;
@@ -194,6 +236,7 @@ export default function BookingCheckout() {
   const { slug } = useParams<{ slug: string }>();
   const [searchParams] = useSearchParams();
   const { user } = useAuth();
+  const isAuthenticatedCustomer = user?.role === "CUSTOMER";
   const formId = useId();
   const { startPayment, isPending: isPaymentPending } = useRazorpayPayment();
 
@@ -210,12 +253,20 @@ export default function BookingCheckout() {
   const adults = Math.max(1, Number(searchParams.get("adults")) || 1);
   const children = Math.max(0, Number(searchParams.get("children")) || 0);
   const totalGuests = adults + children;
+  const checkoutTokenStorageKey = [
+    "nivara-public-checkout",
+    slug ?? "room",
+    checkIn ?? "",
+    checkOut ?? "",
+    adults,
+    children,
+  ].join(":");
 
   // Lead guest form state
   const [leadGuest, setLeadGuest] = useState<LeadGuestForm>({
     fullName: user?.fullName ?? "",
     email: user?.email ?? "",
-    phone: "",
+    phone: user?.phone ?? "",
   });
 
   // Additional guests state
@@ -226,9 +277,7 @@ export default function BookingCheckout() {
   // Special request
   const [specialRequest, setSpecialRequest] = useState<string>("");
 
-  // Payment method selection
-  const [paymentMethod, setPaymentMethod] =
-    useState<PaymentMethodOption>("CASH");
+  const paymentMethod = "ONLINE" as const;
 
   // Form validation errors
   const [formErrors, setFormErrors] = useState<{
@@ -346,10 +395,21 @@ export default function BookingCheckout() {
 
     // Validate Phone Number
     const phoneClean = leadGuest.phone.replace(/[\s()-]/g, "");
+    const phoneRegex = /^\+?[\d\s().-]{10,20}$/;
     if (!leadGuest.phone.trim()) {
       errors.phone = "Mobile phone number is required.";
-    } else if (phoneClean.length < 10) {
+    } else if (phoneClean.length < 10 || !phoneRegex.test(leadGuest.phone)) {
       errors.phone = "Please enter a valid phone number (at least 10 digits).";
+    }
+
+    if (additionalGuests.length !== totalGuests - 1) {
+      errors.general = `Add details for all ${totalGuests - 1} additional guest${totalGuests === 2 ? "" : "s"}.`;
+    } else if (
+      additionalGuests.some(
+        (guest) => !guest.fullName.trim() || guest.age < 1 || guest.age > 120
+      )
+    ) {
+      errors.general = "Complete the name and age for each additional guest.";
     }
 
     if (Object.keys(errors).length > 0) {
@@ -359,7 +419,9 @@ export default function BookingCheckout() {
 
     if (!room || !checkIn || !checkOut) return;
 
-    if (!room.availability.isAvailable) {
+    const storedRoomId = getPublicCheckoutRoomId(checkoutTokenStorageKey);
+
+    if (!room.availability.isAvailable && !storedRoomId) {
       setFormErrors({
         general:
           "This room type is no longer available for your selected dates. Please choose other dates or select another room.",
@@ -371,23 +433,30 @@ export default function BookingCheckout() {
     setFormErrors({});
 
     try {
-      const availableRooms = await bookingsService.findAvailableRooms({
-        checkInDate: checkIn,
-        checkOutDate: checkOut,
-        adults,
-        children,
-      });
-
-      const matchingRoom =
-        availableRooms.find((r) => r.roomType.id === room.id) ??
-        availableRooms[0];
-
-      if (!matchingRoom) {
-        setFormErrors({
-          general:
-            "No specific room inventory found matching your criteria. Please choose another date or room category.",
+      let selectedRoomId = storedRoomId;
+      if (!selectedRoomId) {
+        const availableRooms = await bookingsService.findAvailableRooms({
+          checkInDate: checkIn,
+          checkOutDate: checkOut,
+          adults,
+          children,
         });
-        return;
+
+        const matchingRoom =
+          availableRooms.find(
+            (availableRoom) => availableRoom.roomType.id === room.id
+          ) ?? availableRooms[0];
+
+        if (!matchingRoom) {
+          setFormErrors({
+            general:
+              "No specific room inventory found matching your criteria. Please choose another date or room category.",
+          });
+          return;
+        }
+
+        selectedRoomId = matchingRoom.id;
+        storePublicCheckoutRoomId(checkoutTokenStorageKey, selectedRoomId);
       }
 
       const guestPayload: BookingGuestInput[] = [
@@ -405,11 +474,7 @@ export default function BookingCheckout() {
       ];
 
       const bookingPayload = {
-        checkoutToken: crypto.randomUUID(),
-        guestName: leadGuest.fullName.trim(),
-        guestEmail: leadGuest.email.trim().toLowerCase(),
-        guestPhone: leadGuest.phone.trim(),
-        roomId: matchingRoom.id,
+        roomId: selectedRoomId,
         checkInDate: checkIn,
         checkOutDate: checkOut,
         adults,
@@ -419,36 +484,41 @@ export default function BookingCheckout() {
         paymentMethod,
       } as const;
 
-      const result = await bookingsService.createPublic(bookingPayload);
+      const checkoutToken = getPublicCheckoutToken(checkoutTokenStorageKey);
+      let result: CreateBookingResult | CreatePublicBookingResult;
 
-      if (paymentMethod === "CASH") {
-        setConfirmedBooking({
-          bookingReference: result.bookingReference,
-          roomName: room.name,
-          checkInDate: checkIn,
-          checkOutDate: checkOut,
-          nights,
-          totalGuests,
-          leadGuest,
-          paymentMethod: "CASH",
-          totalAmount: result.totalAmount,
+      if (isAuthenticatedCustomer) {
+        result = await bookingsService.create({
+          ...bookingPayload,
+          checkoutToken,
         });
-        return;
+      } else {
+        result = await bookingsService.createPublic({
+          ...bookingPayload,
+          checkoutToken,
+          guestName: leadGuest.fullName.trim(),
+          guestEmail: leadGuest.email.trim().toLowerCase(),
+          guestPhone: leadGuest.phone.trim(),
+        });
       }
 
+      const publicCheckoutToken = isAuthenticatedCustomer
+        ? undefined
+        : checkoutToken;
+
       await startPayment(result.id, result.bookingReference, {
-        checkoutToken: result.checkoutToken,
+        ...(publicCheckoutToken && { checkoutToken: publicCheckoutToken }),
         onStatus: (paymentStatus) => {
-          const status =
-            "paymentStatus" in paymentStatus
-              ? paymentStatus.paymentStatus
-              : paymentStatus.status;
+          const status = paymentStatus.paymentStatus;
           const totalAmount =
             "totalAmount" in paymentStatus
               ? paymentStatus.totalAmount
-              : result.totalAmount;
+              : "totalAmount" in result
+                ? result.totalAmount
+                : result.amount;
 
           if (status === "COMPLETED") {
+            clearPublicCheckoutToken(checkoutTokenStorageKey);
             setConfirmedBooking({
               bookingReference: result.bookingReference,
               roomName: room.name,
@@ -457,7 +527,7 @@ export default function BookingCheckout() {
               nights,
               totalGuests,
               leadGuest,
-              paymentMethod: "ONLINE",
+              paymentMethod,
               totalAmount,
             });
             return;
@@ -560,9 +630,7 @@ export default function BookingCheckout() {
                 <div>
                   <p className="text-muted-foreground">Payment Mode</p>
                   <p className="mt-0.5 font-medium text-foreground">
-                    {confirmedBooking.paymentMethod === "CASH"
-                      ? "Pay upon Arrival at Hotel"
-                      : "Online Payment"}
+                    Online Payment
                   </p>
                 </div>
               </div>
@@ -1006,7 +1074,8 @@ export default function BookingCheckout() {
                           Additional Guest Information
                         </h3>
                         <p className="text-xs text-muted-foreground">
-                          Optionally register companions staying in this room.
+                          Add details for every additional person staying in
+                          this room.
                         </p>
                       </div>
                       <Badge variant="outline">
@@ -1133,86 +1202,27 @@ export default function BookingCheckout() {
                     id={`${formId}-payment-heading`}
                     className="font-heading text-xl font-normal"
                   >
-                    Select Payment Method
+                    Online Payment
                   </h2>
                   <p className="mt-1 text-xs text-muted-foreground">
-                    Choose how you would like to settle your reservation
-                    charges.
+                    Complete payment securely to confirm your reservation.
                   </p>
                 </div>
 
-                <div className="space-y-3">
-                  {/* Option 1: Cash / Pay upon arrival */}
-                  <label
-                    className={cn(
-                      "flex cursor-pointer items-start gap-4 border p-4 transition-all",
-                      paymentMethod === "CASH"
-                        ? "border-gold bg-gold/5 ring-1 ring-gold"
-                        : "border-border bg-background/50 hover:border-gold/50"
-                    )}
-                  >
-                    <input
-                      type="radio"
-                      name="paymentMethod"
-                      value="CASH"
-                      checked={paymentMethod === "CASH"}
-                      onChange={() => setPaymentMethod("CASH")}
-                      className="mt-1 accent-[#AD8A52]"
-                    />
-                    <div className="min-w-0 flex-1">
-                      <div className="flex items-center gap-2">
-                        <Wallet className="size-4 shrink-0 text-gold" />
-                        <span className="text-sm font-semibold text-foreground">
-                          Pay upon Arrival (Cash / UPI / Card at Front Desk)
-                        </span>
-                      </div>
-                      <p className="mt-1 text-xs leading-relaxed text-muted-foreground">
-                        Hold your reservation instantly with zero deposit.
-                        Settle your payment in person upon arrival at the hotel
-                        front desk.
-                      </p>
-                      <Badge
-                        variant="outline"
-                        className="mt-2 border-success/40 text-[10px] text-success"
-                      >
-                        Zero Advance Required
-                      </Badge>
-                    </div>
-                  </label>
-
-                  {/* Option 2: Online Payment */}
-                  <label
-                    className={cn(
-                      "flex cursor-pointer items-start gap-4 border p-4 transition-all",
-                      paymentMethod === "ONLINE"
-                        ? "border-gold bg-gold/5 ring-1 ring-gold"
-                        : "border-border bg-background/50 hover:border-gold/50"
-                    )}
-                  >
-                    <input
-                      type="radio"
-                      name="paymentMethod"
-                      value="ONLINE"
-                      checked={paymentMethod === "ONLINE"}
-                      onChange={() => setPaymentMethod("ONLINE")}
-                      className="mt-1 accent-[#AD8A52]"
-                    />
-                    <div className="min-w-0 flex-1">
-                      <div className="flex items-center gap-2">
-                        <CreditCard className="size-4 shrink-0 text-gold" />
-                        <span className="text-sm font-semibold text-foreground">
-                          Online Payment (Debit/Credit Card, UPI, NetBanking)
-                        </span>
-                      </div>
-                      <p className="mt-1 text-xs leading-relaxed text-muted-foreground">
-                        Secure digital checkout powered by Razorpay for card,
-                        UPI and net banking payments.
-                      </p>
-                      <Badge variant="secondary" className="mt-2 text-[10px]">
-                        Secure Online Checkout
-                      </Badge>
-                    </div>
-                  </label>
+                <div className="flex items-start gap-4 border border-gold bg-gold/5 p-4 ring-1 ring-gold">
+                  <CreditCard className="mt-1 size-4 shrink-0 text-gold" />
+                  <div className="min-w-0 flex-1">
+                    <span className="text-sm font-semibold text-foreground">
+                      Card, UPI, or net banking
+                    </span>
+                    <p className="mt-1 text-xs leading-relaxed text-muted-foreground">
+                      Secure checkout powered by Razorpay. Your reservation is
+                      confirmed only after payment is verified.
+                    </p>
+                    <Badge variant="secondary" className="mt-2 text-[10px]">
+                      Secure Online Checkout
+                    </Badge>
+                  </div>
                 </div>
               </section>
             </div>
@@ -1299,19 +1309,11 @@ export default function BookingCheckout() {
                     {isSubmitting || isPaymentPending ? (
                       <>
                         <RotateCw className="size-4 animate-spin" />
-                        <span>
-                          {paymentMethod === "CASH"
-                            ? "Confirming Reservation…"
-                            : "Processing Payment…"}
-                        </span>
+                        <span>Processing Payment…</span>
                       </>
                     ) : (
                       <>
-                        <span>
-                          {paymentMethod === "CASH"
-                            ? "Confirm Reservation"
-                            : "Proceed to Online Payment"}
-                        </span>
+                        <span>Proceed to Online Payment</span>
                         <ArrowRight className="size-4" strokeWidth={1.5} />
                       </>
                     )}

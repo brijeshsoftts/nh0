@@ -244,6 +244,7 @@ export type BookingAvailabilityParams = {
 };
 
 export type CreateBookingInput = BookingAvailabilityParams & {
+  checkoutToken?: string;
   customerId?: string;
   roomId: string;
   guests: BookingGuestInput[];
@@ -276,7 +277,7 @@ export type CreatePublicBookingInput = {
   children: number;
   guests: BookingGuestInput[];
   specialRequest?: string;
-  paymentMethod: PaymentMethod;
+  paymentMethod: "ONLINE";
 };
 
 export type CreatePublicBookingResult = {
