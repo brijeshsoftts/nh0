@@ -9,7 +9,6 @@ export type BookingStatusAction = {
 
 const STATUS_ACTIONS: Record<BookingStatus, BookingStatusAction[]> = {
   PENDING: [
-    { label: "Confirm", status: "CONFIRMED" },
     {
       label: "Cancel",
       status: "CANCELLED",

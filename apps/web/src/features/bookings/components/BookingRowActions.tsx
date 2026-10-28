@@ -172,7 +172,7 @@ export function BookingRowActions({ booking }: { booking: BookingListItem }) {
                   <Icon aria-hidden="true" />
                   {action.status === "CHECKED_IN" && !canCheckIn
                     ? "Check In (Not eligible)"
-                    : action.label}
+                    : action.label}{" "}
                 </DropdownMenuItem>
               </Fragment>
             );

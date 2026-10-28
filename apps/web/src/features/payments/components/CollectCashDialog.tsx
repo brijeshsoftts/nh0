@@ -107,7 +107,7 @@ export function CollectCashDialog({
             </dd>
             <dt className="text-muted-foreground">Invoice number</dt>
             <dd className="text-right font-medium">
-              {booking.invoice.invoiceNumber}
+              {booking?.invoice?.invoiceNumber}
             </dd>
             <dt className="text-muted-foreground">Invoice total</dt>
             <dd className="text-right tabular-nums">
