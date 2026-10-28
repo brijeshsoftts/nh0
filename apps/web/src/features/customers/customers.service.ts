@@ -14,6 +14,7 @@ import type {
   Customer,
   CustomerBookingItem,
   CustomerDetails,
+  CustomerPaymentItem,
   SearchCustomer,
 } from "./customers.types";
 
@@ -59,6 +60,11 @@ export const customersService = {
     params: ListParams
   ): Promise<ApiListResponse<CustomerBookingItem>> =>
     apiClient.get(`/customers/${id}/bookings`, { params }).then((r) => r.data),
+  findPayments: (
+    id: string,
+    params: ListParams
+  ): Promise<ApiListResponse<CustomerPaymentItem>> =>
+    apiClient.get(`/customers/${id}/payments`, { params }).then((r) => r.data),
   getStats: (): Promise<DashboardStat[]> =>
     apiClient
       .get("/customers/stats")

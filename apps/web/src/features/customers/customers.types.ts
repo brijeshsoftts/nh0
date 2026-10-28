@@ -3,6 +3,7 @@ import type {
   InvoiceStatus,
   PaymentStatus,
 } from "@/types/enum.types";
+import type { PaymentItem } from "@/features/payments/payments.types";
 
 export type Customer = {
   id: string;
@@ -65,6 +66,10 @@ export type CustomerBookingItem = {
     roomName: string | null;
     roomTypeName: string;
   } | null;
+
+  export type CustomerPaymentItem = PaymentItem & {
+    currency: string;
+  };
   invoice: {
     invoiceNumber: string;
     status: InvoiceStatus;

@@ -8,6 +8,8 @@ export const customersKeys = {
   detail: (id: string) => ["customers", "detail", id] as const,
   bookings: (id: string, params: ListParams) =>
     [...customersKeys.detail(id), "bookings", params] as const,
+  payments: (id: string, params: ListParams) =>
+    [...customersKeys.detail(id), "payments", params] as const,
   search: (search?: string) => ["customers", "search", search] as const,
 } as const;
 

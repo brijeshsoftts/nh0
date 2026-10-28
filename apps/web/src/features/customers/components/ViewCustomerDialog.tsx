@@ -20,6 +20,7 @@ import type { CustomerDetails } from "../customers.types";
 import { useCustomer } from "../hooks/useCustomer";
 
 import { CustomerBookingsTab } from "./CustomerBookingsTab";
+import { CustomerPaymentsTab } from "./CustomerPaymentsTab";
 import { UpdateCustomerDialog } from "./UpdateCustomerDialog";
 
 type ViewCustomerDialogProps = {
@@ -186,9 +187,11 @@ export function ViewCustomerDialog({
             </TabsContent>
 
             <TabsContent value="payments" className="mt-6">
-              <div className="rounded-md border p-6 text-center text-sm text-muted-foreground">
-                No payment details available.
-              </div>
+              <CustomerPaymentsTab
+                key={id}
+                customerId={id}
+                enabled={open && activeTab === "payments"}
+              />
             </TabsContent>
           </Tabs>
         </DialogContent>

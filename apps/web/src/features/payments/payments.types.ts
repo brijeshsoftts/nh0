@@ -14,6 +14,7 @@ export type PaymentItem = {
   bookingReference: string;
   customerName: string;
   amount: number;
+  currency?: string;
   paymentMethod: PaymentMethod;
   paymentStatus: PaymentStatus;
   paidAt: string | null;

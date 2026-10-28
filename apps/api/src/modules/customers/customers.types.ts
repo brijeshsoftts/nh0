@@ -1,6 +1,7 @@
 import {
   BookingStatus,
   InvoiceStatus,
+  PaymentMethod,
   PaymentStatus,
 } from '../../types/prisma.types';
 
@@ -73,4 +74,21 @@ export type CustomerBookingItem = {
     balanceDue: number;
     latestPaymentStatus: PaymentStatus | null;
   } | null;
+};
+
+export type CustomerPaymentItem = {
+  id: string;
+  bookingId: string;
+  paymentReference: string;
+  transactionId: string | null;
+  invoiceNumber: string;
+  bookingReference: string;
+  customerName: string;
+  amount: number;
+  currency: string;
+  paymentMethod: PaymentMethod;
+  paymentStatus: PaymentStatus;
+  paidAt: string | null;
+  recordedByName: string | null;
+  createdAt: string;
 };

@@ -69,7 +69,7 @@ export function ViewPaymentDetails({
 
                 <div className="mt-2 flex flex-wrap items-center justify-between gap-3">
                   <p className="text-2xl font-semibold tracking-tight wrap-break-word sm:text-3xl">
-                    {formatPrice(payment.amount)}
+                    {formatPaymentAmount(payment.amount, payment.currency)}
                   </p>
 
                   <PaymentStatusBadge value={payment.paymentStatus} />
@@ -186,6 +186,18 @@ export function ViewPaymentDetails({
       </SheetContent>
     </Sheet>
   );
+}
+
+function formatPaymentAmount(amount: number, currency = "INR") {
+  try {
+    return new Intl.NumberFormat("en-IN", {
+      style: "currency",
+      currency,
+      maximumFractionDigits: 0,
+    }).format(amount);
+  } catch {
+    return `${formatPrice(amount)} ${currency}`;
+  }
 }
 
 function DetailItem({

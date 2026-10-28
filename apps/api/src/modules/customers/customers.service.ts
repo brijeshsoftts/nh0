@@ -21,12 +21,14 @@ import { StatItem } from '../../types/shared.types';
 import { CreateCustomerDto } from './dto/create-customer.dto';
 import { CustomerBookingsQueryDto } from './dto/customer-bookings-query.dto';
 import { CustomersQueryDto } from './dto/customers-query.dto';
+import type { PaymentsQueryDto } from '../payments/dto/payments-query.dto';
 import { UpdateCustomerDto } from './dto/update-customer.dto';
 import { CUSTOMER_ERROR_MSG } from './customers.constants';
 import {
   Customer,
   CustomerBookingItem,
   CustomerDetails,
+  CustomerPaymentItem,
   SearchCustomer,
 } from './customers.types';
 
@@ -333,6 +335,106 @@ export class CustomersService {
             : null,
         };
       }),
+      meta: { page: query.page, limit: query.limit, total },
+    };
+  }
+
+  async getPayments(
+    id: string,
+    query: PaymentsQueryDto,
+  ): Promise<ListResponse<CustomerPaymentItem>> {
+    const customer = await this.prismaService.user.findFirst({
+      where: { id, role: UserRole.CUSTOMER, softDeletedAt: null },
+      select: { id: true, fullName: true },
+    });
+
+    if (!customer) {
+      throw new NotFoundException(CUSTOMER_ERROR_MSG.NOT_FOUND);
+    }
+
+    const where: Prisma.PaymentWhereInput = {
+      invoice: {
+        is: {
+          booking: { is: { customerId: customer.id } },
+        },
+      },
+      ...(query.status && { paymentStatus: query.status }),
+      ...(query.paymentMethod && { paymentMethod: query.paymentMethod }),
+      ...(query.search && {
+        OR: [
+          { paymentReference: { contains: query.search, mode: 'insensitive' } },
+          { transactionId: { contains: query.search, mode: 'insensitive' } },
+          {
+            invoice: {
+              is: {
+                invoiceNumber: { contains: query.search, mode: 'insensitive' },
+              },
+            },
+          },
+          {
+            invoice: {
+              is: {
+                booking: {
+                  is: {
+                    bookingReference: {
+                      contains: query.search,
+                      mode: 'insensitive',
+                    },
+                  },
+                },
+              },
+            },
+          },
+        ],
+      }),
+    };
+
+    const [payments, total] = await this.prismaService.$transaction([
+      this.prismaService.payment.findMany({
+        where,
+        skip: (query.page - 1) * query.limit,
+        take: query.limit,
+        orderBy: [{ createdAt: 'desc' }, { id: 'desc' }],
+        select: {
+          id: true,
+          bookingId: true,
+          paymentReference: true,
+          transactionId: true,
+          amount: true,
+          currency: true,
+          paymentMethod: true,
+          paymentStatus: true,
+          paidAt: true,
+          createdAt: true,
+          invoice: {
+            select: {
+              invoiceNumber: true,
+              booking: { select: { bookingReference: true } },
+            },
+          },
+          recorder: { select: { fullName: true } },
+        },
+      }),
+      this.prismaService.payment.count({ where }),
+    ]);
+
+    return {
+      data: payments.map((payment) => ({
+        id: payment.id,
+        bookingId: payment.bookingId,
+        paymentReference: payment.paymentReference,
+        transactionId: payment.transactionId,
+        invoiceNumber: payment.invoice.invoiceNumber,
+        bookingReference: payment.invoice.booking.bookingReference,
+        customerName: customer.fullName,
+        amount: payment.amount,
+        currency: payment.currency,
+        paymentMethod: payment.paymentMethod,
+        paymentStatus: payment.paymentStatus,
+        paidAt: payment.paidAt?.toISOString() ?? null,
+        recordedByName: payment.recorder?.fullName ?? null,
+        createdAt: payment.createdAt.toISOString(),
+      })),
       meta: { page: query.page, limit: query.limit, total },
     };
   }
