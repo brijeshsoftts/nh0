@@ -1,16 +1,16 @@
-import { Outlet, ScrollRestoration, useLocation } from "react-router-dom";
+import { Outlet, ScrollRestoration } from "react-router-dom";
 
-import { cn } from "@/lib/utils";
+import { PublicFooter } from "@/components/layout/PublicFooter";
+import { PublicNavbar } from "@/components/layout/PublicNavbar";
 
 export function PublicLayout() {
-  const { pathname } = useLocation();
-  const isHome = pathname === "/";
-
   return (
     <div className="flex min-h-svh flex-col bg-background font-sans text-foreground antialiased">
-      <main className={cn("flex-1", !isHome && "")}>
+      <PublicNavbar />
+      <main className="min-w-0 flex-1">
         <Outlet />
       </main>
+      <PublicFooter />
       <ScrollRestoration />
     </div>
   );

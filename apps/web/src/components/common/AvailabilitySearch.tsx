@@ -1,5 +1,5 @@
-import { addDays, format, parseISO, startOfToday } from "date-fns";
-import { AnimatePresence, motion, useReducedMotion } from "framer-motion";
+import { addDays, format, isValid, parseISO, startOfToday } from "date-fns";
+import { motion, useReducedMotion } from "framer-motion";
 import {
   ArrowRight,
   CalendarDays,
@@ -11,11 +11,81 @@ import {
 import { type FormEvent, useId, useState } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 
-function validQueryDate(value: string | null) {
-  if (!value) return undefined;
+import { Button } from "@/components/ui/button";
+import { Calendar } from "@/components/ui/calendar";
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/ui/popover";
+
+function validQueryDate(value: string | null, fallback: Date) {
+  if (!value) return fallback;
 
   const date = parseISO(value);
-  return Number.isNaN(date.getTime()) ? undefined : format(date, "yyyy-MM-dd");
+  return isValid(date) && date >= startOfToday() ? date : fallback;
+}
+
+function DatePickerField({
+  id,
+  label,
+  date,
+  disabled,
+  onSelect,
+}: {
+  id: string;
+  label: string;
+  date: Date;
+  disabled: { before: Date };
+  onSelect: (date: Date | undefined) => void;
+}) {
+  const [open, setOpen] = useState(false);
+
+  return (
+    <div className="min-w-0">
+      <label
+        className="mb-1.5 block text-sm font-medium text-foreground"
+        htmlFor={id}
+      >
+        {label}
+      </label>
+      <Popover open={open} onOpenChange={setOpen}>
+        <PopoverTrigger
+          render={
+            <Button
+              id={id}
+              type="button"
+              variant="outline"
+              className="h-12 w-full justify-start gap-2 rounded-md border-input bg-background px-3 text-left text-sm font-normal text-foreground focus-visible:ring-2 focus-visible:ring-ring"
+              aria-label={`${label}: ${format(date, "dd MMM yyyy")}`}
+            />
+          }
+        >
+          <CalendarDays
+            className="size-4 shrink-0 text-primary"
+            aria-hidden="true"
+          />
+          {format(date, "dd MMM yyyy")}
+        </PopoverTrigger>
+        <PopoverContent align="start" className="w-72 rounded-md p-2">
+          <Calendar
+            mode="single"
+            selected={date}
+            onSelect={(selectedDate) => {
+              onSelect(selectedDate);
+              if (selectedDate) setOpen(false);
+            }}
+            disabled={disabled}
+            classNames={{
+              weekday: "text-sm text-foreground",
+              outside: "text-foreground",
+              disabled: "text-muted-foreground",
+            }}
+          />
+        </PopoverContent>
+      </Popover>
+    </div>
+  );
 }
 
 function GuestCounter({
@@ -43,15 +113,16 @@ function GuestCounter({
       </div>
 
       <div className="flex shrink-0 items-center gap-3">
-        <button
+        <Button
           type="button"
+          variant="outline"
+          size="icon-sm"
           aria-label={`Decrease ${label.toLowerCase()}`}
           disabled={value <= min}
           onClick={() => onChange(Math.max(min, value - 1))}
-          className="grid size-8 place-items-center border border-border text-foreground transition hover:border-gold focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring disabled:cursor-not-allowed disabled:opacity-30"
         >
           <Minus className="size-3.5" aria-hidden="true" />
-        </button>
+        </Button>
 
         <span
           className="w-4 text-center text-sm tabular-nums"
@@ -60,76 +131,71 @@ function GuestCounter({
           {value}
         </span>
 
-        <button
+        <Button
           type="button"
+          variant="outline"
+          size="icon-sm"
           aria-label={`Increase ${label.toLowerCase()}`}
           disabled={value >= max}
           onClick={() => onChange(Math.min(max, value + 1))}
-          className="grid size-8 place-items-center border border-border text-foreground transition hover:border-gold focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring disabled:cursor-not-allowed disabled:opacity-30"
         >
           <Plus className="size-3.5" aria-hidden="true" />
-        </button>
+        </Button>
       </div>
     </div>
   );
 }
 
-export function AvailabilitySearch() {
+export function AvailabilitySearch({ className = "" }: { className?: string }) {
   const id = useId();
   const reduceMotion = useReducedMotion() ?? false;
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   const today = startOfToday();
-  const todayString = format(today, "yyyy-MM-dd");
-  const tomorrowString = format(addDays(today, 1), "yyyy-MM-dd");
-
-  const [checkIn, setCheckIn] = useState(
-    validQueryDate(
-      searchParams.get("checkIn") ?? searchParams.get("check-in")
-    ) ?? todayString
+  const initialCheckIn = validQueryDate(
+    searchParams.get("checkInDate") ??
+      searchParams.get("checkIn") ??
+      searchParams.get("check-in"),
+    today
   );
+  const initialCheckOut = validQueryDate(
+    searchParams.get("checkOutDate") ??
+      searchParams.get("checkOut") ??
+      searchParams.get("check-out"),
+    addDays(initialCheckIn, 1)
+  );
+  const [checkIn, setCheckIn] = useState(initialCheckIn);
   const [checkOut, setCheckOut] = useState(
-    validQueryDate(
-      searchParams.get("checkOut") ?? searchParams.get("check-out")
-    ) ?? tomorrowString
+    initialCheckOut > initialCheckIn
+      ? initialCheckOut
+      : addDays(initialCheckIn, 1)
   );
   const [adults, setAdults] = useState(
-    Math.max(1, Number(searchParams.get("adults")) || 2)
+    Math.min(10, Math.max(1, Number(searchParams.get("adults")) || 2))
   );
   const [children, setChildren] = useState(
-    Math.max(0, Number(searchParams.get("children")) || 0)
+    Math.min(10, Math.max(0, Number(searchParams.get("children")) || 0))
   );
   const [guestsOpen, setGuestsOpen] = useState(false);
   const [error, setError] = useState("");
-
-  const checkInDate = parseISO(checkIn);
-  const minCheckOut = format(addDays(checkInDate, 1), "yyyy-MM-dd");
-
-  const updateCheckIn = (value: string) => {
-    setCheckIn(value);
-    setError("");
-
-    if (checkOut <= value) {
-      setCheckOut(format(addDays(parseISO(value), 1), "yyyy-MM-dd"));
-    }
-  };
+  const guestSummary = `${adults} adult${adults === 1 ? "" : "s"}, ${children} child${children === 1 ? "" : "ren"}`;
 
   const handleSubmit = (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
 
-    if (checkIn < todayString) {
+    if (checkIn < today) {
       setError("Check-in cannot be in the past.");
       return;
     }
 
-    if (checkOut <= checkIn) {
+    if (checkOut <= checkIn || adults < 1 || children < 0) {
       setError("Check-out must be after check-in.");
       return;
     }
 
     const params = new URLSearchParams({
-      "check-in": checkIn,
-      "check-out": checkOut,
+      checkInDate: format(checkIn, "yyyy-MM-dd"),
+      checkOutDate: format(checkOut, "yyyy-MM-dd"),
       adults: String(adults),
       children: String(children),
       page: "1",
@@ -143,156 +209,113 @@ export function AvailabilitySearch() {
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: reduceMotion ? 0 : 0.4, ease: "easeOut" }}
       onSubmit={handleSubmit}
-      className="border border-primary-foreground/20 bg-background p-4 text-foreground shadow-2xl sm:p-6 lg:p-7"
+      className={`grid grid-cols-1 gap-4 rounded-lg border border-border bg-background p-4 text-foreground shadow-lg sm:grid-cols-2 sm:p-5 lg:grid-cols-4 lg:items-end lg:gap-4 ${className}`}
       aria-labelledby={`${id}-heading`}
     >
       <h2 id={`${id}-heading`} className="sr-only">
         Check room availability
       </h2>
 
-      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-[1fr_1fr_0.95fr_auto] lg:items-end lg:gap-0">
-        <div className="min-w-0 border-b border-border pb-4 lg:border-r lg:border-b-0 lg:pr-5 lg:pb-0">
-          <label
-            htmlFor={`${id}-checkin`}
-            className="mb-2 block text-[9px] font-medium tracking-[0.18em] text-muted-foreground uppercase"
-          >
-            Check-in
-          </label>
-          <div className="relative flex min-w-0 items-center gap-2">
-            <CalendarDays
-              className="size-4 shrink-0 text-gold"
-              strokeWidth={1.5}
-              aria-hidden="true"
-            />
-            <input
-              id={`${id}-checkin`}
-              type="date"
-              required
-              min={todayString}
-              value={checkIn}
-              onChange={(event) => updateCheckIn(event.target.value)}
-              className="block w-full min-w-0 appearance-none bg-transparent text-[13px] font-medium text-foreground scheme-light outline-none focus-visible:ring-1 focus-visible:ring-ring focus-visible:ring-offset-2"
-            />
-          </div>
-        </div>
-
-        <div className="min-w-0 border-b border-border pb-4 sm:px-5 lg:border-r lg:border-b-0 lg:pr-5 lg:pb-0">
-          <label
-            htmlFor={`${id}-checkout`}
-            className="mb-2 block text-[9px] font-medium tracking-[0.18em] text-muted-foreground uppercase"
-          >
-            Check-out
-          </label>
-          <div className="relative flex min-w-0 items-center gap-2">
-            <CalendarDays
-              className="size-4 shrink-0 text-gold"
-              strokeWidth={1.5}
-              aria-hidden="true"
-            />
-            <input
-              id={`${id}-checkout`}
-              type="date"
-              required
-              min={minCheckOut}
-              value={checkOut}
-              onChange={(event) => {
-                setCheckOut(event.target.value);
-                setError("");
-              }}
-              className="block w-full min-w-0 appearance-none bg-transparent text-[13px] font-medium text-foreground scheme-light outline-none focus-visible:ring-1 focus-visible:ring-ring focus-visible:ring-offset-2"
-            />
-          </div>
-        </div>
-
-        <div className="relative min-w-0 border-b border-border pb-4 sm:col-span-2 lg:col-span-1 lg:border-b-0 lg:pr-5 lg:pb-0 lg:pl-5">
-          <p className="mb-2 text-[9px] font-medium tracking-[0.18em] text-muted-foreground uppercase">
-            Guests
-          </p>
-          <button
-            type="button"
-            aria-expanded={guestsOpen}
-            aria-controls={`${id}-guest-panel`}
-            onClick={() => setGuestsOpen((value) => !value)}
-            className="flex w-full items-center justify-between gap-3 text-left focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring"
+      <DatePickerField
+        id={`${id}-checkin`}
+        label="Check-in"
+        date={checkIn}
+        disabled={{ before: today }}
+        onSelect={(date) => {
+          if (!date) return;
+          setCheckIn(date);
+          setError("");
+          if (checkOut <= date) setCheckOut(addDays(date, 1));
+        }}
+      />
+      <DatePickerField
+        id={`${id}-checkout`}
+        label="Check-out"
+        date={checkOut}
+        disabled={{ before: addDays(checkIn, 1) }}
+        onSelect={(date) => {
+          if (!date) return;
+          setCheckOut(date);
+          setError("");
+        }}
+      />
+      <div className="relative min-w-0">
+        <p className="mb-1.5 text-sm font-medium text-foreground">Guests</p>
+        <Popover open={guestsOpen} onOpenChange={setGuestsOpen}>
+          <PopoverTrigger
+            render={
+              <Button
+                type="button"
+                variant="outline"
+                className="h-12 w-full justify-between gap-2 rounded-md border-input bg-background px-3 text-left text-sm font-normal text-foreground focus-visible:ring-2 focus-visible:ring-ring"
+                aria-expanded={guestsOpen}
+                aria-label={`Guests: ${guestSummary}`}
+              />
+            }
           >
             <span className="flex min-w-0 items-center gap-2">
               <Users
-                className="size-4 shrink-0 text-gold"
-                strokeWidth={1.5}
+                className="size-4 shrink-0 text-primary"
                 aria-hidden="true"
               />
-              <span className="truncate text-[13px] font-medium">
-                {adults + children} guests
-              </span>
+              <span className="truncate">{guestSummary}</span>
             </span>
             <ChevronDown
               className={`size-4 shrink-0 text-muted-foreground transition-transform ${guestsOpen ? "rotate-180" : ""}`}
               aria-hidden="true"
             />
-          </button>
-
-          <AnimatePresence>
-            {guestsOpen ? (
-              <motion.div
-                id={`${id}-guest-panel`}
-                initial={reduceMotion ? false : { opacity: 0, y: 6 }}
-                animate={{ opacity: 1, y: 0 }}
-                exit={{ opacity: 0, y: 6 }}
-                transition={{ duration: reduceMotion ? 0 : 0.18 }}
-                className="absolute inset-x-0 top-full z-30 mt-4 border border-border bg-popover p-4 text-popover-foreground shadow-xl sm:inset-x-auto sm:right-0 sm:w-75 sm:p-5"
+          </PopoverTrigger>
+          <PopoverContent align="start" className="w-72 rounded-md p-4 sm:w-80">
+            <div className="mb-2 flex items-center justify-between">
+              <p className="font-heading text-lg font-medium text-popover-foreground">
+                Guests
+              </p>
+              <Button
+                type="button"
+                variant="ghost"
+                className="h-10 rounded-md px-3 text-sm"
+                onClick={() => setGuestsOpen(false)}
               >
-                <div className="mb-3 flex items-center justify-between">
-                  <p className="font-serif text-lg">Guests</p>
-                  <button
-                    type="button"
-                    onClick={() => setGuestsOpen(false)}
-                    className="inline-flex min-h-10 items-center px-2 text-xs text-muted-foreground transition-colors hover:text-foreground focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring"
-                    aria-label="Close guest selector"
-                  >
-                    Done
-                  </button>
-                </div>
-
-                <div className="divide-y divide-border">
-                  <GuestCounter
-                    label="Adults"
-                    description="Ages 13 or above"
-                    value={adults}
-                    min={1}
-                    max={10}
-                    onChange={setAdults}
-                  />
-                  <GuestCounter
-                    label="Children"
-                    description="Ages 0–12"
-                    value={children}
-                    min={0}
-                    max={10}
-                    onChange={setChildren}
-                  />
-                </div>
-              </motion.div>
-            ) : null}
-          </AnimatePresence>
-        </div>
-
-        <div className="sm:col-span-2 lg:col-span-1 lg:pl-5">
-          <button
-            type="submit"
-            className="flex h-12 w-full items-center justify-center gap-3 bg-primary px-5 text-[11px] font-medium tracking-widest text-primary-foreground uppercase transition-colors hover:bg-primary/90 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring sm:h-13 lg:min-w-47.5"
-          >
-            Check availability
-            <ArrowRight
-              className="size-4"
-              strokeWidth={1.5}
-              aria-hidden="true"
-            />
-          </button>
-        </div>
+                Done
+              </Button>
+            </div>
+            <div className="divide-y divide-border">
+              <GuestCounter
+                label="Adults"
+                description="Ages 13 or above"
+                value={adults}
+                min={1}
+                max={10}
+                onChange={setAdults}
+              />
+              <GuestCounter
+                label="Children"
+                description="Ages 0–12"
+                value={children}
+                min={0}
+                max={10}
+                onChange={setChildren}
+              />
+            </div>
+          </PopoverContent>
+        </Popover>
+      </div>
+      <div className="min-w-0 sm:col-span-2 lg:col-span-1">
+        <Button
+          type="submit"
+          variant="secondary"
+          className="h-12 w-full rounded-md px-4 text-sm font-semibold"
+        >
+          Check availability
+          <ArrowRight className="size-4" strokeWidth={1.5} aria-hidden="true" />
+        </Button>
       </div>
 
       {error ? (
-        <p role="alert" className="mt-4 text-xs text-error">
+        <p
+          role="alert"
+          className="text-sm text-destructive sm:col-span-2 lg:col-span-4"
+        >
           {error}
         </p>
       ) : null}
