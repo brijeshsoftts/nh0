@@ -1,14 +1,21 @@
+/* =========================================================
+   NIVARA HOTELS — BRAND DESIGN SYSTEM
+   Tailwind CSS v4 + shadcn/ui
+   Brand: Bold Orange / Golden Yellow / White / Deep Black
+   ========================================================= */
+
+/* 1. Imports */
 @import "tailwindcss";
 @import "tw-animate-css";
 @import "shadcn/tailwind.css";
 @import "@fontsource-variable/inter";
 @import "@fontsource-variable/playfair-display";
 
+/* 2. Dark mode variant */
 @custom-variant dark (&:is(.dark *));
 
 /* =========================================================
-   NIVARA HOTELS — DESIGN TOKENS
-   Tailwind CSS v4 + shadcn/ui
+   3. THEME TOKENS
    ========================================================= */
 
 @theme inline {
@@ -17,7 +24,19 @@
   --font-heading:
     "Playfair Display Variable", "Playfair Display", Georgia, serif;
 
-  /* Core semantic colors */
+  /* Brand palette — exact core colors */
+  --color-brand-orange: var(--brand-orange);
+  --color-brand-yellow: var(--brand-yellow);
+  --color-brand-white: var(--brand-white);
+  --color-brand-black: var(--brand-black);
+
+  /* Extended brand palette */
+  --color-orange-light: var(--orange-light);
+  --color-orange-dark: var(--orange-dark);
+  --color-yellow-light: var(--yellow-light);
+  --color-yellow-dark: var(--yellow-dark);
+
+  /* shadcn semantic colors */
   --color-background: var(--background);
   --color-foreground: var(--foreground);
 
@@ -40,15 +59,11 @@
   --color-accent-foreground: var(--accent-foreground);
 
   --color-destructive: var(--destructive);
-
   --color-border: var(--border);
   --color-input: var(--input);
   --color-ring: var(--ring);
 
-  /* Nivara brand colors */
-  --color-gold: var(--gold);
-  --color-gold-foreground: var(--gold-foreground);
-
+  /* Additional semantic feedback */
   --color-success: var(--success);
   --color-success-foreground: var(--success-foreground);
 
@@ -78,195 +93,258 @@
   --color-sidebar-border: var(--sidebar-border);
   --color-sidebar-ring: var(--sidebar-ring);
 
-  /* Radius scale */
+  /* Radius scale — shadcn-compatible */
+  --radius-xs: calc(var(--radius) * 0.4);
   --radius-sm: calc(var(--radius) * 0.6);
   --radius-md: calc(var(--radius) * 0.8);
   --radius-lg: var(--radius);
-  --radius-xl: calc(var(--radius) * 1.4);
-  --radius-2xl: calc(var(--radius) * 1.8);
-  --radius-3xl: calc(var(--radius) * 2.2);
+  --radius-xl: calc(var(--radius) * 1.35);
+  --radius-2xl: calc(var(--radius) * 1.7);
+  --radius-3xl: calc(var(--radius) * 2.1);
   --radius-4xl: calc(var(--radius) * 2.6);
+
+  /* Shadows */
+  --shadow-xs: var(--shadow-xs-value);
+  --shadow-sm: var(--shadow-sm-value);
+  --shadow-md: var(--shadow-md-value);
+  --shadow-lg: var(--shadow-lg-value);
+  --shadow-xl: var(--shadow-xl-value);
+  --shadow-brand: var(--shadow-brand-value);
+
+  /* Animation timing */
+  --ease-brand: cubic-bezier(0.22, 1, 0.36, 1);
 }
 
 /* =========================================================
-   LIGHT MODE — WARM IVORY / CHARCOAL / ANTIQUE GOLD
+   4. LIGHT MODE
+   Clean white surfaces with vivid orange accents
    ========================================================= */
 
 :root {
   color-scheme: light;
 
-  /* Backgrounds and surfaces */
-  --background: #faf8f4;
-  --foreground: #25251f;
+  /* Brand colors — preserve these exact values */
+  --brand-orange: #ff4f00;
+  --brand-yellow: #ffc400;
+  --brand-white: #ffffff;
+  --brand-black: #1c1c1c;
 
+  /* Extended brand colors */
+  --orange-light: #fff0e8;
+  --orange-dark: #d94300;
+  --yellow-light: #fff7d6;
+  --yellow-dark: #d9a500;
+
+  /* Backgrounds */
+  --background: #fffcf9;
+  --foreground: #1c1c1c;
+
+  /* Cards and elevated surfaces */
   --card: #ffffff;
-  --card-foreground: #25251f;
+  --card-foreground: #1c1c1c;
 
   --popover: #ffffff;
-  --popover-foreground: #25251f;
+  --popover-foreground: #1c1c1c;
 
-  /* Primary actions */
-  --primary: #25251f;
+  /* Primary — orange */
+  --primary: #ff4f00;
   --primary-foreground: #ffffff;
 
-  /* Secondary surfaces */
-  --secondary: #f0ede6;
-  --secondary-foreground: #333129;
+  /* Secondary — golden yellow */
+  --secondary: #fff0bf;
+  --secondary-foreground: #382900;
 
-  /* Muted content */
-  --muted: #f0ede6;
-  --muted-foreground: #716d64;
+  /* Muted surfaces */
+  --muted: #f5f2ee;
+  --muted-foreground: #706a64;
 
-  /* Selection and subtle emphasis */
-  --accent: #ede5d7;
-  --accent-foreground: #493a25;
+  /* Accent */
+  --accent: #fff0e8;
+  --accent-foreground: #c43c00;
 
   /* Borders and focus */
-  --border: #e5ded2;
-  --input: #dad2c5;
-  --ring: #ad8a52;
+  --border: #eae3dc;
+  --input: #dcd3ca;
+  --ring: #ff4f00;
 
-  /* Feedback */
-  --destructive: #a33d35;
+  /* Destructive actions */
+  --destructive: #d92d20;
 
-  --success: #326647;
+  /* Status colors */
+  --success: #16803d;
   --success-foreground: #ffffff;
 
-  --warning: #89621d;
+  --warning: #a66300;
   --warning-foreground: #ffffff;
 
-  --error: #a33d35;
+  --error: #d92d20;
   --error-foreground: #ffffff;
 
-  --info: #365d82;
+  --info: #2563a6;
   --info-foreground: #ffffff;
 
-  /* Brand */
-  --gold: #ad8a52;
-  --gold-foreground: #ffffff;
+  /* Brand-specific shadow */
+  --shadow-xs-value: 0 1px 2px rgb(28 28 28 / 4%);
+  --shadow-sm-value: 0 1px 3px rgb(28 28 28 / 5%), 0 1px 2px rgb(28 28 28 / 3%);
+  --shadow-md-value:
+    0 4px 12px rgb(28 28 28 / 5%), 0 2px 4px rgb(28 28 28 / 3%);
+  --shadow-lg-value:
+    0 12px 28px rgb(28 28 28 / 7%), 0 4px 10px rgb(28 28 28 / 3%);
+  --shadow-xl-value:
+    0 24px 48px rgb(28 28 28 / 10%), 0 8px 20px rgb(28 28 28 / 4%);
+  --shadow-brand-value:
+    0 8px 24px rgb(255 79 0 / 20%), 0 3px 8px rgb(255 79 0 / 10%);
 
   /* Charts */
-  --chart-1: #ad8a52;
-  --chart-2: #526c60;
-  --chart-3: #6d8294;
-  --chart-4: #9b775e;
-  --chart-5: #817d74;
+  --chart-1: #ff4f00;
+  --chart-2: #ffc400;
+  --chart-3: #1c1c1c;
+  --chart-4: #d97745;
+  --chart-5: #8b8178;
 
   /* Sidebar */
-  --sidebar: #f5f1e9;
-  --sidebar-foreground: #25251f;
-  --sidebar-primary: #25251f;
+  --sidebar: #ffffff;
+  --sidebar-foreground: #1c1c1c;
+  --sidebar-primary: #ff4f00;
   --sidebar-primary-foreground: #ffffff;
-  --sidebar-accent: #ede5d7;
-  --sidebar-accent-foreground: #493a25;
-  --sidebar-border: #e5ded2;
-  --sidebar-ring: #ad8a52;
+  --sidebar-accent: #fff0e8;
+  --sidebar-accent-foreground: #c43c00;
+  --sidebar-border: #eae3dc;
+  --sidebar-ring: #ff4f00;
 
-  /* Components */
+  /* Component geometry */
   --radius: 0.75rem;
 }
 
 /* =========================================================
-   DARK MODE — WARM CHARCOAL / SOFT IVORY / MUTED GOLD
-   Activated by adding .dark to html or an ancestor.
+   5. DARK MODE
+   Deep black surfaces with orange and yellow highlights
    ========================================================= */
 
 .dark {
   color-scheme: dark;
 
-  /* Backgrounds and surfaces */
-  --background: #191916;
-  --foreground: #f5f1e8;
+  /* Brand colors stay consistent between themes */
+  --brand-orange: #ff4f00;
+  --brand-yellow: #ffc400;
+  --brand-white: #ffffff;
+  --brand-black: #1c1c1c;
 
-  --card: #23231f;
-  --card-foreground: #f5f1e8;
+  --orange-light: #3a1b0e;
+  --orange-dark: #ff7338;
+  --yellow-light: #382e0a;
+  --yellow-dark: #ffd44d;
 
-  --popover: #26251f;
-  --popover-foreground: #f5f1e8;
+  /* Backgrounds */
+  --background: #141312;
+  --foreground: #f8f5f1;
 
-  /* Primary actions */
-  --primary: #e9e1d2;
-  --primary-foreground: #25251f;
+  /* Cards and elevated surfaces */
+  --card: #1d1b19;
+  --card-foreground: #f8f5f1;
 
-  /* Secondary surfaces */
-  --secondary: #302f29;
-  --secondary-foreground: #eae4d9;
+  --popover: #211f1d;
+  --popover-foreground: #f8f5f1;
 
-  /* Muted content */
-  --muted: #2c2b26;
-  --muted-foreground: #b7b0a4;
+  /* Primary */
+  --primary: #ff6a24;
+  --primary-foreground: #ffffff;
 
-  /* Selection and subtle emphasis */
-  --accent: #383329;
-  --accent-foreground: #e7d2aa;
+  /* Secondary */
+  --secondary: #352c17;
+  --secondary-foreground: #ffe18a;
+
+  /* Muted surfaces */
+  --muted: #292623;
+  --muted-foreground: #b1a9a1;
+
+  /* Accent */
+  --accent: #382117;
+  --accent-foreground: #ffad85;
 
   /* Borders and focus */
-  --border: #403d35;
-  --input: #49453c;
-  --ring: #c6a46a;
+  --border: #39332e;
+  --input: #484039;
+  --ring: #ff7338;
 
-  /* Feedback */
-  --destructive: #e58b80;
+  /* Destructive actions */
+  --destructive: #ff6b61;
 
-  --success: #86b99a;
-  --success-foreground: #19271e;
+  /* Status colors */
+  --success: #4ade80;
+  --success-foreground: #102a19;
 
-  --warning: #e7c17a;
-  --warning-foreground: #30230d;
+  --warning: #ffd166;
+  --warning-foreground: #382900;
 
-  --error: #e58b80;
-  --error-foreground: #321714;
+  --error: #ff8178;
+  --error-foreground: #321412;
 
-  --info: #91b8dc;
-  --info-foreground: #172636;
+  --info: #7db8f0;
+  --info-foreground: #10243a;
 
-  /* Brand */
-  --gold: #c6a46a;
-  --gold-foreground: #211b11;
+  /* Shadows */
+  --shadow-xs-value: 0 1px 2px rgb(0 0 0 / 15%);
+  --shadow-sm-value: 0 2px 5px rgb(0 0 0 / 18%);
+  --shadow-md-value: 0 5px 14px rgb(0 0 0 / 22%);
+  --shadow-lg-value: 0 12px 28px rgb(0 0 0 / 28%);
+  --shadow-xl-value: 0 24px 48px rgb(0 0 0 / 35%);
+  --shadow-brand-value: 0 8px 24px rgb(255 79 0 / 18%);
 
   /* Charts */
-  --chart-1: #c6a46a;
-  --chart-2: #86b99a;
-  --chart-3: #91b8dc;
-  --chart-4: #d5a58b;
-  --chart-5: #b7b0a4;
+  --chart-1: #ff7338;
+  --chart-2: #ffd166;
+  --chart-3: #f8f5f1;
+  --chart-4: #e79a76;
+  --chart-5: #a69a8d;
 
   /* Sidebar */
-  --sidebar: #201f1b;
-  --sidebar-foreground: #f5f1e8;
-  --sidebar-primary: #c6a46a;
-  --sidebar-primary-foreground: #211b11;
-  --sidebar-accent: #302f29;
-  --sidebar-accent-foreground: #eae4d9;
-  --sidebar-border: #403d35;
-  --sidebar-ring: #c6a46a;
+  --sidebar: #191715;
+  --sidebar-foreground: #f8f5f1;
+  --sidebar-primary: #ff6a24;
+  --sidebar-primary-foreground: #ffffff;
+  --sidebar-accent: #30221b;
+  --sidebar-accent-foreground: #ffad85;
+  --sidebar-border: #39332e;
+  --sidebar-ring: #ff7338;
 }
 
 /* =========================================================
-   BASE STYLES
+   6. BASE STYLES
    ========================================================= */
 
 @layer base {
-  * {
-    @apply border-border outline-ring/50;
+  *,
+  *::before,
+  *::after {
+    @apply border-border;
   }
 
   html {
     @apply font-sans;
+
+    min-height: 100%;
     font-synthesis: none;
     text-rendering: optimizeLegibility;
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
+    scroll-behavior: smooth;
+    scrollbar-gutter: stable;
   }
 
   body {
     @apply bg-background text-foreground;
+
+    min-width: 320px;
     min-height: 100vh;
+    margin: 0;
     font-family: var(--font-sans);
     font-size: 0.9375rem;
-    line-height: 1.6;
+    line-height: 1.65;
+    font-feature-settings: "cv02", "cv03", "cv04", "cv11";
   }
 
+  /* Editorial typography */
   h1,
   h2,
   h3,
@@ -275,17 +353,34 @@
   h6 {
     font-family: var(--font-heading);
     font-weight: 500;
-    line-height: 1.2;
+    line-height: 1.15;
     letter-spacing: -0.025em;
     text-wrap: balance;
+  }
+
+  h1 {
+    font-size: clamp(2.25rem, 5vw, 4.5rem);
+  }
+
+  h2 {
+    font-size: clamp(1.875rem, 3.5vw, 3rem);
+  }
+
+  h3 {
+    font-size: clamp(1.375rem, 2.5vw, 2rem);
   }
 
   p {
     text-wrap: pretty;
   }
 
+  a {
+    color: inherit;
+    text-decoration: none;
+  }
+
   button:not(:disabled),
-  [role="button"]:not(:disabled) {
+  [role="button"]:not([aria-disabled="true"]) {
     cursor: pointer;
   }
 
@@ -302,6 +397,12 @@
     color: inherit;
   }
 
+  input::placeholder,
+  textarea::placeholder {
+    color: var(--muted-foreground);
+    opacity: 0.8;
+  }
+
   img,
   video,
   svg {
@@ -313,8 +414,8 @@
   }
 
   ::selection {
-    color: var(--foreground);
-    background: var(--accent);
+    color: #ffffff;
+    background: #ff4f00;
   }
 
   :focus-visible {
@@ -326,14 +427,275 @@
     scroll-margin-top: 6rem;
   }
 
-  @media (prefers-reduced-motion: reduce) {
-    *,
-    *::before,
-    *::after {
-      scroll-behavior: auto !important;
-      animation-duration: 0.01ms !important;
-      animation-iteration-count: 1 !important;
-      transition-duration: 0.01ms !important;
+  /* Consistent browser scrollbar */
+  * {
+    scrollbar-width: thin;
+    scrollbar-color: var(--border) transparent;
+  }
+
+  ::-webkit-scrollbar {
+    width: 8px;
+    height: 8px;
+  }
+
+  ::-webkit-scrollbar-track {
+    background: transparent;
+  }
+
+  ::-webkit-scrollbar-thumb {
+    background: var(--border);
+    border: 2px solid transparent;
+    border-radius: 999px;
+    background-clip: padding-box;
+  }
+
+  ::-webkit-scrollbar-thumb:hover {
+    background-color: var(--muted-foreground);
+  }
+}
+
+/* =========================================================
+   7. BRAND GRADIENTS AND REUSABLE SURFACES
+   ========================================================= */
+
+@layer utilities {
+  /* Orange-to-yellow gradient */
+  .bg-brand-gradient {
+    background-image: linear-gradient(
+      135deg,
+      #ff4f00 0%,
+      #ff7900 45%,
+      #ffc400 100%
+    );
+  }
+
+  .bg-brand-gradient-horizontal {
+    background-image: linear-gradient(
+      90deg,
+      #ff4f00 0%,
+      #ff7900 50%,
+      #ffc400 100%
+    );
+  }
+
+  .bg-brand-gradient-soft {
+    background-image: linear-gradient(
+      135deg,
+      var(--orange-light) 0%,
+      var(--yellow-light) 100%
+    );
+  }
+
+  .text-brand-gradient {
+    background-image: linear-gradient(
+      110deg,
+      #ff4f00 0%,
+      #ff7900 48%,
+      #d99d00 100%
+    );
+    background-clip: text;
+    -webkit-background-clip: text;
+    color: transparent;
+  }
+
+  .border-brand-gradient {
+    border: 1px solid transparent;
+    background:
+      linear-gradient(var(--card), var(--card)) padding-box,
+      linear-gradient(135deg, #ff4f00, #ffc400) border-box;
+  }
+
+  /* Reusable shadows */
+  .shadow-brand {
+    box-shadow: var(--shadow-brand-value);
+  }
+
+  .shadow-surface {
+    box-shadow: var(--shadow-md-value);
+  }
+
+  .shadow-surface-hover {
+    box-shadow: var(--shadow-lg-value);
+  }
+
+  /* Premium translucent surface */
+  .surface-glass {
+    background: color-mix(in srgb, var(--card) 82%, transparent);
+    border: 1px solid color-mix(in srgb, var(--border) 75%, transparent);
+    backdrop-filter: blur(16px);
+    -webkit-backdrop-filter: blur(16px);
+  }
+
+  /* Restrained interactive lift */
+  .interactive-lift {
+    transition:
+      transform 240ms var(--ease-brand),
+      box-shadow 240ms var(--ease-brand),
+      border-color 200ms ease;
+  }
+
+  @media (hover: hover) and (prefers-reduced-motion: no-preference) {
+    .interactive-lift:hover {
+      transform: translateY(-3px);
+      box-shadow: var(--shadow-lg-value);
     }
+
+    .interactive-lift:active {
+      transform: translateY(-1px);
+    }
+  }
+
+  /* Decorative orange glow */
+  .brand-glow {
+    box-shadow:
+      0 0 0 1px rgb(255 79 0 / 8%),
+      0 8px 30px rgb(255 79 0 / 12%);
+  }
+
+  /* Marketing page section spacing */
+  .section-padding {
+    padding-block: clamp(3.5rem, 8vw, 7rem);
+  }
+
+  .container-marketing {
+    width: min(100% - 2rem, 80rem);
+    margin-inline: auto;
+  }
+
+  /* Better text readability */
+  .text-balance {
+    text-wrap: balance;
+  }
+
+  .text-pretty {
+    text-wrap: pretty;
+  }
+}
+
+/* =========================================================
+   8. ANIMATIONS
+   ========================================================= */
+
+/* Initial page entrance */
+@keyframes fade-in {
+  from {
+    opacity: 0;
+  }
+
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes slide-up {
+  from {
+    opacity: 0;
+    transform: translateY(16px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes slide-in-right {
+  from {
+    opacity: 0;
+    transform: translateX(16px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+/* Gentle brand accent */
+@keyframes brand-pulse {
+  0%,
+  100% {
+    box-shadow: 0 0 0 0 rgb(255 79 0 / 0%);
+  }
+
+  50% {
+    box-shadow: 0 0 0 6px rgb(255 79 0 / 10%);
+  }
+}
+
+/* Marketing hero decoration */
+@keyframes float {
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+
+  50% {
+    transform: translateY(-8px);
+  }
+}
+
+/* Shimmer for loading placeholders */
+@keyframes shimmer {
+  from {
+    background-position: 200% 0;
+  }
+
+  to {
+    background-position: -200% 0;
+  }
+}
+
+@layer utilities {
+  .animate-fade-in {
+    animation: fade-in 400ms ease-out both;
+  }
+
+  .animate-slide-up {
+    animation: slide-up 550ms var(--ease-brand) both;
+  }
+
+  .animate-slide-in-right {
+    animation: slide-in-right 400ms var(--ease-brand) both;
+  }
+
+  .animate-brand-pulse {
+    animation: brand-pulse 2.4s ease-in-out infinite;
+  }
+
+  .animate-float {
+    animation: float 5s ease-in-out infinite;
+  }
+
+  .animate-shimmer {
+    background-image: linear-gradient(
+      90deg,
+      var(--muted) 0%,
+      var(--card) 50%,
+      var(--muted) 100%
+    );
+    background-size: 200% 100%;
+    animation: shimmer 1.8s linear infinite;
+  }
+}
+
+/* =========================================================
+   9. ACCESSIBILITY AND RESPONSIVE POLISH
+   ========================================================= */
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    scroll-behavior: auto !important;
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}
+
+@media (max-width: 640px) {
+  .container-marketing {
+    width: min(100% - 2rem, 80rem);
   }
 }
