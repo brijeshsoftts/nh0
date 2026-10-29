@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Spinner } from "@/components/ui/spinner";
 import { bookingsKeys } from "@/features/bookings/bookings.keys";
 import { invoicesKeys } from "@/features/invoices/invoices.keys";
+import { roomsKeys } from "@/features/rooms/rooms/rooms.keys";
 import { formatPrice } from "@/lib/format";
 import { notifyError } from "@/lib/notification";
 
@@ -28,6 +29,7 @@ export function ManualCashPaymentButton({
       await Promise.all([
         queryClient.invalidateQueries({ queryKey: paymentsKeys.all }),
         queryClient.invalidateQueries({ queryKey: bookingsKeys.all }),
+        queryClient.invalidateQueries({ queryKey: roomsKeys.all }),
         queryClient.invalidateQueries({ queryKey: invoicesKeys.all }),
       ]);
       toast.success("Cash payment recorded.");

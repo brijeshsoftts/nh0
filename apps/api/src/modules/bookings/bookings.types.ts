@@ -28,6 +28,7 @@ export type BookingListItem = {
   } | null;
   invoice: { id: string; status: InvoiceStatus } | null;
   canCheckIn: boolean;
+  canMarkNoShow: boolean;
 };
 
 export type BookingDetails = {
@@ -75,9 +76,18 @@ export type BookingDetails = {
   };
   bookingRoom: {
     id: string;
-    roomNumber: string;
-    name: string | null;
-    floor: number;
+    assignedRoom: {
+      id: string;
+      roomNumber: string;
+      name: string | null;
+      floor: number;
+      housekeepers: {
+        id: string;
+        fullName: string;
+        email: string;
+        phone: string;
+      }[];
+    } | null;
     roomType?: {
       id: string;
       name: string;

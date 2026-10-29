@@ -109,6 +109,14 @@ export class RoomsController {
     return apiMessageResponse(ROOM_SUCCESS_MSG.UPDATED);
   }
 
+  @Roles('ADMIN', 'MANAGER')
+  @Patch(':id/release-out-of-order')
+  @HttpCode(HttpStatus.OK)
+  async releaseOutOfOrder(@Param('id') id: string) {
+    await this.roomsService.releaseOutOfOrder(id);
+    return apiMessageResponse(ROOM_SUCCESS_MSG.UPDATED);
+  }
+
   @Roles('ADMIN')
   @Delete(':id')
   @HttpCode(HttpStatus.OK)

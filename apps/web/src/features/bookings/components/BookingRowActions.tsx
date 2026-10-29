@@ -40,6 +40,7 @@ const STATUS_ICONS: Partial<Record<BookingStatus, typeof CheckCircle2>> = {
   CHECKED_IN: LogIn,
   CHECKED_OUT: LogOut,
   CANCELLED: Ban,
+  NO_SHOW: Ban,
 };
 
 export function BookingRowActions({ booking }: { booking: BookingListItem }) {
@@ -59,7 +60,7 @@ export function BookingRowActions({ booking }: { booking: BookingListItem }) {
     user?.role === "MANAGER" ||
     (user?.role === "STAFF" && user.category === "RECEPTIONIST");
   const statusActions = canUpdate
-    ? getBookingStatusActions(booking.status)
+    ? getBookingStatusActions(booking.status, booking.canMarkNoShow)
     : [];
   const canViewInvoice =
     (booking.status === "CHECKED_OUT" || booking.status === "CANCELLED") &&

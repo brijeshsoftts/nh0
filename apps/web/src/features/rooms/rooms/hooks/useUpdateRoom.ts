@@ -12,6 +12,20 @@ import {
   UpdateRoomSchema,
 } from "../schemas/updateRoom.schema";
 
+export function useReleaseOutOfOrderRoom(id: string) {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationKey: ["rooms", "release-out-of-order", id],
+    mutationFn: () => roomsService.releaseOutOfOrder(id),
+    onSuccess: (res) => {
+      toast.success(res?.message || "Room returned to service.");
+      void queryClient.invalidateQueries({ queryKey: roomsKeys.all });
+    },
+    onError: notifyError,
+  });
+}
+
 export function useUpdateRoomMutation(id: string) {
   const queryClient = useQueryClient();
 

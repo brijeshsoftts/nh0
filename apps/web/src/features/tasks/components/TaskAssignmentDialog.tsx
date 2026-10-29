@@ -1,3 +1,4 @@
+import { useQueryClient } from "@tanstack/react-query";
 import { useState } from "react";
 
 import { Button } from "@/components/ui/button";
@@ -18,6 +19,7 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { Label } from "@/components/ui/label";
+import { roomsKeys } from "@/features/rooms/rooms/rooms.keys";
 import { useDebounce } from "@/hooks/useDebounce";
 
 import { useLookupHousekeepers, useUpdateTask } from "../tasks.crud";
@@ -34,6 +36,7 @@ export function TaskAssignmentDialog({
   onOpenChange,
   task,
 }: TaskAssignmentDialogProps) {
+  const queryClient = useQueryClient();
   const [search, setSearch] = useState("");
   const [selected, setSelected] = useState<HousekeeperLookupItem | null>(null);
   const query = useDebounce(search, 300);
@@ -43,7 +46,10 @@ export function TaskAssignmentDialog({
     category: "housekeeper",
   });
   const updateTask = useUpdateTask(task.id, {
-    onSuccess: () => onOpenChange(false),
+    onSuccess: () => {
+      void queryClient.invalidateQueries({ queryKey: roomsKeys.all });
+      onOpenChange(false);
+    },
   });
   const isPending = updateTask.mutation.isPending;
 

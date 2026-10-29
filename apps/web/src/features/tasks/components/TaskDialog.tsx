@@ -1,3 +1,4 @@
+import { useQueryClient } from "@tanstack/react-query";
 import { formatDate } from "date-fns";
 import { Check } from "lucide-react";
 import { useMemo, useState } from "react";
@@ -24,6 +25,7 @@ import {
 } from "@/components/ui/dialog";
 import { Label } from "@/components/ui/label";
 import { Spinner } from "@/components/ui/spinner";
+import { roomsKeys } from "@/features/rooms/rooms/rooms.keys";
 import { useDebounce } from "@/hooks/useDebounce";
 import type { TaskStatus, TaskType } from "@/types/enum.types";
 
@@ -103,7 +105,11 @@ export function TaskDialog({
   task,
   onEdit,
 }: TaskDialogProps) {
-  const closeOnSuccess = () => onOpenChange(false);
+  const queryClient = useQueryClient();
+  const closeOnSuccess = () => {
+    void queryClient.invalidateQueries({ queryKey: roomsKeys.all });
+    onOpenChange(false);
+  };
   const createTask = useCreateTask({ onSuccess: closeOnSuccess });
   const updateTask = useUpdateTask(task?.id ?? "", {
     onSuccess: closeOnSuccess,
@@ -311,10 +317,10 @@ function RoomSelect({
             {(item: RoomLookupItem) => (
               <ComboboxItem
                 key={item.id}
-                value={`${item.name} - #${item.floor}`}
+                value={`${item.name} - #${item.roomNumber}`}
                 onClick={() => onSelect(item.id)}
               >
-                {item.name} - #{item.floor}
+                {item.name} - #{item.roomNumber}
               </ComboboxItem>
             )}
           </ComboboxList>

@@ -178,7 +178,7 @@ function RoomTable() {
           },
 
           {
-            key: "occupancy",
+            key: "occupancyStatus",
             label: "Occupancy",
             options: occupancy.map((status) => ({
               label: status,
@@ -186,7 +186,7 @@ function RoomTable() {
             })),
           },
           {
-            key: "housekeeping",
+            key: "housekeepingStatus",
             label: "Housekeeping",
             options: housekeeping.map((status) => ({
               label: status,

@@ -1,33 +1,12 @@
 import { createZodDto } from 'nestjs-zod';
 import { z } from 'zod';
 
-const issueStatusSchema = z
-  .string()
-  .transform((value) => value.toUpperCase())
-  .pipe(z.enum(['OPEN', 'IN_PROGRESS', 'COMPLETED', 'RESOLVED', 'CANCELLED']));
-
-const issuePrioritySchema = z
-  .string()
-  .transform((value) => value.toUpperCase())
-  .pipe(z.enum(['LOW', 'MEDIUM', 'HIGH', 'URGENT']));
-
-const issueCategorySchema = z
-  .string()
-  .transform((value) => value.toUpperCase())
-  .pipe(
-    z.enum([
-      'PLUMBING',
-      'ELECTRICAL',
-      'HVAC',
-      'FURNITURE',
-      'APPLIANCE',
-      'INTERNET',
-      'BATHROOM',
-      'DOOR_LOCK',
-      'LIGHTING',
-      'OTHER',
-    ]),
-  );
+import { enumQueryParam } from '../../../common/helpers/query-filter.helper';
+import {
+  IssueCategory,
+  IssuePriority,
+  IssueStatus,
+} from '../../../types/prisma.types';
 
 export const IssuesQuerySchema = z
   .object({
@@ -36,9 +15,9 @@ export const IssuesQuerySchema = z
       .trim()
       .max(100, 'Search must be 100 characters or fewer')
       .optional(),
-    status: issueStatusSchema.optional(),
-    priority: issuePrioritySchema.optional(),
-    category: issueCategorySchema.optional(),
+    status: enumQueryParam(IssueStatus),
+    priority: enumQueryParam(IssuePriority),
+    category: enumQueryParam(IssueCategory),
     page: z.coerce
       .number('Page must be a number')
       .int('Page must be a whole number')

@@ -3,6 +3,7 @@ import { toast } from "sonner";
 
 import { notifyError } from "@/lib/notification";
 
+import { roomsKeys } from "../../rooms/rooms/rooms.keys";
 import { tasksKeys, tasksMutationKeys } from "../tasks.keys";
 import { tasksService } from "../tasks.service";
 
@@ -17,6 +18,7 @@ export function useDeleteTask() {
       queryClient.invalidateQueries({
         queryKey: tasksKeys.lists(),
       });
+      void queryClient.invalidateQueries({ queryKey: roomsKeys.all });
     },
     onError: notifyError,
   });

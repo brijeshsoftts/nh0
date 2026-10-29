@@ -3,6 +3,7 @@ import { toast } from "sonner";
 
 import { bookingsKeys } from "@/features/bookings/bookings.keys";
 import { invoicesKeys } from "@/features/invoices/invoices.keys";
+import { roomsKeys } from "@/features/rooms/rooms/rooms.keys";
 import { createCrud } from "@/lib/crud/createCrud";
 import { notifyError } from "@/lib/notification";
 
@@ -29,6 +30,7 @@ export function useCollectCash() {
       await Promise.all([
         queryClient.invalidateQueries({ queryKey: paymentsKeys.all }),
         queryClient.invalidateQueries({ queryKey: bookingsKeys.all }),
+        queryClient.invalidateQueries({ queryKey: roomsKeys.all }),
         queryClient.invalidateQueries({ queryKey: invoicesKeys.all }),
       ]);
       toast.success("Cash payment collected.");
@@ -46,6 +48,7 @@ export function useRecordQrPayment() {
       await Promise.all([
         queryClient.invalidateQueries({ queryKey: paymentsKeys.all }),
         queryClient.invalidateQueries({ queryKey: bookingsKeys.all }),
+        queryClient.invalidateQueries({ queryKey: roomsKeys.all }),
         queryClient.invalidateQueries({ queryKey: invoicesKeys.all }),
       ]);
       toast.success("QR payment recorded. Verify it against the bank/app.");

@@ -1,22 +1,24 @@
 import { createZodDto } from 'nestjs-zod';
 import { z } from 'zod';
 
+import {
+  booleanQueryParam,
+  enumQueryParam,
+} from '../../../common/helpers/query-filter.helper';
+import {
+  HousekeepingStatus,
+  OccupancyStatus,
+} from '../../../types/prisma.types';
+
 export const RoomsQuerySchema = z
   .object({
     search: z
       .string('Search must be a string')
       .max(100, 'Search must be 100 characters or less')
       .optional(),
-    isActive: z
-      .enum(['true', 'false'], {
-        message: 'isActive must be true or false',
-      })
-      .transform((value) => value === 'true')
-      .optional(),
-    occupancyStatus: z
-      .enum(['VACANT', 'RESERVED', 'OCCUPIED', 'OUT_OF_ORDER'])
-      .optional(),
-    housekeepingStatus: z.enum(['CLEAN', 'DIRTY', 'CLEANING']).optional(),
+    isActive: booleanQueryParam('isActive must be true or false'),
+    occupancyStatus: enumQueryParam(OccupancyStatus),
+    housekeepingStatus: enumQueryParam(HousekeepingStatus),
     roomType: z.cuid('Invalid room type ID').optional(),
     page: z.coerce
       .number('Page must be a number')

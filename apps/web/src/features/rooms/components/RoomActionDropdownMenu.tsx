@@ -1,5 +1,6 @@
 import {
   BrushCleaning,
+  CheckCircle2,
   EllipsisVertical,
   Eye,
   LoaderCircle,
@@ -31,7 +32,10 @@ import { useAuth } from "@/hooks/useAuth";
 import { UpdateRoomDialog } from "../rooms/components/UpdateRoomDialog";
 import { ViewRoomDialog } from "../rooms/components/ViewRoomDialog";
 import { useDeleteRoom } from "../rooms/hooks/useDeleteRoom";
-import { useUpdateRoomMutation } from "../rooms/hooks/useUpdateRoom";
+import {
+  useReleaseOutOfOrderRoom,
+  useUpdateRoomMutation,
+} from "../rooms/hooks/useUpdateRoom";
 import type { Room } from "../rooms/rooms.types";
 
 import { UpdateRoomHousekeepingDialog } from "./UpdateRoomHousekeepingDialog";
@@ -42,12 +46,15 @@ export function RoomActionDropdownMenu({ room }: { room: Room }) {
   const [isUpdateOpen, setIsUpdateOpen] = useState(false);
   const [isHousekeepingOpen, setIsHousekeepingOpen] = useState(false);
   const [isDeleteOpen, setIsDeleteOpen] = useState(false);
+  const [isReleaseOpen, setIsReleaseOpen] = useState(false);
   const canManage = user?.role === "ADMIN" || user?.role === "MANAGER";
   const canDelete = user?.role === "ADMIN";
   const { mutate: updateRoom, isPending: isUpdating } = useUpdateRoomMutation(
     room.id
   );
   const { handleDelete, isDeleting } = useDeleteRoom();
+  const releaseRoom = useReleaseOutOfOrderRoom(room.id);
+  const isBusy = isUpdating || isDeleting || releaseRoom.isPending;
 
   if (!canManage) return null;
 
@@ -60,9 +67,9 @@ export function RoomActionDropdownMenu({ room }: { room: Room }) {
             variant="ghost"
             shape="square"
             aria-label={`Actions for room ${room.roomNumber}`}
-            disabled={isUpdating || isDeleting}
+            disabled={isBusy}
           >
-            {isUpdating || isDeleting ? (
+            {isBusy ? (
               <LoaderCircle aria-hidden="true" className="animate-spin" />
             ) : (
               <EllipsisVertical aria-hidden="true" />
@@ -73,14 +80,14 @@ export function RoomActionDropdownMenu({ room }: { room: Room }) {
         <DropdownMenuContent align="end">
           <DropdownMenuItem
             onClick={() => setIsViewOpen(true)}
-            disabled={isUpdating || isDeleting}
+            disabled={isBusy}
           >
             <Eye aria-hidden="true" />
             View
           </DropdownMenuItem>
           <DropdownMenuItem
             onClick={() => updateRoom({ isActive: !room.isActive })}
-            disabled={isUpdating || isDeleting}
+            disabled={isBusy}
           >
             <Power aria-hidden="true" />
             {isUpdating
@@ -91,25 +98,34 @@ export function RoomActionDropdownMenu({ room }: { room: Room }) {
           </DropdownMenuItem>
           <DropdownMenuItem
             onClick={() => setIsHousekeepingOpen(true)}
-            disabled={isUpdating || isDeleting}
+            disabled={isBusy}
           >
             <BrushCleaning aria-hidden="true" />
             Room Care
           </DropdownMenuItem>
           <DropdownMenuItem
             onClick={() => setIsUpdateOpen(true)}
-            disabled={isUpdating || isDeleting}
+            disabled={isBusy}
           >
             <Pencil aria-hidden="true" />
             Update
           </DropdownMenuItem>
+          {room.occupancyStatus === "OUT_OF_ORDER" && (
+            <DropdownMenuItem
+              onClick={() => setIsReleaseOpen(true)}
+              disabled={isBusy}
+            >
+              <CheckCircle2 aria-hidden="true" />
+              Return to service
+            </DropdownMenuItem>
+          )}
           {canDelete && (
             <>
               <DropdownMenuSeparator />
               <DropdownMenuItem
                 variant="destructive"
                 onClick={() => setIsDeleteOpen(true)}
-                disabled={isUpdating || isDeleting}
+                disabled={isBusy}
               >
                 <Trash2 aria-hidden="true" />
                 Delete
@@ -169,6 +185,38 @@ export function RoomActionDropdownMenu({ room }: { room: Room }) {
               disabled={isDeleting}
             >
               {isDeleting ? "Deleting..." : "Delete room"}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+      <Dialog open={isReleaseOpen} onOpenChange={setIsReleaseOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Return room to service?</DialogTitle>
+            <DialogDescription>
+              The room will remain unavailable until its active bookings allow
+              it to be released. Open or in-progress issues must be resolved.
+            </DialogDescription>
+          </DialogHeader>
+          <DialogFooter>
+            <Button
+              type="button"
+              variant="outline"
+              onClick={() => setIsReleaseOpen(false)}
+              disabled={releaseRoom.isPending}
+            >
+              Cancel
+            </Button>
+            <Button
+              type="button"
+              onClick={() =>
+                releaseRoom.mutate(undefined, {
+                  onSuccess: () => setIsReleaseOpen(false),
+                })
+              }
+              disabled={releaseRoom.isPending}
+            >
+              {releaseRoom.isPending ? "Updating..." : "Return to service"}
             </Button>
           </DialogFooter>
         </DialogContent>

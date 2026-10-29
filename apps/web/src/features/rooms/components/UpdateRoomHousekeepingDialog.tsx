@@ -46,11 +46,7 @@ export function UpdateRoomHousekeepingDialog({
         <Select
           value={status}
           onValueChange={(value) => {
-            if (
-              value === "CLEAN" ||
-              value === "DIRTY" ||
-              value === "CLEANING"
-            ) {
+            if (value === "CLEAN" || value === "DIRTY") {
               setStatus(value);
             }
           }}
@@ -62,7 +58,9 @@ export function UpdateRoomHousekeepingDialog({
           <SelectContent>
             <SelectItem value="CLEAN">Clean</SelectItem>
             <SelectItem value="DIRTY">Dirty</SelectItem>
-            <SelectItem value="CLEANING">Cleaning</SelectItem>
+            <SelectItem value="CLEANING" disabled>
+              Cleaning
+            </SelectItem>
           </SelectContent>
         </Select>
         <DialogFooter>

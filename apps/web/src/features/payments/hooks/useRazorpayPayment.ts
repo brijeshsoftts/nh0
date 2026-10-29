@@ -4,6 +4,7 @@ import { type RazorpayOrderOptions, useRazorpay } from "react-razorpay";
 import { toast } from "sonner";
 
 import { bookingsKeys } from "@/features/bookings/bookings.keys";
+import { roomsKeys } from "@/features/rooms/rooms/rooms.keys";
 import { notifyError } from "@/lib/notification";
 
 import { paymentsKeys } from "../payments.keys";
@@ -42,6 +43,7 @@ export function useRazorpayPayment() {
     await Promise.all([
       queryClient.invalidateQueries({ queryKey: paymentsKeys.all }),
       queryClient.invalidateQueries({ queryKey: bookingsKeys.all }),
+      queryClient.invalidateQueries({ queryKey: roomsKeys.all }),
     ]);
   };
 

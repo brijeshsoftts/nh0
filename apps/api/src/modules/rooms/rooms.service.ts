@@ -1,4 +1,5 @@
 import {
+  BadRequestException,
   ConflictException,
   ForbiddenException,
   Injectable,
@@ -8,10 +9,14 @@ import {
 import { PrismaService } from '../../prisma/prisma.service';
 import { ListResponse } from '../../types/api.types';
 import {
+  BookingStatus,
   Category,
   HousekeepingStatus,
+  IssueStatus,
   OccupancyStatus,
+  PaymentStatus,
   Prisma,
+  TaskStatus,
   UserRole,
 } from '../../types/prisma.types';
 import { StatItem } from '../../types/shared.types';
@@ -20,6 +25,11 @@ import { CreateRoomDto } from './dto/create-room.dto';
 import { RoomsLookupQueryDto } from './dto/rooms-lookup-query.dto';
 import { RoomsQueryDto } from './dto/rooms-query.dto';
 import { UpdateRoomDto } from './dto/update-room.dto';
+import {
+  lockRoom,
+  releaseRoomOutOfOrder,
+  resolveRoomOccupancyStatus,
+} from './room-status-lifecycle';
 import { ROOM_ERROR_MSG } from './rooms.constants';
 import {
   CreateRoomResponse,
@@ -254,6 +264,20 @@ export class RoomsService {
   }
 
   async create(dto: CreateRoomDto): Promise<CreateRoomResponse> {
+    if (
+      dto.occupancyStatus === OccupancyStatus.OCCUPIED ||
+      dto.occupancyStatus === OccupancyStatus.RESERVED
+    ) {
+      throw new BadRequestException(
+        'Occupied and reserved room statuses are derived from bookings.',
+      );
+    }
+    if (dto.housekeepingStatus === HousekeepingStatus.CLEANING) {
+      throw new BadRequestException(
+        'A housekeeping task must be started before marking the room cleaning.',
+      );
+    }
+
     const roomType = await this.prismaService.roomType.findUnique({
       where: {
         id: dto.roomTypeId,
@@ -322,6 +346,7 @@ export class RoomsService {
       page,
       limit,
       search,
+      isActive,
       occupancyStatus,
       housekeepingStatus,
       roomType,
@@ -331,6 +356,7 @@ export class RoomsService {
       ...(role === UserRole.STAFF &&
         category === Category.HOUSEKEEPER &&
         this.housekeeperRoomWhere(userId)),
+      ...(isActive !== undefined && { isActive }),
       ...(search && {
         OR: [
           {
@@ -418,7 +444,7 @@ export class RoomsService {
           ],
         }),
       },
-      select: { id: true, name: true, floor: true },
+      select: { id: true, name: true, floor: true, roomNumber: true },
       orderBy: { roomNumber: 'asc' },
       take: query.limit,
     });
@@ -556,50 +582,181 @@ export class RoomsService {
   }
 
   async update(id: string, dto: UpdateRoomDto): Promise<void> {
-    const room = await this.prismaService.room.findUnique({
-      where: { id },
-      select: {
-        id: true,
-        roomNumber: true,
-      },
-    });
-
-    if (!room) {
-      throw new NotFoundException(ROOM_ERROR_MSG.NOT_FOUND);
-    }
-
-    if (dto.roomNumber && dto.roomNumber.toString() !== room.roomNumber) {
-      const existingRoom = await this.prismaService.room.findUnique({
-        where: { roomNumber: dto.roomNumber.toString() },
-        select: { id: true },
+    await this.prismaService.$transaction(async (tx) => {
+      await lockRoom(tx, id);
+      const room = await tx.room.findUnique({
+        where: { id },
+        select: { id: true, roomNumber: true, occupancyStatus: true },
       });
 
-      if (existingRoom) {
-        throw new ConflictException(ROOM_ERROR_MSG.CONFLICT_ROOM_NUMBER);
-      }
-    }
-
-    if (dto.roomTypeId) {
-      const roomType = await this.prismaService.roomType.findUnique({
-        where: { id: dto.roomTypeId },
-        select: { id: true },
-      });
-
-      if (!roomType) {
+      if (!room) {
         throw new NotFoundException(ROOM_ERROR_MSG.NOT_FOUND);
       }
-    }
 
-    await this.prismaService.room.update({
-      where: { id },
-      data: {
-        ...dto,
-        roomNumber: undefined,
-        ...(dto.roomNumber && { roomNumber: dto.roomNumber.toString() }),
-      },
-      select: {
-        id: true,
-      },
+      if (dto.roomNumber && dto.roomNumber.toString() !== room.roomNumber) {
+        const existingRoom = await tx.room.findUnique({
+          where: { roomNumber: dto.roomNumber.toString() },
+          select: { id: true },
+        });
+
+        if (existingRoom) {
+          throw new ConflictException(ROOM_ERROR_MSG.CONFLICT_ROOM_NUMBER);
+        }
+      }
+
+      if (dto.roomTypeId) {
+        const roomType = await tx.roomType.findUnique({
+          where: { id: dto.roomTypeId },
+          select: { id: true },
+        });
+
+        if (!roomType) {
+          throw new NotFoundException(ROOM_ERROR_MSG.NOT_FOUND);
+        }
+      }
+
+      if (
+        dto.occupancyStatus &&
+        dto.occupancyStatus !== room.occupancyStatus &&
+        room.occupancyStatus === OccupancyStatus.OUT_OF_ORDER
+      ) {
+        throw new ConflictException(
+          'Use the release action to return an out-of-order room to service.',
+        );
+      }
+
+      if (
+        dto.occupancyStatus &&
+        dto.occupancyStatus !== room.occupancyStatus &&
+        dto.occupancyStatus !== OccupancyStatus.OUT_OF_ORDER
+      ) {
+        const expectedStatus = await resolveRoomOccupancyStatus(tx, id);
+        if (dto.occupancyStatus !== expectedStatus) {
+          throw new ConflictException(
+            `Room occupancy is controlled by active bookings (${expectedStatus}).`,
+          );
+        }
+      }
+
+      if (dto.isActive === false) {
+        const now = new Date();
+        const activeBooking = await tx.booking.findFirst({
+          where: {
+            bookingRoom: { assignedRoomId: id },
+            checkOutDate: { gt: now },
+            OR: [
+              {
+                status: {
+                  in: [BookingStatus.CONFIRMED, BookingStatus.CHECKED_IN],
+                },
+              },
+              {
+                status: BookingStatus.PENDING,
+                OR: [
+                  { checkoutExpiresAt: null },
+                  { checkoutExpiresAt: { gt: now } },
+                  {
+                    invoice: {
+                      is: {
+                        payments: {
+                          some: { paymentStatus: PaymentStatus.PENDING },
+                        },
+                      },
+                    },
+                  },
+                ],
+              },
+            ],
+          },
+          select: { id: true },
+        });
+
+        if (activeBooking) {
+          throw new BadRequestException(
+            'A room with active bookings cannot be deactivated.',
+          );
+        }
+      }
+
+      if (dto.housekeepingStatus) {
+        const activeTasks = await tx.housekeepingTask.findMany({
+          where: {
+            roomId: id,
+            status: { in: [TaskStatus.PENDING, TaskStatus.IN_PROGRESS] },
+          },
+          select: { status: true },
+        });
+        const hasInProgressTask = activeTasks.some(
+          (task) => task.status === TaskStatus.IN_PROGRESS,
+        );
+        if (
+          dto.housekeepingStatus === HousekeepingStatus.CLEAN &&
+          activeTasks.length > 0
+        ) {
+          throw new BadRequestException(
+            'Complete or remove active housekeeping tasks before marking the room clean.',
+          );
+        }
+        if (
+          dto.housekeepingStatus === HousekeepingStatus.CLEANING &&
+          !hasInProgressTask
+        ) {
+          throw new BadRequestException(
+            'A housekeeping task must be started before marking the room cleaning.',
+          );
+        }
+        if (
+          dto.housekeepingStatus === HousekeepingStatus.DIRTY &&
+          hasInProgressTask
+        ) {
+          throw new BadRequestException(
+            'A room with active cleaning work cannot be marked dirty.',
+          );
+        }
+      }
+
+      await tx.room.update({
+        where: { id },
+        data: {
+          ...dto,
+          roomNumber: undefined,
+          ...(dto.roomNumber && { roomNumber: dto.roomNumber.toString() }),
+        },
+        select: { id: true },
+      });
+    });
+  }
+
+  async releaseOutOfOrder(id: string): Promise<void> {
+    await this.prismaService.$transaction(async (tx) => {
+      await lockRoom(tx, id);
+      const room = await tx.room.findUnique({
+        where: { id },
+        select: { occupancyStatus: true },
+      });
+
+      if (!room) {
+        throw new NotFoundException(ROOM_ERROR_MSG.NOT_FOUND);
+      }
+      if (room.occupancyStatus !== OccupancyStatus.OUT_OF_ORDER) {
+        throw new ConflictException('Room is not out of order.');
+      }
+
+      const unresolvedIssue = await tx.issue.findFirst({
+        where: {
+          roomId: id,
+          status: { in: [IssueStatus.OPEN, IssueStatus.IN_PROGRESS] },
+        },
+        select: { id: true },
+      });
+
+      if (unresolvedIssue) {
+        throw new BadRequestException(
+          'Resolve all open or in-progress room issues before returning this room to service.',
+        );
+      }
+
+      await releaseRoomOutOfOrder(tx, id);
     });
   }
 

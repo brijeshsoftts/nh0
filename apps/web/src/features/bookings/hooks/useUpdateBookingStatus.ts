@@ -3,6 +3,7 @@ import { toast } from "sonner";
 
 import { notifyError } from "@/lib/notification";
 
+import { roomsKeys } from "../../rooms/rooms/rooms.keys";
 import { bookingsKeys, bookingsMutationKeys } from "../bookings.keys";
 import { bookingsService } from "../bookings.service";
 
@@ -17,6 +18,7 @@ export function useUpdateBookingStatus() {
       void queryClient.invalidateQueries({ queryKey: bookingsKeys.lists() });
       void queryClient.invalidateQueries({ queryKey: bookingsKeys.details() });
       void queryClient.invalidateQueries({ queryKey: bookingsKeys.stats() });
+      void queryClient.invalidateQueries({ queryKey: roomsKeys.all });
     },
     onError: notifyError,
   });

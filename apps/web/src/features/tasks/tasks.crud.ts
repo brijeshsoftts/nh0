@@ -1,9 +1,13 @@
-import { useQuery } from "@tanstack/react-query";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { toast } from "sonner";
 
 import { apiClient } from "@/lib/apiClient";
 import { createCrud } from "@/lib/crud/createCrud";
+import { notifyError } from "@/lib/notification";
 import type { ApiListResponse } from "@/types/api.types";
 import type { TaskStatus } from "@/types/enum.types";
+
+import { roomsKeys } from "../rooms/rooms/rooms.keys";
 
 import { CreateTaskSchema } from "./schemas/createTask.schema";
 import { UpdateTaskSchema } from "./schemas/updateTask.schema";
@@ -55,16 +59,19 @@ export function useLookupRooms(params?: { search: string; limit: number }) {
 }
 
 export function useUpdateStatus(id: string) {
-  const useUpdateTaskStatus = tasksCrud.createAction<{
-    status: TaskStatus;
-  }>({
-    name: "updateStatus",
-    mutationFn: (data) =>
-      apiClient.patch(`/tasks/${id}/status`, data).then((r) => r.data),
-    successMessage: "Task status updated",
-  });
+  const queryClient = useQueryClient();
 
-  return useUpdateTaskStatus();
+  return useMutation({
+    mutationKey: ["tasks", "updateStatus", id],
+    mutationFn: (data: { status: TaskStatus }) =>
+      apiClient.patch(`/tasks/${id}/status`, data).then((r) => r.data),
+    onSuccess: (res) => {
+      toast.success(res?.message || "Task status updated");
+      void queryClient.invalidateQueries({ queryKey: tasksKeys.all });
+      void queryClient.invalidateQueries({ queryKey: roomsKeys.all });
+    },
+    onError: notifyError,
+  });
 }
 
 export function useHousekeeperTaskQueue() {

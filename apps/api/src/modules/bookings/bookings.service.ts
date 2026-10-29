@@ -15,12 +15,19 @@ import {
   BookingStatus,
   Category,
   InvoiceStatus,
+  OccupancyStatus,
   PaymentMethod,
   PaymentStatus,
   Prisma,
+  TaskStatus,
   UserRole,
 } from '../../types/prisma.types';
 import { StatItem } from '../../types/shared.types';
+import {
+  canReserveRoomForBooking,
+  lockRoom,
+  syncRoomOccupancyStatus,
+} from '../rooms/room-status-lifecycle';
 
 import { BookingAvailabilityQueryDto } from './dto/available-rooms-query.dto';
 import { BookingsQueryDto } from './dto/bookings-query.dto';
@@ -238,11 +245,12 @@ export class BookingsService {
   ): Promise<ListResponse<BookingListItem | CustomerBooking>> {
     this.assertBookingAccess(role, category);
     const hotelToday = hotelCalendarDate(new Date());
-    const { search, status, paymentMethod, page, limit } = query;
+    const { search, status, invoiceStatus, paymentMethod, page, limit } = query;
     const where: Prisma.BookingWhereInput = {
       ...(role === UserRole.CUSTOMER && { customerId: userId }),
       ...(status && { status }),
       ...(paymentMethod && { paymentMethod }),
+      ...(invoiceStatus && { invoice: { is: { status: invoiceStatus } } }),
       ...(search && {
         OR: [
           {
@@ -332,6 +340,15 @@ export class BookingsService {
                   isActive: true,
                   occupancyStatus: true,
                   housekeepingStatus: true,
+                  housekeepingTasks: {
+                    where: {
+                      status: {
+                        in: [TaskStatus.PENDING, TaskStatus.IN_PROGRESS],
+                      },
+                    },
+                    select: { id: true },
+                    take: 1,
+                  },
                 },
               },
               roomType: { select: { name: true } },
@@ -387,11 +404,16 @@ export class BookingsService {
         room?.isActive === true &&
         (room.occupancyStatus === 'VACANT' ||
           room.occupancyStatus === 'RESERVED') &&
-        room.housekeepingStatus === 'CLEAN';
+        room.housekeepingStatus === 'CLEAN' &&
+        room.housekeepingTasks.length === 0;
+      const canMarkNoShow =
+        booking.status === BookingStatus.CONFIRMED &&
+        bookingCalendarDate(booking.checkInDate) <= hotelToday;
 
       return {
         ...booking,
         canCheckIn,
+        canMarkNoShow,
         customer: booking.customer ?? {
           id: booking.id,
           fullName: booking.guestName ?? 'Guest',
@@ -461,6 +483,7 @@ export class BookingsService {
           id: true,
           status: true,
           checkInDate: true,
+          checkOutDate: true,
           paymentMethod: true,
           bookingRoom: { select: { assignedRoomId: true } },
           invoice: {
@@ -508,6 +531,21 @@ export class BookingsService {
             'Full payment and an assigned room are required before confirmation.',
           );
         }
+
+        const assignedRoomId = booking.bookingRoom?.assignedRoomId;
+        if (
+          !assignedRoomId ||
+          !(await canReserveRoomForBooking(tx, {
+            roomId: assignedRoomId,
+            bookingId: booking.id,
+            checkInDate: booking.checkInDate,
+            checkOutDate: booking.checkOutDate,
+          }))
+        ) {
+          throw new ConflictException(
+            'The assigned room is unavailable for this booking.',
+          );
+        }
       }
 
       if (nextStatus === BookingStatus.CHECKED_IN) {
@@ -544,7 +582,12 @@ export class BookingsService {
           );
         }
 
-        await tx.$queryRaw`SELECT "id" FROM "Room" WHERE "id" = ${assignedRoomId} FOR UPDATE`;
+        const canReserve = await canReserveRoomForBooking(tx, {
+          roomId: assignedRoomId,
+          bookingId: booking.id,
+          checkInDate: booking.checkInDate,
+          checkOutDate: booking.checkOutDate,
+        });
         const room = await tx.room.findUnique({
           where: { id: assignedRoomId },
           select: {
@@ -555,7 +598,9 @@ export class BookingsService {
         });
 
         if (
+          !canReserve ||
           !room?.isActive ||
+          room.occupancyStatus === OccupancyStatus.OUT_OF_ORDER ||
           (room.occupancyStatus !== 'VACANT' &&
             room.occupancyStatus !== 'RESERVED') ||
           room.housekeepingStatus !== 'CLEAN'
@@ -564,6 +609,15 @@ export class BookingsService {
             'The assigned room is not ready for check-in.',
           );
         }
+      }
+
+      if (
+        nextStatus === BookingStatus.NO_SHOW &&
+        bookingCalendarDate(booking.checkInDate) > hotelCalendarDate(timestamp)
+      ) {
+        throw new BadRequestException(
+          'A booking cannot be marked no-show before its check-in date.',
+        );
       }
 
       const updateResult = await tx.booking.updateMany({
@@ -586,6 +640,29 @@ export class BookingsService {
         throw new ConflictException(
           'Booking status changed before this update could be applied',
         );
+      }
+
+      const assignedRoomId = booking.bookingRoom?.assignedRoomId;
+      if (assignedRoomId) {
+        if (
+          nextStatus === BookingStatus.CONFIRMED ||
+          nextStatus === BookingStatus.CHECKED_IN ||
+          nextStatus === BookingStatus.CHECKED_OUT ||
+          nextStatus === BookingStatus.CANCELLED ||
+          nextStatus === BookingStatus.NO_SHOW
+        ) {
+          await syncRoomOccupancyStatus(tx, assignedRoomId);
+        }
+
+        if (
+          nextStatus === BookingStatus.CHECKED_IN ||
+          nextStatus === BookingStatus.CHECKED_OUT
+        ) {
+          await tx.room.updateMany({
+            where: { id: assignedRoomId },
+            data: { housekeepingStatus: 'DIRTY' },
+          });
+        }
       }
 
       return { id, status: nextStatus };
@@ -719,6 +796,20 @@ export class BookingsService {
                 roomNumber: true,
                 name: true,
                 floor: true,
+                housekeeperAssigns: {
+                  where: { isActive: true },
+                  orderBy: { updatedAt: 'desc' },
+                  select: {
+                    housekeeper: {
+                      select: {
+                        id: true,
+                        fullName: true,
+                        email: true,
+                        phone: true,
+                      },
+                    },
+                  },
+                },
               },
             },
             roomType: {
@@ -820,9 +911,18 @@ export class BookingsService {
       bookingRoom: booking.bookingRoom
         ? {
             id: booking.bookingRoom.id,
-            roomNumber: booking.bookingRoom.assignedRoom?.roomNumber ?? '',
-            name: booking.bookingRoom.assignedRoom?.name ?? null,
-            floor: booking.bookingRoom.assignedRoom?.floor ?? 0,
+            assignedRoom: booking.bookingRoom.assignedRoom
+              ? {
+                  id: booking.bookingRoom.assignedRoom.id,
+                  roomNumber: booking.bookingRoom.assignedRoom.roomNumber,
+                  name: booking.bookingRoom.assignedRoom.name,
+                  floor: booking.bookingRoom.assignedRoom.floor,
+                  housekeepers:
+                    booking.bookingRoom.assignedRoom.housekeeperAssigns.map(
+                      ({ housekeeper }) => housekeeper,
+                    ),
+                }
+              : null,
             roomType: booking.bookingRoom.roomType ?? undefined,
             pricePerNight: booking.bookingRoom.pricePerNight,
           }
@@ -856,6 +956,19 @@ export class BookingsService {
     const rooms = await this.prismaService.room.findMany({
       where: {
         isActive: true,
+        occupancyStatus: { not: OccupancyStatus.OUT_OF_ORDER },
+        housekeepingStatus: 'CLEAN',
+        housekeepingTasks: {
+          none: {
+            OR: [
+              { status: TaskStatus.IN_PROGRESS },
+              {
+                status: TaskStatus.PENDING,
+                scheduledDate: { gte: startDate, lt: endDate },
+              },
+            ],
+          },
+        },
         roomType: {
           isActive: true,
           maxGuests: { gte: totalGuests },
@@ -1030,7 +1143,18 @@ export class BookingsService {
 
     const createTransaction = () =>
       this.prismaService.$transaction(async (tx) => {
-        await tx.$queryRaw`SELECT "id" FROM "Room" WHERE "id" = ${dto.roomId} FOR UPDATE`;
+        await lockRoom(tx, dto.roomId);
+
+        const roomIsBookable = await canReserveRoomForBooking(tx, {
+          roomId: dto.roomId,
+          checkInDate,
+          checkOutDate,
+        });
+        if (!roomIsBookable) {
+          throw new ConflictException(
+            'This room is unavailable or not clean for the selected dates.',
+          );
+        }
 
         if (checkoutTokenHash) {
           const existingBooking = await tx.booking.findUnique({
@@ -1048,20 +1172,6 @@ export class BookingsService {
               dto.paymentMethod,
             );
           }
-        }
-
-        const overlappingBooking = await tx.booking.findFirst({
-          where: {
-            bookingRoom: { assignedRoomId: dto.roomId },
-            ...this.buildActiveBookingWhere(checkInDate, checkOutDate),
-          },
-          select: { id: true },
-        });
-
-        if (overlappingBooking) {
-          throw new ConflictException(
-            'This room is no longer available for the selected dates.',
-          );
         }
 
         const bookedAt = new Date();
@@ -1097,6 +1207,7 @@ export class BookingsService {
             pricePerNight: room.roomType.basePrice,
           },
         });
+        await syncRoomOccupancyStatus(tx, room.id);
 
         await tx.bookingGuest.createMany({
           data: dto.guests.map((guest) => ({
@@ -1304,7 +1415,7 @@ export class BookingsService {
 
     try {
       const booking = await this.prismaService.$transaction(async (tx) => {
-        await tx.$queryRaw`SELECT "id" FROM "Room" WHERE "id" = ${dto.roomId} FOR UPDATE`;
+        await lockRoom(tx, dto.roomId);
 
         const existingBooking = await tx.booking.findUnique({
           where: { publicCheckoutTokenHash: tokenHash },
@@ -1320,10 +1431,23 @@ export class BookingsService {
           };
         }
 
+        const roomIsBookable = await canReserveRoomForBooking(tx, {
+          roomId: dto.roomId,
+          checkInDate,
+          checkOutDate,
+        });
+        if (!roomIsBookable) {
+          throw new ConflictException(
+            'This room is unavailable or not clean for the selected dates.',
+          );
+        }
+
         const room = await tx.room.findFirst({
           where: {
             id: dto.roomId,
             isActive: true,
+            occupancyStatus: { not: OccupancyStatus.OUT_OF_ORDER },
+            housekeepingStatus: 'CLEAN',
             roomType: { isActive: true },
           },
           select: {
@@ -1336,34 +1460,6 @@ export class BookingsService {
         if (!room) throw new NotFoundException('Room is not available.');
         if (totalGuests > room.roomType.maxGuests) {
           throw new BadRequestException('Guest count exceeds room capacity.');
-        }
-
-        const overlappingBooking = await tx.booking.findFirst({
-          where: {
-            bookingRoom: { assignedRoomId: room.id },
-            checkInDate: { lt: checkOutDate },
-            checkOutDate: { gt: checkInDate },
-            OR: [
-              {
-                status: {
-                  in: [BookingStatus.CONFIRMED, BookingStatus.CHECKED_IN],
-                },
-              },
-              {
-                status: BookingStatus.PENDING,
-                OR: [
-                  { checkoutExpiresAt: null },
-                  { checkoutExpiresAt: { gt: now } },
-                ],
-              },
-            ],
-          },
-          select: { id: true },
-        });
-        if (overlappingBooking) {
-          throw new ConflictException(
-            'This room is no longer available for the selected dates.',
-          );
         }
 
         const { subtotal, taxAmount, totalAmount } = calculateBookingTotals({
@@ -1402,6 +1498,7 @@ export class BookingsService {
             pricePerNight: room.roomType.basePrice,
           },
         });
+        await syncRoomOccupancyStatus(tx, room.id);
         await tx.bookingGuest.createMany({
           data: dto.guests.map((guest) => ({
             bookingId: createdBooking.id,

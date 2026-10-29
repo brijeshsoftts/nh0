@@ -1,6 +1,12 @@
 import { createZodDto } from 'nestjs-zod';
 import { z } from 'zod';
 
+import {
+  booleanQueryParam,
+  enumQueryParam,
+} from '../../../common/helpers/query-filter.helper';
+import { UserRole } from '../../../types/prisma.types';
+
 export const UsersQuerySchema = z
   .object({
     search: z
@@ -8,11 +14,11 @@ export const UsersQuerySchema = z
       .trim()
       .max(100, 'Search must be 100 characters or less')
       .optional(),
-    role: z.enum(['MANAGER', 'STAFF']).optional(),
-    isActive: z
-      .enum(['true', 'false'])
-      .transform((value) => value === 'true')
-      .optional(),
+    role: enumQueryParam(
+      { MANAGER: UserRole.MANAGER, STAFF: UserRole.STAFF },
+      'Role must be Manager or Staff',
+    ),
+    isActive: booleanQueryParam('isActive must be true or false'),
     page: z.coerce
       .number('Page must be a number')
       .int('Page must be a whole number')

@@ -23,6 +23,7 @@ import {
   UserRole,
 } from '../../types/prisma.types';
 import { StatItem } from '../../types/shared.types';
+import { confirmPaidBooking } from '../rooms/room-status-lifecycle';
 
 import { CreatePaymentDto } from './dto/create-payment.dto';
 import { PaymentsQueryDto } from './dto/payments-query.dto';
@@ -168,10 +169,12 @@ export class PaymentsService {
     category?: Category,
   ): Promise<ListResponse<PaymentItem | CustomerPayment>> {
     this.assertPaymentReader(role, category);
-    const { page, limit, search, status, paymentMethod } = query;
+    const { page, limit, search, status, paymentStatus, paymentMethod } = query;
     const where: Prisma.PaymentWhereInput = {
       ...(role === UserRole.CUSTOMER && { customerId: userId }),
-      ...(status && { paymentStatus: status }),
+      ...((paymentStatus ?? status) && {
+        paymentStatus: paymentStatus ?? status,
+      }),
       ...(paymentMethod && { paymentMethod }),
       ...(search && {
         OR: [
@@ -442,21 +445,7 @@ export class PaymentsService {
         });
 
         if (invoice.booking.status === BookingStatus.PENDING) {
-          const bookingUpdated = await tx.booking.updateMany({
-            where: {
-              id: invoice.bookingId,
-              status: BookingStatus.PENDING,
-              paymentMethod: PaymentMethod.ONLINE,
-            },
-            data: {
-              status: BookingStatus.CONFIRMED,
-              checkoutExpiresAt: null,
-            },
-          });
-
-          if (bookingUpdated.count !== 1) {
-            throw new ConflictException(PAYMENTS_ERROR_MSG.PAYMENT_CHANGED);
-          }
+          await confirmPaidBooking(tx, invoice.bookingId);
         }
 
         return {
@@ -1315,18 +1304,7 @@ export class PaymentsService {
           invoiceStatus === InvoiceStatus.PAID &&
           invoice.booking.status === BookingStatus.PENDING
         ) {
-          const bookingUpdated = await tx.booking.updateMany({
-            where: {
-              id: invoice.bookingId,
-              status: BookingStatus.PENDING,
-              paymentMethod: PaymentMethod.CASH,
-            },
-            data: { status: BookingStatus.CONFIRMED, checkoutExpiresAt: null },
-          });
-
-          if (bookingUpdated.count !== 1) {
-            throw new ConflictException(PAYMENTS_ERROR_MSG.PAYMENT_CHANGED);
-          }
+          await confirmPaidBooking(tx, invoice.bookingId);
         }
 
         return {
@@ -1694,13 +1672,7 @@ export class PaymentsService {
       });
 
       if ((completedPayments._sum.amount ?? 0) >= invoice.totalAmount) {
-        await tx.booking.updateMany({
-          where: { id: current.bookingId, status: BookingStatus.PENDING },
-          data: {
-            status: BookingStatus.CONFIRMED,
-            checkoutExpiresAt: null,
-          },
-        });
+        await confirmPaidBooking(tx, current.bookingId);
       }
     };
 

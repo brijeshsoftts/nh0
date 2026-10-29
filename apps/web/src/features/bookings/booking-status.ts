@@ -31,6 +31,22 @@ const STATUS_ACTIONS: Record<BookingStatus, BookingStatusAction[]> = {
   NO_SHOW: [],
 };
 
-export function getBookingStatusActions(status: BookingStatus) {
-  return STATUS_ACTIONS[status];
+export function getBookingStatusActions(
+  status: BookingStatus,
+  canMarkNoShow = false
+) {
+  const actions = STATUS_ACTIONS[status];
+
+  return status === "CONFIRMED" && canMarkNoShow
+    ? [
+        ...actions,
+        {
+          label: "Mark No-show",
+          status: "NO_SHOW" as const,
+          destructive: true,
+          confirmMessage:
+            "Mark this booking as no-show and release its reservation?",
+        },
+      ]
+    : actions;
 }

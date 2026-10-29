@@ -18,6 +18,7 @@ export type RoomLookupItem = {
   id: string;
   name: string | null;
   floor: number;
+  roomNumber: string;
 };
 
 export type CreateRoomResponse = RoomBase & {

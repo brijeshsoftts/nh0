@@ -289,13 +289,15 @@ export function BookingDetailsSheet({
                   <div className="flex items-center gap-2 text-sm">
                     <Mail className="size-3.5 shrink-0 text-muted-foreground" />
 
-                    <span className="truncate">{booking.customer.email}</span>
+                    <span className="truncate">
+                      {booking.customer.email || "—"}
+                    </span>
                   </div>
 
                   <div className="flex items-center gap-2 text-sm">
                     <Phone className="size-3.5 shrink-0 text-muted-foreground" />
 
-                    <span>{booking.customer.phone}</span>
+                    <span>{booking.customer.phone || "—"}</span>
                   </div>
                 </div>
 
@@ -381,7 +383,9 @@ export function BookingDetailsSheet({
 
                         <div className="min-w-0">
                           <p className="text-sm font-semibold">
-                            Room {booking.bookingRoom.roomNumber}
+                            {booking.bookingRoom.assignedRoom
+                              ? `Room ${booking.bookingRoom.assignedRoom.roomNumber}`
+                              : "Room not assigned"}
                           </p>
 
                           <p className="truncate text-xs text-muted-foreground">
@@ -407,7 +411,7 @@ export function BookingDetailsSheet({
                         <p className="text-xs text-muted-foreground">Floor</p>
 
                         <p className="mt-1 text-sm font-medium">
-                          {booking.bookingRoom.floor}
+                          {booking.bookingRoom.assignedRoom?.floor ?? "—"}
                         </p>
                       </div>
 
@@ -419,11 +423,49 @@ export function BookingDetailsSheet({
                         </p>
                       </div>
                     </div>
+
+                    <div className="mt-3 border-t pt-3">
+                      <p className="text-xs text-muted-foreground">
+                        Responsible housekeeper
+                      </p>
+
+                      {booking.bookingRoom.assignedRoom?.housekeepers.length ? (
+                        <div className="mt-2 space-y-3">
+                          {booking.bookingRoom.assignedRoom.housekeepers.map(
+                            (housekeeper) => (
+                              <div key={housekeeper.id} className="space-y-1">
+                                <p className="text-sm font-medium">
+                                  {housekeeper.fullName}
+                                </p>
+                                {housekeeper.email && (
+                                  <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                                    <Mail className="size-3.5 shrink-0" />
+                                    <span className="truncate">
+                                      {housekeeper.email}
+                                    </span>
+                                  </div>
+                                )}
+                                {housekeeper.phone && (
+                                  <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                                    <Phone className="size-3.5 shrink-0" />
+                                    <span>{housekeeper.phone}</span>
+                                  </div>
+                                )}
+                              </div>
+                            )
+                          )}
+                        </div>
+                      ) : (
+                        <p className="mt-1 text-sm text-muted-foreground">
+                          No housekeeper assigned
+                        </p>
+                      )}
+                    </div>
                   </div>
                 </div>
               ) : (
                 <p className="rounded-lg border p-3 text-sm text-muted-foreground">
-                  No room is assigned to this booking.
+                  Room not assigned
                 </p>
               )}
             </Section>

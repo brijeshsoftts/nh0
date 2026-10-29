@@ -1,15 +1,8 @@
 import { createZodDto } from 'nestjs-zod';
 import { z } from 'zod';
 
-const taskTypeSchema = z
-  .string()
-  .transform((value) => value.toUpperCase())
-  .pipe(z.enum(['CLEANING', 'DEEP_CLEAN', 'TURNDOWN']));
-
-const taskStatusSchema = z
-  .string()
-  .transform((value) => value.toUpperCase())
-  .pipe(z.enum(['PENDING', 'IN_PROGRESS', 'COMPLETED']));
+import { enumQueryParam } from '../../../common/helpers/query-filter.helper';
+import { TaskStatus, TaskType } from '../../../types/prisma.types';
 
 export const TasksQuerySchema = z
   .object({
@@ -18,8 +11,8 @@ export const TasksQuerySchema = z
       .trim()
       .max(100, 'Search must be 100 characters or fewer')
       .optional(),
-    taskType: taskTypeSchema.optional(),
-    status: taskStatusSchema.optional(),
+    taskType: enumQueryParam(TaskType),
+    status: enumQueryParam(TaskStatus),
     page: z.coerce
       .number('Page must be a number')
       .int('Page must be a whole number')

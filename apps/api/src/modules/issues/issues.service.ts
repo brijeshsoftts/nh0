@@ -15,6 +15,7 @@ import {
   UserRole,
 } from '../../types/prisma.types';
 import { StatItem } from '../../types/shared.types';
+import { lockRoom } from '../rooms/room-status-lifecycle';
 
 import { CreateIssueDto } from './dto/create-issue.dto';
 import { IssuesQueryDto } from './dto/issues-query.dto';
@@ -144,6 +145,7 @@ export class IssuesService {
       const issue = await tx.issue.findUnique({
         where: { id },
         select: {
+          roomId: true,
           status: true,
           startedAt: true,
           completedAt: true,
@@ -155,13 +157,15 @@ export class IssuesService {
         throw new NotFoundException(ISSUE_ERROR_MSG.NOT_FOUND);
       }
 
+      await lockRoom(tx, issue.roomId);
+
       if (dto.status === issue.status && Object.keys(dto).length === 1) {
         throw new BadRequestException(ISSUE_ERROR_MSG.STATUS_UNCHANGED);
       }
 
       const timestamp = new Date();
       const result = await tx.issue.updateMany({
-        where: { id, status: issue.status },
+        where: { id, roomId: issue.roomId, status: issue.status },
         data: {
           ...dto,
           ...(dto.status === IssueStatus.IN_PROGRESS &&
@@ -311,38 +315,41 @@ export class IssuesService {
     const reference = `ISS-${Date.now()}-${Math.random().toString(36).slice(2, 7).toUpperCase()}`;
 
     try {
-      const issue = await this.prismaService.issue.create({
-        data: {
-          reference,
-          roomId,
-          reportedById,
-          category: dto.category,
-          priority: dto.priority,
-          title: dto.title,
-          description: dto.description,
-          imageId: dto.imageId ?? null,
-        },
-        select: {
-          id: true,
-          reference: true,
-          title: true,
-          category: true,
-          priority: true,
-          status: true,
-          room: {
-            select: {
-              id: true,
-              roomNumber: true,
-            },
+      const issue = await this.prismaService.$transaction(async (tx) => {
+        await lockRoom(tx, roomId);
+        return tx.issue.create({
+          data: {
+            reference,
+            roomId,
+            reportedById,
+            category: dto.category,
+            priority: dto.priority,
+            title: dto.title,
+            description: dto.description,
+            imageId: dto.imageId ?? null,
           },
-          reporter: {
-            select: {
-              id: true,
-              fullName: true,
+          select: {
+            id: true,
+            reference: true,
+            title: true,
+            category: true,
+            priority: true,
+            status: true,
+            room: {
+              select: {
+                id: true,
+                roomNumber: true,
+              },
             },
+            reporter: {
+              select: {
+                id: true,
+                fullName: true,
+              },
+            },
+            reportedAt: true,
           },
-          reportedAt: true,
-        },
+        });
       });
 
       return {
