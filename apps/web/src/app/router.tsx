@@ -1,7 +1,9 @@
-import { createBrowserRouter, Navigate } from "react-router-dom";
+import { createBrowserRouter } from "react-router-dom";
 
 import { DashboardLayout } from "@/components/layout/DashboardLayout";
 import { PublicLayout } from "@/components/layout/PublicLayout";
+import LoginPage from "@/pages/auth/Login";
+import RegisterPage from "@/pages/auth/Register";
 import ResetPasswordPage from "@/pages/auth/ResetPassword";
 import AuditLogsPage from "@/pages/protect/AuditLogs";
 import BookingsPage from "@/pages/protect/Bookings";
@@ -34,15 +36,16 @@ export const router = createBrowserRouter([
       { path: "rooms/:slug", element: <RoomDetails /> },
       { path: "rooms/:slug/book", element: <BookingCheckout /> },
       { path: "checkout", element: <BookingCheckout /> },
-      {
-        path: "/login",
-        element: <Navigate to="/" replace state={{ openAuth: true }} />,
-      },
     ],
   },
+  { path: "/register", element: <RegisterPage /> },
   {
     path: "/reset-password",
     element: <ResetPasswordPage />,
+  },
+  {
+    path: "/login",
+    element: <LoginPage />,
   },
   {
     element: <DashboardLayout />,

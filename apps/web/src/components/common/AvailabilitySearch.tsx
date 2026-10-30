@@ -2,6 +2,7 @@ import { addDays, format, isValid, parseISO, startOfToday } from "date-fns";
 import { motion, useReducedMotion } from "framer-motion";
 import {
   ArrowRight,
+  BedDouble,
   CalendarDays,
   ChevronDown,
   Minus,
@@ -146,7 +147,17 @@ function GuestCounter({
   );
 }
 
-export function AvailabilitySearch({ className = "" }: { className?: string }) {
+type RoomTypeOption = { value: string; label: string };
+
+export function AvailabilitySearch({
+  className = "",
+  roomTypeOptions,
+  submitLabel = "Check availability",
+}: {
+  className?: string;
+  roomTypeOptions?: RoomTypeOption[];
+  submitLabel?: string;
+}) {
   const id = useId();
   const reduceMotion = useReducedMotion() ?? false;
   const navigate = useNavigate();
@@ -178,6 +189,9 @@ export function AvailabilitySearch({ className = "" }: { className?: string }) {
   );
   const [guestsOpen, setGuestsOpen] = useState(false);
   const [error, setError] = useState("");
+  const [roomType, setRoomType] = useState(
+    searchParams.get("roomType") ?? "all"
+  );
   const guestSummary = `${adults} adult${adults === 1 ? "" : "s"}, ${children} child${children === 1 ? "" : "ren"}`;
 
   const handleSubmit = (event: FormEvent<HTMLFormElement>) => {
@@ -200,8 +214,13 @@ export function AvailabilitySearch({ className = "" }: { className?: string }) {
       children: String(children),
       page: "1",
     });
+    if (roomType !== "all") params.set("roomType", roomType);
     navigate(`/rooms?${params.toString()}`);
   };
+
+  const gridColumns = roomTypeOptions
+    ? "lg:grid-cols-[1.05fr_1.1fr_1.1fr_1.1fr_1fr]"
+    : "lg:grid-cols-[1.1fr_1.1fr_1.1fr_1fr]";
 
   return (
     <motion.form
@@ -209,12 +228,50 @@ export function AvailabilitySearch({ className = "" }: { className?: string }) {
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: reduceMotion ? 0 : 0.4, ease: "easeOut" }}
       onSubmit={handleSubmit}
-      className={`grid grid-cols-1 gap-4 rounded-lg border border-border bg-background p-4 text-foreground shadow-lg sm:grid-cols-2 sm:p-5 lg:grid-cols-[1.1fr_1.1fr_1.1fr_1fr] lg:items-end lg:gap-4 ${className}`}
+      className={`grid grid-cols-1 gap-4 rounded-lg border border-border bg-background p-4 text-foreground shadow-lg sm:grid-cols-2 sm:p-5 ${gridColumns} lg:items-end lg:gap-4 ${className}`}
       aria-labelledby={`${id}-heading`}
     >
       <h2 id={`${id}-heading`} className="sr-only">
         Check room availability
       </h2>
+
+      {roomTypeOptions ? (
+        <div className="min-w-0">
+          <label
+            className="mb-2 block text-sm font-semibold text-foreground"
+            htmlFor={`${id}-room-type`}
+          >
+            Room type
+          </label>
+          <div className="relative">
+            <BedDouble
+              aria-hidden="true"
+              className="pointer-events-none absolute top-1/2 left-3 size-4 -translate-y-1/2 text-primary"
+            />
+            <select
+              className="h-12 w-full appearance-none rounded-md border border-input bg-background py-2 pr-9 pl-10 text-sm text-foreground outline-none focus-visible:border-ring focus-visible:ring-2 focus-visible:ring-ring"
+              id={`${id}-room-type`}
+              onChange={(event) => setRoomType(event.target.value)}
+              value={roomType}
+            >
+              <option value="all">All room types</option>
+              {roomType !== "all" &&
+              !roomTypeOptions.some((option) => option.value === roomType) ? (
+                <option value={roomType}>Selected room type</option>
+              ) : null}
+              {roomTypeOptions.map((option) => (
+                <option key={option.value} value={option.value}>
+                  {option.label}
+                </option>
+              ))}
+            </select>
+            <ChevronDown
+              aria-hidden="true"
+              className="pointer-events-none absolute top-1/2 right-3 size-4 -translate-y-1/2 text-muted-foreground"
+            />
+          </div>
+        </div>
+      ) : null}
 
       <DatePickerField
         id={`${id}-checkin`}
@@ -306,7 +363,7 @@ export function AvailabilitySearch({ className = "" }: { className?: string }) {
           variant="secondary"
           className="h-12 w-full rounded-md px-4 text-sm font-semibold"
         >
-          Check availability
+          {submitLabel}
           <ArrowRight className="size-4" strokeWidth={1.5} aria-hidden="true" />
         </Button>
       </div>

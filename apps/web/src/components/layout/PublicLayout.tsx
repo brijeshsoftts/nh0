@@ -1,9 +1,13 @@
-import { Outlet, ScrollRestoration } from "react-router-dom";
+import { Outlet, ScrollRestoration, useLocation } from "react-router-dom";
 
 import { PublicFooter } from "@/components/layout/PublicFooter";
 import { PublicNavbar } from "@/components/layout/PublicNavbar";
 
 export function PublicLayout() {
+  const { pathname } = useLocation();
+  const isCheckoutRoute =
+    pathname === "/checkout" || /\/rooms\/[^/]+\/book\/?$/.test(pathname);
+
   return (
     <div className="flex min-h-svh flex-col bg-background font-sans text-foreground antialiased">
       <a
@@ -12,11 +16,11 @@ export function PublicLayout() {
       >
         Skip to content
       </a>
-      <PublicNavbar />
+      <PublicNavbar compact={isCheckoutRoute} />
       <main className="min-w-0 flex-1" id="main-content" tabIndex={-1}>
         <Outlet />
       </main>
-      <PublicFooter />
+      {isCheckoutRoute ? null : <PublicFooter />}
       <ScrollRestoration />
     </div>
   );

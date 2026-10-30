@@ -15,5 +15,6 @@ export const bookingsKeys = {
 
 export const bookingsMutationKeys = {
   create: ["bookings", "create"] as const,
+  createPublic: ["bookings", "create-public"] as const,
   updateStatus: ["bookings", "update-status"] as const,
 } as const;

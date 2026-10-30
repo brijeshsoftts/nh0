@@ -24,7 +24,9 @@ export const CreatePublicBookingSchema = z
     checkOutDate: z.coerce.date('Check-out date is required.'),
     adults: z.coerce.number().int().min(1).max(10),
     children: z.coerce.number().int().min(0).max(10),
-    guests: z.array(guestSchema).min(1, 'Add at least one guest.'),
+    guests: z
+      .array(guestSchema.pick({ fullName: true }).strict())
+      .min(1, 'Add at least one guest.'),
     specialRequest: z.string().trim().max(500).optional(),
     paymentMethod: z.literal('ONLINE'),
   })

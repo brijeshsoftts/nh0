@@ -157,7 +157,16 @@ export class PublicService {
   async findAvailableRooms(
     query: AvailableRoomsQueryDto,
   ): Promise<ListResponse<AvailableRoomListItemResponse>> {
-    const { checkInDate, checkOutDate, adults, children, page, limit } = query;
+    const {
+      checkInDate,
+      checkOutDate,
+      adults,
+      children,
+      roomType,
+      sortBy,
+      page,
+      limit,
+    } = query;
 
     const totalGuests = adults + children;
 
@@ -171,6 +180,7 @@ export class PublicService {
 
     const where = {
       isActive: true,
+      ...(roomType && { slug: roomType }),
       maxGuests: {
         gte: totalGuests || 1,
       },
@@ -187,7 +197,7 @@ export class PublicService {
         skip: (page - 1) * limit,
         take: limit,
         orderBy: {
-          basePrice: 'asc',
+          basePrice: sortBy === 'price-desc' ? 'desc' : 'asc',
         },
         select: {
           id: true,

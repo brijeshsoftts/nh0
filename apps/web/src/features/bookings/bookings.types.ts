@@ -227,6 +227,10 @@ export type BookingGuestInput = {
   idProofNumber?: string;
 };
 
+export type PublicBookingGuestInput = {
+  fullName: string;
+};
+
 export type AvailableBookingRoom = {
   id: string;
   roomNumber: string;
@@ -285,7 +289,7 @@ export type CreatePublicBookingInput = {
   checkOutDate: string;
   adults: number;
   children: number;
-  guests: BookingGuestInput[];
+  guests: PublicBookingGuestInput[];
   specialRequest?: string;
   paymentMethod: "ONLINE";
 };

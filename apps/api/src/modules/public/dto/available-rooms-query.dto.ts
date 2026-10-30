@@ -20,6 +20,10 @@ export const AvailableRoomsQuerySchema = z
       .int('Children must be a whole number')
       .max(10, 'Maximum 10 children allowed')
       .default(0),
+    roomType: z.string().trim().min(1).max(120).optional(),
+    sortBy: z
+      .enum(['recommended', 'price-asc', 'price-desc'])
+      .default('recommended'),
     page: z.coerce
       .number()
       .int('Page must be a whole number')

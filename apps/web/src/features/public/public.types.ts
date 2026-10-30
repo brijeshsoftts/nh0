@@ -54,6 +54,8 @@ export type AvailableRoomsParams = {
   checkOutDate?: string;
   adults?: number;
   children?: number;
+  roomType?: string;
+  sortBy?: "recommended" | "price-asc" | "price-desc";
   page?: number;
   limit?: number;
 };

@@ -1,10 +1,11 @@
 import { AnimatePresence, motion, useReducedMotion } from "framer-motion";
 import {
   ArrowRight,
+  ArrowUpRight,
   ChevronLeft,
   ChevronRight,
-  CircleHelp,
   MessageSquareQuote,
+  Star,
 } from "lucide-react";
 import { useState } from "react";
 import { Link } from "react-router-dom";
@@ -25,22 +26,58 @@ import { getAmenityIcon } from "@/lib/amenity-icons";
 
 const aboutImage =
   "https://images.unsplash.com/photo-1600210492486-724fe5c67fb0?auto=format&fit=crop&w=1400&q=85";
+const closingImage =
+  "https://images.unsplash.com/photo-1600607687939-ce8a6c25118c?auto=format&fit=crop&w=2200&q=90";
+const amenityImages = [
+  "https://images.unsplash.com/photo-1571896349842-33c89424de2d?auto=format&fit=crop&w=900&q=85",
+  "https://images.unsplash.com/photo-1414235077428-338989a2e8c0?auto=format&fit=crop&w=900&q=85",
+  "https://images.unsplash.com/photo-1611892440504-42a792e24d32?auto=format&fit=crop&w=900&q=85",
+  "https://images.unsplash.com/photo-1540555700478-4be289fbecef?auto=format&fit=crop&w=900&q=85",
+  "https://images.unsplash.com/photo-1534438327276-14e5300c3a48?auto=format&fit=crop&w=900&q=85",
+  "https://images.unsplash.com/photo-1566073771259-6a8506099945?auto=format&fit=crop&w=900&q=85",
+];
+
+function getAmenityImage(name: string, index: number) {
+  const label = name.toLowerCase();
+  if (label.includes("pool")) return amenityImages[0];
+  if (label.includes("restaurant") || label.includes("dining")) {
+    return amenityImages[1];
+  }
+  if (label.includes("spa")) return amenityImages[3];
+  if (label.includes("fitness") || label.includes("gym")) {
+    return amenityImages[4];
+  }
+  if (label.includes("wifi") || label.includes("wi-fi")) {
+    return amenityImages[2];
+  }
+  return amenityImages[index % amenityImages.length];
+}
 
 const questions = [
   {
-    question: "How do I check room availability?",
+    question: "What are the check-in and check-out timings?",
     answer:
-      "Choose your check-in and check-out dates, then set the number of adults and children. The search takes you to room discovery with those choices included.",
+      "Timings can vary by property. Please contact the hotel before your visit to confirm the details for your stay.",
   },
   {
-    question: "How do I continue with a room?",
+    question: "How can I book a room?",
     answer:
-      "Review the room details that match your search, then continue from the room page to the booking flow. Availability is checked against your selected dates.",
+      "Choose your dates and guest count in the availability search. You can then review the rooms listed for those dates and continue to booking.",
   },
   {
-    question: "Can I change my dates or guest count?",
+    question: "What payment methods are accepted?",
     answer:
-      "Yes. Return to the availability search, update your dates or guest count, and submit the search again.",
+      "Available payment methods are shown during booking. Contact the hotel if you need help before making a reservation.",
+  },
+  {
+    question: "Can I cancel or modify my booking?",
+    answer:
+      "Cancellation and change options depend on your reservation. Check the terms shown with your booking or contact the hotel for assistance.",
+  },
+  {
+    question: "Are additional charges applicable?",
+    answer:
+      "Any applicable taxes or charges are shown with the room and booking details before you confirm.",
   },
 ];
 
@@ -57,11 +94,11 @@ function SectionHeading({
 }) {
   return (
     <div className="max-w-2xl">
-      <p className="text-xs font-semibold tracking-[0.16em] text-accent-foreground uppercase">
+      <p className="text-xs font-semibold tracking-[0.14em] text-accent-foreground uppercase">
         {eyebrow}
       </p>
       <h2
-        className="mt-3 font-heading text-3xl leading-tight font-medium text-foreground sm:text-4xl lg:text-5xl"
+        className="mt-3 font-heading text-3xl leading-[1.12] font-medium text-foreground sm:text-4xl lg:text-5xl"
         id={id}
       >
         {title}
@@ -80,59 +117,61 @@ function HeroSection() {
 
   return (
     <>
-      <section className="relative isolate flex min-h-[680px] flex-col overflow-hidden bg-foreground text-white sm:min-h-[720px] lg:min-h-[760px]">
-        <img
-          alt=""
-          className="absolute inset-0 -z-20 size-full object-cover object-center"
-          fetchPriority="high"
-          src={HERO_IMAGE}
-        />
-        <div className="absolute inset-0 -z-10 bg-black/45" />
-        <div className="container mx-auto flex w-full max-w-7xl flex-1 items-center px-4 py-20 sm:px-6 lg:px-8">
+      <section className="relative overflow-hidden bg-background">
+        <div className="container mx-auto grid min-h-[610px] w-full max-w-7xl items-center gap-9 px-4 pb-24 pt-10 sm:px-6 sm:pb-28 md:grid-cols-[0.76fr_1.24fr] md:gap-8 md:pt-14 lg:px-8 lg:pb-32 lg:pt-16">
           <motion.div
             animate={{ opacity: 1, y: 0 }}
-            className="max-w-3xl"
+            className="relative z-10 max-w-xl py-5 md:py-12"
             initial={reduceMotion ? false : { opacity: 0, y: 18 }}
             transition={{ duration: reduceMotion ? 0 : 0.6, ease: "easeOut" }}
           >
-            <p className="text-xs font-semibold tracking-[0.18em] text-white/85 uppercase">
-              A warm welcome at Nivara
+            <p className="text-xs font-semibold tracking-[0.16em] text-accent-foreground uppercase">
+              More than just a stay
             </p>
-            <h1 className="mt-5 max-w-3xl font-heading text-5xl leading-[1.05] font-medium text-white sm:text-6xl lg:text-7xl">
-              Your comfort,
-              <br className="hidden sm:block" /> our priority.
+            <h1 className="mt-5 max-w-lg font-heading text-5xl leading-[1.03] font-medium tracking-[-0.035em] text-foreground sm:text-6xl lg:text-[4.5rem]">
+              A place to slow down.
             </h1>
-            <p className="mt-6 max-w-xl text-base leading-relaxed text-white/90 sm:text-lg">
-              Discover thoughtfully designed rooms and warm hospitality for a
-              comfortable stay.
+            <p className="mt-6 max-w-md text-base leading-7 text-muted-foreground sm:text-lg sm:leading-8">
+              Experience thoughtfully designed spaces, warm hospitality and the
+              comfort of feeling at home. Whether you’re here for business or
+              leisure, every stay at Nivara is made to feel special.
             </p>
-            <div className="mt-8 flex flex-wrap items-center gap-3">
-              <Button
-                className="h-12 px-6 text-sm font-semibold"
-                nativeButton={false}
-                render={<a href="#rooms" />}
-                variant="secondary"
-              >
-                Explore rooms
-                <ArrowRight aria-hidden="true" className="size-4" />
-              </Button>
-              <Button
-                className="h-12 border-white/60 bg-transparent px-6 text-sm text-white hover:bg-white/10 hover:text-white"
-                nativeButton={false}
-                render={<Link to="/about" />}
-                variant="outline"
-              >
-                Discover Nivara
-              </Button>
-            </div>
+            <a
+              className="mt-8 inline-flex min-h-11 items-center gap-2 border-b border-primary pb-1 text-sm font-semibold text-foreground transition-colors hover:text-accent-foreground focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-ring"
+              href="#rooms"
+            >
+              Explore our rooms
+              <ArrowUpRight aria-hidden="true" className="size-4" />
+            </a>
           </motion.div>
+          <div className="relative md:ml-3 lg:ml-8">
+            <div className="absolute -top-5 right-8 z-10 hidden h-24 w-24 rounded-full border border-primary/60 md:block" />
+            <img
+              alt="A sunlit boutique hotel guest room with considered details and natural materials"
+              className="relative aspect-[1.18] w-full object-cover object-center md:aspect-[1.14]"
+              fetchPriority="high"
+              src={HERO_IMAGE}
+            />
+            <div className="absolute -bottom-5 -left-3 hidden max-w-52 bg-card px-5 py-4 shadow-md sm:block lg:-left-8">
+              <p className="font-heading text-xl text-foreground">Stay awhile</p>
+              <p className="mt-1 text-xs leading-relaxed text-muted-foreground">
+                Thoughtful comfort, from the moment you arrive.
+              </p>
+            </div>
+          </div>
         </div>
       </section>
       <div
-        className="relative z-10 container mx-auto -mt-14 w-full max-w-7xl px-4 sm:px-6 lg:-mt-16 lg:px-8"
+        className="relative z-10 container mx-auto -mt-16 w-full max-w-7xl px-4 sm:px-6 lg:-mt-20 lg:px-8"
         id="availability"
       >
-        <AvailabilitySearch />
+        <div className="mb-3 flex items-center gap-3 px-1">
+          <span className="h-px w-8 bg-primary" />
+          <p className="text-xs font-semibold tracking-[0.14em] text-accent-foreground uppercase">
+            Plan your stay
+          </p>
+        </div>
+        <AvailabilitySearch className="rounded-md p-5 sm:p-6" />
       </div>
     </>
   );
@@ -142,13 +181,13 @@ function AboutSection() {
   return (
     <section
       aria-labelledby="about-title"
-      className="container mx-auto grid w-full max-w-7xl items-center gap-9 px-4 py-16 sm:px-6 sm:py-20 md:grid-cols-[1.05fr_0.95fr] md:gap-14 lg:px-8 lg:py-28"
+      className="container mx-auto grid w-full max-w-7xl items-center gap-9 px-4 py-20 sm:px-6 sm:py-24 md:grid-cols-[1.08fr_0.92fr] md:gap-16 lg:px-8 lg:py-32"
       id="about"
     >
       <div className="relative">
         <img
           alt="A calm, naturally lit hotel lounge"
-          className="aspect-[1.2] w-full rounded-xl object-cover sm:aspect-[1.35]"
+          className="aspect-[1.12] w-full object-cover sm:aspect-[1.3]"
           loading="lazy"
           src={aboutImage}
         />
@@ -158,11 +197,12 @@ function AboutSection() {
         <SectionHeading
           eyebrow="ABOUT NIVARA"
           id="about-title"
-          title="A stay that feels welcoming."
+          title="Hospitality with a personal touch."
         />
         <p className="mt-5 text-base leading-relaxed text-muted-foreground">
-          Thoughtful spaces, everyday comforts and attentive hospitality make it
-          easier to settle in and enjoy your time away.
+          At Nivara, we believe a great stay is about more than just a room. It’s
+          about the little moments — a warm welcome, thoughtful service and
+          spaces that make you feel at ease.
         </p>
         <Button
           className="mt-7 h-11 px-5"
@@ -170,7 +210,7 @@ function AboutSection() {
           render={<Link to="/about" />}
           variant="outline"
         >
-          Know more about us
+          Discover our story
           <ChevronRight aria-hidden="true" className="size-4" />
         </Button>
       </div>
@@ -194,9 +234,9 @@ function FeaturedRooms({
       <div className="container mx-auto max-w-7xl px-4 py-16 sm:px-6 sm:py-20 lg:px-8 lg:py-28">
         <div className="mb-9 flex flex-col gap-5 sm:mb-12 sm:flex-row sm:items-end sm:justify-between">
           <SectionHeading
-            description="Explore room options with the details and pricing currently listed."
+            description="Thoughtfully designed rooms for every kind of stay."
             eyebrow="ROOMS & SUITES"
-            title="Find your perfect stay"
+            title="Find your kind of comfort."
           />
           <Button
             className="h-11 self-start px-5 sm:self-auto"
@@ -234,7 +274,7 @@ function FeaturedRooms({
         ) : rooms.length ? (
           <div className="grid gap-x-6 gap-y-10 sm:grid-cols-2 lg:grid-cols-3 lg:gap-x-8">
             {rooms.slice(0, 3).map((room) => (
-              <RoomCard key={room.id} room={room} />
+              <RoomCard key={room.id} room={room} showTaxNote />
             ))}
           </div>
         ) : (
@@ -259,53 +299,54 @@ function AmenitiesSection({ rooms }: { rooms: AvailableRoomListItem[] }) {
   return (
     <section
       aria-labelledby="amenities-title"
-      className="container mx-auto grid w-full max-w-7xl gap-10 px-4 py-16 sm:px-6 sm:py-20 md:grid-cols-[0.8fr_1.2fr] md:gap-16 lg:px-8 lg:py-28"
+      className="bg-secondary/45"
       id="amenities"
     >
-      <div>
-        <SectionHeading
-          description="Amenities shown here are taken from the published room details."
-          eyebrow="THOUGHTFUL DETAILS"
-          id="amenities-title"
-          title="Comfort, in the details"
-        />
-        <Button
-          className="mt-7 h-11 px-5"
-          nativeButton={false}
-          render={<Link to="/rooms" />}
-          variant="outline"
-        >
-          Explore rooms
-          <ChevronRight aria-hidden="true" className="size-4" />
-        </Button>
-      </div>
+      <div className="container mx-auto max-w-7xl px-4 py-20 sm:px-6 sm:py-24 lg:px-8 lg:py-28">
+        <div className="mb-10 flex flex-col justify-between gap-5 md:mb-12 md:flex-row md:items-end">
+          <SectionHeading
+            description="A few considered details, gathered from the amenities listed with our rooms."
+            eyebrow="THE LITTLE THINGS"
+            id="amenities-title"
+            title="Everything you need, thoughtfully arranged."
+          />
+          <Link
+            className="inline-flex min-h-11 items-center gap-2 self-start border-b border-primary pb-1 text-sm font-semibold text-foreground hover:text-accent-foreground focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-ring md:mb-1"
+            to="/rooms"
+          >
+            Explore the rooms <ArrowUpRight aria-hidden="true" className="size-4" />
+          </Link>
+        </div>
       {amenities.length ? (
-        <ul className="grid content-start gap-x-8 gap-y-7 sm:grid-cols-2">
-          {amenities.map((amenity) => {
+        <ul className="grid grid-cols-2 gap-3 sm:grid-cols-3 sm:gap-5">
+          {amenities.map((amenity, index) => {
             const Icon = getAmenityIcon(amenity.icon);
             return (
               <li
-                className="flex items-center gap-4 border-b border-border pb-5"
+                className={`group relative isolate flex aspect-[1.05] items-end overflow-hidden bg-foreground text-white ${index === 0 ? "sm:col-span-2 sm:row-span-2 sm:aspect-auto" : ""}`}
                 key={amenity.name}
               >
-                <Icon
-                  aria-hidden="true"
-                  className="size-5 shrink-0 text-primary"
-                  strokeWidth={1.6}
+                <img
+                  alt=""
+                  className="absolute inset-0 -z-20 size-full object-cover transition-transform duration-700 group-hover:scale-[1.03] motion-reduce:transition-none"
+                  loading="lazy"
+                  src={getAmenityImage(amenity.name, index)}
                 />
-                <span className="text-base font-medium text-foreground">
-                  {amenity.name}
+                <span className="absolute inset-0 -z-10 bg-gradient-to-t from-black/75 via-black/10 to-transparent" />
+                <span className="flex w-full items-center justify-between gap-2 p-3 sm:p-5">
+                  <span className="font-heading text-base leading-tight sm:text-xl">{amenity.name}</span>
+                  <Icon aria-hidden="true" className="size-4 shrink-0 text-white/90 sm:size-5" strokeWidth={1.6} />
                 </span>
               </li>
             );
           })}
         </ul>
       ) : (
-        <p className="self-center border-y border-border py-6 text-sm text-muted-foreground">
-          Room amenities will appear here when published room details are
-          available.
+        <p className="border-y border-border py-6 text-sm text-muted-foreground">
+          Room amenities will appear here when published room details are available.
         </p>
       )}
+      </div>
     </section>
   );
 }
@@ -374,16 +415,15 @@ function TestimonialsSection() {
   return (
     <section className="overflow-hidden bg-muted" id="testimonials">
       <div className="container mx-auto max-w-7xl px-4 py-16 sm:px-6 sm:py-20 lg:px-8 lg:py-24">
-        <div className="mx-auto mb-10 max-w-2xl text-center sm:mb-14">
-          <p className="text-xs font-semibold tracking-[0.16em] text-accent-foreground uppercase">
-            A FEELING THAT STAYS
-          </p>
-          <h2 className="mt-3 font-heading text-3xl font-medium text-foreground sm:text-4xl">
-            Guest stories
-          </h2>
-          <p className="mt-3 text-sm leading-relaxed text-muted-foreground">
-            A few words from guests about their time at Nivara.
-          </p>
+        <div className="mb-10 flex flex-col gap-5 sm:mb-12 md:flex-row md:items-end md:justify-between">
+          <SectionHeading
+            description="A glimpse of the welcome we hope every guest will remember."
+            eyebrow="GUEST STORIES"
+            title="Experiences worth sharing."
+          />
+          <span className="self-start border border-border px-3 py-2 text-xs text-muted-foreground md:mb-1">
+            Illustrative sample content
+          </span>
         </div>
 
         <div
@@ -427,6 +467,23 @@ function TestimonialsSection() {
                         className="size-6 text-primary"
                         strokeWidth={1.5}
                       />
+                      {isActive ? (
+                        <div
+                          aria-label="Illustrative rating: five out of five"
+                          className="mt-4 flex items-center gap-1 text-primary"
+                        >
+                          {Array.from({ length: 5 }, (_, index) => (
+                            <Star
+                              aria-hidden="true"
+                              className="size-3.5 fill-current"
+                              key={index}
+                            />
+                          ))}
+                          <span className="ml-2 text-[11px] text-background/70 dark:text-muted-foreground">
+                            Sample rating
+                          </span>
+                        </div>
+                      ) : null}
                       <blockquote
                         className={`${isActive ? "text-background dark:text-card-foreground" : "text-card-foreground"} mt-5 font-heading text-lg leading-relaxed sm:text-xl`}
                       >
@@ -501,14 +558,16 @@ function FAQSection() {
       id="faq"
     >
       <div>
-        <CircleHelp
-          aria-hidden="true"
-          className="size-6 text-primary"
-          strokeWidth={1.5}
-        />
+        <p className="text-xs font-semibold tracking-[0.14em] text-accent-foreground uppercase">
+          Need to know
+        </p>
         <h2 className="mt-4 max-w-sm font-heading text-3xl leading-tight font-medium text-foreground sm:text-4xl">
-          Frequently asked questions
+          A few things you may want to know.
         </h2>
+        <p className="mt-4 max-w-sm text-base leading-relaxed text-muted-foreground">
+          Find a quick answer before you plan your stay. Booking specific terms
+          are shown during reservation.
+        </p>
       </div>
       <Accordion className="border-t border-border">
         {questions.map(({ question, answer }, index) => (
@@ -532,15 +591,25 @@ function FAQSection() {
 
 function FinalBookingSection() {
   return (
-    <section className="bg-foreground text-background dark:bg-background dark:text-foreground">
-      <div className="container mx-auto flex max-w-7xl flex-col items-start justify-between gap-7 px-4 py-14 sm:px-6 sm:py-16 md:flex-row md:items-center lg:px-8 lg:py-20">
+    <section className="relative isolate overflow-hidden bg-foreground text-background">
+      <img
+        alt=""
+        className="absolute inset-0 -z-20 size-full object-cover"
+        loading="lazy"
+        src={closingImage}
+      />
+      <div className="absolute inset-0 -z-10 bg-foreground/75" />
+      <div className="container mx-auto flex min-h-[380px] max-w-7xl flex-col items-start justify-center gap-7 px-4 py-16 sm:px-6 md:flex-row md:items-center md:justify-between lg:px-8 lg:py-20">
         <div className="max-w-2xl">
-          <p className="text-xs font-semibold tracking-[0.16em] text-background uppercase dark:text-foreground">
-            YOUR STAY, YOUR PACE
+          <p className="text-xs font-semibold tracking-[0.15em] text-background/80 uppercase">
+            Nivara Hotels
           </p>
-          <h2 className="mt-3 font-heading text-3xl leading-tight font-medium sm:text-4xl">
-            Make room for a more comfortable stay.
+          <h2 className="mt-4 font-heading text-4xl leading-tight font-medium sm:text-5xl">
+            Your next stay starts here.
           </h2>
+          <p className="mt-4 max-w-xl text-base leading-relaxed text-background/85">
+            Book your stay with Nivara and enjoy a comfortable, thoughtfully arranged experience.
+          </p>
         </div>
         <Button
           className="h-12 shrink-0 px-6 font-semibold"
@@ -548,7 +617,7 @@ function FinalBookingSection() {
           render={<a href="#availability" />}
           variant="secondary"
         >
-          Find your room
+          Book now
           <ArrowRight aria-hidden="true" className="size-4" />
         </Button>
       </div>

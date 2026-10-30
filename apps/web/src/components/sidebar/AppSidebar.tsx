@@ -92,19 +92,23 @@ export function AppSidebar() {
   const groupedLinks = groupLinks(links ?? []);
 
   return (
-    <Sidebar className="border-r border-sidebar-border bg-sidebar px-0 text-sidebar-foreground">
+    <Sidebar className="border-r border-sidebar-border bg-sidebar text-sidebar-foreground">
       <div className="flex h-full flex-col bg-sidebar text-sidebar-foreground">
-        <SidebarHeader className="border-b border-sidebar-border p-3">
+        <SidebarHeader className="border-b border-sidebar-border px-4 py-4">
           <SidebarMenu>
-            <SidebarMenuItem className="pl-4">
-              <Link to="/dashboard" className="flex h-full w-full items-center">
-                <Logo />
+            <SidebarMenuItem>
+              <Link
+                aria-label="Nivara dashboard"
+                to="/dashboard"
+                className="flex min-h-11 w-full items-center rounded-md focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-sidebar-ring"
+              >
+                <Logo size="sm" />
               </Link>
             </SidebarMenuItem>
           </SidebarMenu>
         </SidebarHeader>
 
-        <SidebarContent className="min-h-0 flex-1 py-4">
+        <SidebarContent className="min-h-0 flex-1 py-3">
           <ScrollArea className="h-full">
             <div className="px-3">
               {groupedLinks.length > 0 && <NavMain items={groupedLinks} />}
@@ -113,10 +117,10 @@ export function AppSidebar() {
         </SidebarContent>
 
         <div className="border-t border-sidebar-border p-3">
-          <div className="flex min-w-0 items-center gap-1 rounded-lg">
+          <div className="flex min-w-0 items-center gap-1">
             <Link
               to="/dashboard/profile"
-              className="group flex min-w-0 flex-1 cursor-pointer items-center gap-3 rounded-lg p-2 transition-colors hover:bg-muted/50"
+              className="group flex min-h-12 min-w-0 flex-1 cursor-pointer items-center gap-3 rounded-md p-2 transition-colors hover:bg-sidebar-accent hover:text-sidebar-accent-foreground focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-sidebar-ring"
             >
               <Avatar className="size-9 shrink-0">
                 <AvatarFallback className="bg-primary text-xs font-semibold text-primary-foreground">
@@ -132,19 +136,16 @@ export function AppSidebar() {
                 <div className="mt-1.5 flex items-center gap-1.5">
                   <Badge
                     variant="secondary"
-                    className="h-5 px-1.5 text-[10px] capitalize"
+                    className="h-5 border border-sidebar-border bg-sidebar-accent px-1.5 text-[10px] text-sidebar-accent-foreground capitalize"
                   >
                     {user?.role ?? "Staff"}
                   </Badge>
                   <span aria-hidden="true" className="relative flex size-2">
-                    {isOnline && (
-                      <span className="absolute inline-flex size-full animate-ping rounded-full bg-primary/40" />
-                    )}
                     <span
-                      className={`relative inline-flex size-2 rounded-full ${isOnline ? "bg-primary" : "bg-muted-foreground/50"}`}
+                      className={`relative inline-flex size-2 rounded-full ${isOnline ? "bg-sidebar-primary" : "bg-sidebar-foreground/35"}`}
                     />
                   </span>
-                  <span className="text-[10px] text-muted-foreground">
+                  <span className="text-[10px] text-sidebar-foreground/65">
                     {isOnline ? "Online" : "Offline"}
                   </span>
                 </div>
@@ -155,7 +156,7 @@ export function AppSidebar() {
               <button
                 type="button"
                 aria-label="Account options"
-                className="flex size-8 shrink-0 items-center justify-center rounded-md text-muted-foreground transition-colors hover:bg-muted/60 hover:text-foreground focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none"
+                className="flex size-9 shrink-0 items-center justify-center rounded-md text-sidebar-foreground/70 transition-colors hover:bg-sidebar-accent hover:text-sidebar-accent-foreground focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-sidebar-ring"
               >
                 <MoreHorizontal className="size-4" />
               </button>

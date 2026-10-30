@@ -1503,9 +1503,9 @@ export class BookingsService {
           data: dto.guests.map((guest) => ({
             bookingId: createdBooking.id,
             fullName: guest.fullName,
-            age: guest.age,
-            gender: guest.gender,
-            idProofNumber: guest.idProofNumber ?? null,
+            age: null,
+            gender: null,
+            idProofNumber: null,
           })),
         });
         const invoice = await tx.invoice.create({
@@ -1571,23 +1571,9 @@ export class BookingsService {
     booking: PublicBookingRetryRecord,
     dto: CreatePublicBookingDto,
   ): void {
-    const normalizeGuests = (
-      guests: readonly {
-        fullName: string;
-        age: number | null;
-        gender: string | null;
-        idProofNumber: string | null;
-      }[],
-    ) =>
+    const normalizeGuests = (guests: readonly { fullName: string }[]) =>
       guests
-        .map((guest) =>
-          JSON.stringify([
-            guest.fullName,
-            guest.age,
-            guest.gender,
-            guest.idProofNumber,
-          ]),
-        )
+        .map((guest) => guest.fullName.trim())
         .sort()
         .join('|');
 
@@ -1602,13 +1588,7 @@ export class BookingsService {
       booking.totalGuests !== dto.adults + dto.children ||
       booking.specialRequest !== (dto.specialRequest || null) ||
       booking.bookingRoom?.assignedRoomId !== dto.roomId ||
-      normalizeGuests(booking.bookingGuests) !==
-        normalizeGuests(
-          dto.guests.map((guest) => ({
-            ...guest,
-            idProofNumber: guest.idProofNumber ?? null,
-          })),
-        )
+      normalizeGuests(booking.bookingGuests) !== normalizeGuests(dto.guests)
     ) {
       throw new ConflictException(
         'This checkout token is already associated with a different booking request.',

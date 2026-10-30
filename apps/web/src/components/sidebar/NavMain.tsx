@@ -66,8 +66,8 @@ function NavMainItem({ item }: { item: NavItem; id: number }) {
 
   if (item.isSection && item.label) {
     return (
-      <SidebarGroup className="p-0 first:pt-0">
-        <SidebarGroupLabel className="h-auto rounded-none px-3 py-2 text-xs tracking-wider text-muted-foreground">
+      <SidebarGroup className="px-0 py-1 first:pt-0">
+        <SidebarGroupLabel className="h-8 rounded-none px-3 pt-2 pb-1 text-[11px] font-semibold tracking-[0.12em] text-sidebar-foreground/55 uppercase">
           {item.label}
         </SidebarGroupLabel>
       </SidebarGroup>
@@ -76,7 +76,7 @@ function NavMainItem({ item }: { item: NavItem; id: number }) {
 
   if (hasChildren && item.title) {
     return (
-      <SidebarGroup>
+      <SidebarGroup className="px-0 py-1">
         <SidebarMenu>
           <Collapsible open={isOpen || isCurrent} onOpenChange={setIsOpen}>
             <SidebarMenuItem>
@@ -90,17 +90,17 @@ function NavMainItem({ item }: { item: NavItem; id: number }) {
                     tooltip={item.title}
                     isActive={isCurrent}
                     className={cn(
-                      "h-9 cursor-pointer rounded-none px-3 py-2 text-sm text-muted-foreground transition-all duration-200 hover:bg-muted/60 hover:text-foreground",
+                      "h-11 cursor-pointer rounded-md px-3 text-sm text-sidebar-foreground/75 transition-colors duration-150 hover:bg-sidebar-accent hover:text-sidebar-accent-foreground focus-visible:ring-2 focus-visible:ring-sidebar-ring",
                       isCurrent &&
-                        "relative bg-primary/10! font-medium text-primary! shadow-xs before:absolute before:top-1/2 before:left-0 before:h-5 before:w-1 before:-translate-y-1/2 before:rounded-none before:bg-primary before:content-['']"
+                        "bg-sidebar-accent font-semibold text-sidebar-accent-foreground"
                     )}
                   >
                     {item.icon && (
                       <item.icon
                         size={16}
                         className={cn(
-                          "text-muted-foreground/80 transition-transform duration-200 group-hover/menu-button:scale-105 group-hover/menu-button:text-foreground",
-                          isCurrent && "text-primary"
+                          "size-4 text-sidebar-foreground/70 transition-colors duration-150 group-hover/menu-button:text-sidebar-accent-foreground",
+                          isCurrent && "text-sidebar-accent-foreground"
                         )}
                       />
                     )}
@@ -108,8 +108,9 @@ function NavMainItem({ item }: { item: NavItem; id: number }) {
                     <ChevronRight
                       className={cn(
                         "ml-auto transition-transform duration-200",
-                        (isOpen || isCurrent) && "rotate-90 text-primary",
-                        !isCurrent && "text-muted-foreground/80"
+                        (isOpen || isCurrent) &&
+                          "rotate-90 text-sidebar-accent-foreground",
+                        !isCurrent && "text-sidebar-foreground/60"
                       )}
                     />
                   </SidebarMenuButton>
@@ -132,7 +133,7 @@ function NavMainItem({ item }: { item: NavItem; id: number }) {
 
   if (item.title) {
     return (
-      <SidebarGroup className="p-0">
+      <SidebarGroup className="px-0 py-0.5">
         <SidebarMenu>
           <SidebarMenuItem>
             <SidebarMenuButton
@@ -142,17 +143,17 @@ function NavMainItem({ item }: { item: NavItem; id: number }) {
               tooltip={item.title}
               isActive={isCurrent}
               className={cn(
-                "h-10 cursor-pointer rounded-none px-3 text-sm text-foreground transition-all duration-200 hover:bg-primary/50 hover:text-foreground",
+                "h-11 cursor-pointer rounded-md px-3 text-sm text-sidebar-foreground/75 transition-colors duration-150 hover:bg-sidebar-accent hover:text-sidebar-accent-foreground focus-visible:ring-2 focus-visible:ring-sidebar-ring",
                 isCurrent &&
-                  "relative bg-primary! font-medium text-background! shadow-xs before:absolute before:top-1/2 before:left-0 before:h-5 before:w-1 before:-translate-y-1/2 before:rounded-r-full before:bg-primary before:content-['']"
+                  "bg-sidebar-accent font-semibold text-sidebar-accent-foreground"
               )}
               render={<Link to={item.href!} />}
             >
               {item.icon && (
                 <item.icon
                   className={cn(
-                    "text-foreground transition-transform duration-200 group-hover/menu-button:scale-105 group-hover/menu-button:text-foreground",
-                    isCurrent && "text-background!"
+                    "size-4 text-sidebar-foreground/70 transition-colors duration-150 group-hover/menu-button:text-sidebar-accent-foreground",
+                    isCurrent && "text-sidebar-accent-foreground"
                   )}
                 />
               )}
@@ -184,16 +185,16 @@ function NavMainSubItem({ item }: { item: NavItem }) {
                 id={`nav-sub-trigger-${item.title.toLowerCase().replace(/\s+/g, "-")}`}
                 isActive={isCurrent}
                 className={cn(
-                  "h-9 rounded-none px-3 py-2 text-sm font-medium text-muted-foreground transition-all duration-200 hover:bg-muted/60 hover:text-foreground",
+                  "h-10 rounded-md px-3 py-2 text-sm font-medium text-sidebar-foreground/75 transition-colors duration-150 hover:bg-sidebar-accent hover:text-sidebar-accent-foreground focus-visible:ring-2 focus-visible:ring-sidebar-ring",
                   isCurrent &&
-                    "relative bg-primary/10! text-primary! shadow-xs before:absolute before:top-1/2 before:left-0 before:h-5 before:w-1 before:-translate-y-1/2 before:rounded-none before:bg-primary before:content-['']"
+                    "bg-sidebar-accent text-sidebar-accent-foreground"
                 )}
               >
                 {item.icon && (
                   <item.icon
                     className={cn(
-                      "text-muted-foreground/80 transition-transform duration-200 group-hover/menu-sub-item:scale-105 group-hover/menu-sub-item:text-foreground",
-                      isCurrent && "text-primary"
+                      "size-4 text-sidebar-foreground/70 transition-colors duration-150 group-hover/menu-sub-item:text-sidebar-accent-foreground",
+                      isCurrent && "text-sidebar-accent-foreground"
                     )}
                   />
                 )}
@@ -201,8 +202,9 @@ function NavMainSubItem({ item }: { item: NavItem }) {
                 <ChevronRight
                   className={cn(
                     "ml-auto transition-transform duration-200",
-                    (isOpen || isCurrent) && "rotate-90 text-primary",
-                    !isCurrent && "text-muted-foreground/80"
+                    (isOpen || isCurrent) &&
+                      "rotate-90 text-sidebar-accent-foreground",
+                    !isCurrent && "text-sidebar-foreground/60"
                   )}
                 />
               </SidebarMenuSubButton>
@@ -226,9 +228,9 @@ function NavMainSubItem({ item }: { item: NavItem }) {
         <SidebarMenuSubButton
           id={`nav-sub-button-${item.title.toLowerCase().replace(/\s+/g, "-")}`}
           className={cn(
-            "w-full rounded-none text-muted-foreground transition-all duration-200 hover:bg-muted/60 hover:text-foreground",
+            "h-10 w-full rounded-md text-sidebar-foreground/75 transition-colors duration-150 hover:bg-sidebar-accent hover:text-sidebar-accent-foreground focus-visible:ring-2 focus-visible:ring-sidebar-ring",
             isCurrent &&
-              "relative bg-primary/10! font-medium text-primary! shadow-xs before:absolute before:top-1/2 before:left-0 before:h-5 before:w-1 before:-translate-y-1/2 before:rounded-none before:bg-primary before:content-['']"
+              "bg-sidebar-accent font-semibold text-sidebar-accent-foreground"
           )}
           isActive={isCurrent}
           render={
@@ -236,8 +238,8 @@ function NavMainSubItem({ item }: { item: NavItem }) {
               {item.icon && (
                 <item.icon
                   className={cn(
-                    "text-muted-foreground/80 transition-transform duration-200 group-hover/menu-sub-item:scale-105 group-hover/menu-sub-item:text-foreground",
-                    isCurrent && "text-primary"
+                    "size-4 text-sidebar-foreground/70 transition-colors duration-150 group-hover/menu-sub-item:text-sidebar-accent-foreground",
+                    isCurrent && "text-sidebar-accent-foreground"
                   )}
                 />
               )}

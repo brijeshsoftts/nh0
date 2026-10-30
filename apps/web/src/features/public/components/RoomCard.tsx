@@ -11,9 +11,16 @@ import { formatBed, formatPrice } from "@/lib/format";
 type RoomCardProps = {
   room: AvailableRoomListItem;
   bookingSearch?: string;
+  showTaxNote?: boolean;
+  showAvailability?: boolean;
 };
 
-export function RoomCard({ room, bookingSearch = "" }: RoomCardProps) {
+export function RoomCard({
+  room,
+  bookingSearch = "",
+  showTaxNote = false,
+  showAvailability = false,
+}: RoomCardProps) {
   const reduceMotion = useReducedMotion() ?? false;
 
   const roomPhoto = room.image;
@@ -50,6 +57,13 @@ export function RoomCard({ room, bookingSearch = "" }: RoomCardProps) {
               <BedDouble aria-hidden="true" className="size-10" />
             </span>
           )}
+          {showAvailability ? (
+            <span
+              className={`absolute top-3 left-3 px-3 py-1.5 text-xs font-semibold ${isAvailable ? "bg-success text-success-foreground" : "bg-background text-muted-foreground"}`}
+            >
+              {isAvailable ? "Available" : "Sold out"}
+            </span>
+          ) : null}
         </Link>
 
         <CardContent className="flex flex-1 flex-col p-4 sm:p-5">
@@ -70,6 +84,11 @@ export function RoomCard({ room, bookingSearch = "" }: RoomCardProps) {
               <span className="mt-1 block text-xs text-muted-foreground">
                 per night
               </span>
+              {showTaxNote ? (
+                <span className="mt-1 block text-[11px] text-muted-foreground">
+                  Plus applicable GST
+                </span>
+              ) : null}
             </p>
           </div>
 
@@ -91,7 +110,15 @@ export function RoomCard({ room, bookingSearch = "" }: RoomCardProps) {
                 aria-hidden="true"
                 className="size-4 shrink-0 text-primary"
               />
-              <span className="truncate">{room.maxGuests} guests</span>
+              <span className="flex min-w-0 flex-col">
+                <span className="truncate">{room.maxGuests} guests max</span>
+                {room.adults > 0 || room.children > 0 ? (
+                  <span className="truncate text-[10px] text-muted-foreground">
+                    {room.adults} {room.adults === 1 ? "adult" : "adults"} ·{" "}
+                    {room.children} {room.children === 1 ? "child" : "children"}
+                  </span>
+                ) : null}
+              </span>
             </li>
             <li className="flex min-w-0 items-center gap-1.5">
               {room.sizeSqFt ? (
@@ -144,18 +171,18 @@ export function RoomCard({ room, bookingSearch = "" }: RoomCardProps) {
               className="h-10 min-w-0 px-2 text-sm sm:px-3"
               nativeButton={false}
               render={<Link to={`/rooms/${room.slug}${bookingSearch}`} />}
-              variant="outline"
+              variant={showAvailability ? "default" : "outline"}
             >
               View details
             </Button>
             {isAvailable ? (
               <Button
-                className="h-10 min-w-0 px-2 text-sm sm:px-3"
+                className={`h-10 min-w-0 px-2 text-sm sm:px-3 ${showAvailability ? "border-border bg-background text-foreground hover:bg-muted" : ""}`}
                 nativeButton={false}
                 render={
                   <Link to={`/rooms/${room.slug}/book${bookingSearch}`} />
                 }
-                variant="default"
+                variant={showAvailability ? "outline" : "default"}
               >
                 <CalendarCheck aria-hidden="true" className="size-4" />
                 Book now
