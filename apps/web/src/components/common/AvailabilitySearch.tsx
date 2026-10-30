@@ -44,7 +44,7 @@ function DatePickerField({
   return (
     <div className="min-w-0">
       <label
-        className="mb-1.5 block text-sm font-medium text-foreground"
+        className="mb-2 block text-sm font-semibold text-foreground"
         htmlFor={id}
       >
         {label}
@@ -209,7 +209,7 @@ export function AvailabilitySearch({ className = "" }: { className?: string }) {
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: reduceMotion ? 0 : 0.4, ease: "easeOut" }}
       onSubmit={handleSubmit}
-      className={`grid grid-cols-1 gap-4 rounded-lg border border-border bg-background p-4 text-foreground shadow-lg sm:grid-cols-2 sm:p-5 lg:grid-cols-4 lg:items-end lg:gap-4 ${className}`}
+      className={`grid grid-cols-1 gap-4 rounded-lg border border-border bg-background p-4 text-foreground shadow-lg sm:grid-cols-2 sm:p-5 lg:grid-cols-[1.1fr_1.1fr_1.1fr_1fr] lg:items-end lg:gap-4 ${className}`}
       aria-labelledby={`${id}-heading`}
     >
       <h2 id={`${id}-heading`} className="sr-only">
@@ -240,7 +240,7 @@ export function AvailabilitySearch({ className = "" }: { className?: string }) {
         }}
       />
       <div className="relative min-w-0">
-        <p className="mb-1.5 text-sm font-medium text-foreground">Guests</p>
+        <p className="mb-2 text-sm font-semibold text-foreground">Guests</p>
         <Popover open={guestsOpen} onOpenChange={setGuestsOpen}>
           <PopoverTrigger
             render={

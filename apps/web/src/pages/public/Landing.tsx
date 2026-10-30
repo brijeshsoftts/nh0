@@ -1,11 +1,12 @@
-import { motion, useReducedMotion } from "framer-motion";
+import { AnimatePresence, motion, useReducedMotion } from "framer-motion";
 import {
   ArrowRight,
-  BedDouble,
+  ChevronLeft,
   ChevronRight,
   CircleHelp,
   MessageSquareQuote,
 } from "lucide-react";
+import { useState } from "react";
 import { Link } from "react-router-dom";
 
 import { AvailabilitySearch } from "@/components/common/AvailabilitySearch";
@@ -16,6 +17,7 @@ import {
   AccordionTrigger,
 } from "@/components/ui/accordion";
 import { Button } from "@/components/ui/button";
+import { RoomCard } from "@/features/public/components/RoomCard";
 import { HERO_IMAGE } from "@/features/public/public.mock";
 import type { AvailableRoomListItem } from "@/features/public/public.types";
 import { useAvailableRooms } from "@/features/public/useAvailableRooms";
@@ -176,61 +178,6 @@ function AboutSection() {
   );
 }
 
-function RoomCard({ room }: { room: AvailableRoomListItem }) {
-  const bedDescription = `${room.bedCount} ${room.bedType.toLowerCase().replaceAll("_", " ")} ${room.bedCount === 1 ? "bed" : "beds"}`;
-  const price = new Intl.NumberFormat("en-IN", {
-    style: "currency",
-    currency: "INR",
-    maximumFractionDigits: 0,
-  }).format(room.basePrice);
-
-  return (
-    <article className="group min-w-0">
-      <Link
-        aria-label={`View ${room.name} details`}
-        className="relative block aspect-[1.45] overflow-hidden rounded-lg bg-muted focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-ring"
-        to={`/rooms/${room.slug}`}
-      >
-        {room.image ? (
-          <img
-            alt={room.image.altText ?? room.name}
-            className="size-full object-cover transition-transform duration-500 group-hover:scale-[1.03] motion-reduce:transition-none motion-reduce:group-hover:scale-100"
-            loading="lazy"
-            src={room.image.url}
-          />
-        ) : (
-          <span className="grid size-full place-items-center text-muted-foreground">
-            <BedDouble aria-hidden="true" className="size-10" />
-          </span>
-        )}
-      </Link>
-      <div className="flex items-start justify-between gap-4 pt-4">
-        <h3 className="font-heading text-2xl font-medium text-foreground">
-          {room.name}
-        </h3>
-        <p className="shrink-0 text-right text-sm text-muted-foreground">
-          <span className="block font-semibold text-foreground">{price}</span>
-          per night
-        </p>
-      </div>
-      <p className="mt-2 line-clamp-2 min-h-12 text-sm leading-relaxed text-muted-foreground">
-        {room.description || "Explore the room details for more information."}
-      </p>
-      <p className="mt-3 text-sm text-muted-foreground">
-        {bedDescription} <span aria-hidden="true">·</span> Up to{" "}
-        {room.maxGuests} guests
-        {room.sizeSqFt ? ` · ${room.sizeSqFt} sq ft` : ""}
-      </p>
-      <Link
-        className="mt-4 inline-flex min-h-11 items-center gap-2 text-sm font-semibold text-foreground underline decoration-primary underline-offset-4 transition-colors hover:text-primary focus-visible:rounded-sm focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-ring"
-        to={`/rooms/${room.slug}`}
-      >
-        View details <ArrowRight aria-hidden="true" className="size-4" />
-      </Link>
-    </article>
-  );
-}
-
 function FeaturedRooms({
   rooms,
   isLoading,
@@ -364,20 +311,184 @@ function AmenitiesSection({ rooms }: { rooms: AvailableRoomListItem[] }) {
 }
 
 function TestimonialsSection() {
+  const [activeIndex, setActiveIndex] = useState(0);
+  const [direction, setDirection] = useState(1);
+  const reduceMotion = useReducedMotion() ?? false;
+  const testimonials = [
+    {
+      name: "Ananya S.",
+      city: "Chennai",
+      room: "Deluxe room",
+      quote:
+        "The room felt calm, the booking details were clear, and check-in was straightforward.",
+    },
+    {
+      name: "Rohan K.",
+      city: "Pune",
+      room: "Double room",
+      quote:
+        "I appreciated having space to unwind after a full day out. Everything I needed was easy to find.",
+    },
+    {
+      name: "Meera D.",
+      city: "Mumbai",
+      room: "Suite",
+      quote:
+        "A comfortable stay with thoughtful touches. The room was clean and restful.",
+    },
+    {
+      name: "Kunal P.",
+      city: "Hyderabad",
+      room: "Deluxe room",
+      quote:
+        "Finding a room for my dates was simple, and the details matched what I expected.",
+    },
+    {
+      name: "Aisha R.",
+      city: "Kochi",
+      room: "Double room",
+      quote:
+        "The welcoming atmosphere made the stay feel easy from the moment I arrived.",
+    },
+    {
+      name: "Nikhil M.",
+      city: "New Delhi",
+      room: "Suite",
+      quote: "I had a relaxing stay and appreciated the well-arranged room.",
+    },
+  ];
+  const move = (step: number) => {
+    setDirection(step);
+    setActiveIndex(
+      (current) => (current + step + testimonials.length) % testimonials.length
+    );
+  };
+  const visibleTestimonials = [-1, 0, 1].map((offset) => ({
+    testimonial:
+      testimonials[
+        (activeIndex + offset + testimonials.length) % testimonials.length
+      ],
+    isActive: offset === 0,
+  }));
+
   return (
-    <section className="bg-secondary" id="testimonials">
-      <div className="container mx-auto flex max-w-7xl flex-col items-center px-4 py-14 text-center sm:px-6 sm:py-16 lg:px-8">
-        <MessageSquareQuote
-          aria-hidden="true"
-          className="size-7 text-primary"
-          strokeWidth={1.5}
-        />
-        <h2 className="mt-4 font-heading text-3xl font-medium text-foreground sm:text-4xl">
-          Guest stories
-        </h2>
-        <p className="mt-3 max-w-lg text-sm leading-relaxed text-muted-foreground">
-          Published guest reviews are not available yet.
-        </p>
+    <section className="overflow-hidden bg-muted" id="testimonials">
+      <div className="container mx-auto max-w-7xl px-4 py-16 sm:px-6 sm:py-20 lg:px-8 lg:py-24">
+        <div className="mx-auto mb-10 max-w-2xl text-center sm:mb-14">
+          <p className="text-xs font-semibold tracking-[0.16em] text-accent-foreground uppercase">
+            A FEELING THAT STAYS
+          </p>
+          <h2 className="mt-3 font-heading text-3xl font-medium text-foreground sm:text-4xl">
+            Guest stories
+          </h2>
+          <p className="mt-3 text-sm leading-relaxed text-muted-foreground">
+            A few words from guests about their time at Nivara.
+          </p>
+        </div>
+
+        <div
+          aria-label="Guest testimonials"
+          aria-roledescription="carousel"
+          className="mx-auto max-w-6xl"
+          role="region"
+        >
+          <div className="min-h-72">
+            <AnimatePresence mode="wait" initial={false}>
+              <motion.div
+                animate={{ opacity: 1, x: 0 }}
+                className="grid grid-cols-1 gap-4 lg:grid-cols-3 lg:items-center lg:gap-5"
+                exit={{
+                  opacity: reduceMotion ? 1 : 0,
+                  x: reduceMotion ? 0 : direction * -28,
+                }}
+                initial={
+                  reduceMotion ? false : { opacity: 0, x: direction * 28 }
+                }
+                key={activeIndex}
+                transition={{
+                  duration: reduceMotion ? 0 : 0.28,
+                  ease: "easeOut",
+                }}
+              >
+                {visibleTestimonials.map(({ testimonial, isActive }) => (
+                  <figure
+                    aria-label={`${testimonial.name} from ${testimonial.city}`}
+                    aria-roledescription="slide"
+                    className={`${
+                      isActive
+                        ? "flex min-h-72 bg-foreground text-background shadow-lg dark:bg-card dark:text-card-foreground"
+                        : "hidden min-h-64 bg-card text-card-foreground shadow-sm lg:flex lg:translate-y-5"
+                    } flex-col justify-between rounded-lg p-6 sm:p-8`}
+                    key={testimonial.name}
+                  >
+                    <div>
+                      <MessageSquareQuote
+                        aria-hidden="true"
+                        className="size-6 text-primary"
+                        strokeWidth={1.5}
+                      />
+                      <blockquote
+                        className={`${isActive ? "text-background dark:text-card-foreground" : "text-card-foreground"} mt-5 font-heading text-lg leading-relaxed sm:text-xl`}
+                      >
+                        “{testimonial.quote}”
+                      </blockquote>
+                    </div>
+                    <figcaption className="mt-7 flex items-center gap-3">
+                      <span
+                        aria-hidden="true"
+                        className={`${isActive ? "bg-primary text-primary-foreground" : "bg-secondary text-secondary-foreground"} grid size-11 shrink-0 place-items-center rounded-full text-sm font-semibold`}
+                      >
+                        {testimonial.name
+                          .split(" ")
+                          .map((part) => part[0])
+                          .join("")}
+                      </span>
+                      <span className="min-w-0">
+                        <span className="block text-sm font-semibold">
+                          {testimonial.name}
+                        </span>
+                        <span
+                          className={`${isActive ? "text-background/70 dark:text-muted-foreground" : "text-muted-foreground"} mt-0.5 block text-xs`}
+                        >
+                          {testimonial.city} <span aria-hidden="true">·</span>{" "}
+                          {testimonial.room}
+                        </span>
+                      </span>
+                    </figcaption>
+                  </figure>
+                ))}
+              </motion.div>
+            </AnimatePresence>
+          </div>
+
+          <div className="mt-8 flex items-center justify-center gap-4">
+            <Button
+              aria-label="Show previous testimonial"
+              className="size-11 rounded-full"
+              onClick={() => move(-1)}
+              size="icon"
+              variant="outline"
+            >
+              <ChevronLeft aria-hidden="true" className="size-5" />
+            </Button>
+            <p
+              aria-live="polite"
+              className="min-w-16 text-center text-xs font-medium text-muted-foreground tabular-nums"
+            >
+              {String(activeIndex + 1).padStart(2, "0")} /{" "}
+              {String(testimonials.length).padStart(2, "0")}
+            </p>
+            <Button
+              aria-label="Show next testimonial"
+              className="size-11 rounded-full"
+              onClick={() => move(1)}
+              size="icon"
+              variant="outline"
+            >
+              <ChevronRight aria-hidden="true" className="size-5" />
+            </Button>
+          </div>
+        </div>
       </div>
     </section>
   );
