@@ -1,7 +1,8 @@
 /* =========================================================
    NIVARA HOTELS — BRAND DESIGN SYSTEM
    Tailwind CSS v4 + shadcn/ui
-   Brand: Bold Orange / Golden Yellow / White / Deep Black
+   Brand: Deep Charcoal / Warm Copper / Warm Ivory
+   Typography: Playfair Display + Inter
    ========================================================= */
 
 /* 1. Imports */
@@ -14,69 +15,51 @@
 /* 2. Dark mode variant */
 @custom-variant dark (&:is(.dark *));
 
-/* =========================================================
-   3. THEME TOKENS
-   ========================================================= */
-
+/* 3. Tailwind v4 theme mappings */
 @theme inline {
   /* Typography */
-  --font-sans: "Inter Variable", Inter, sans-serif;
+  --font-sans: "Inter Variable", "Inter", sans-serif;
   --font-heading:
     "Playfair Display Variable", "Playfair Display", Georgia, serif;
 
-  /* Brand palette — exact core colors */
-  --color-brand-orange: var(--brand-orange);
-  --color-brand-yellow: var(--brand-yellow);
+  /* Brand palette */
+  --color-brand-charcoal: var(--brand-charcoal);
+  --color-brand-copper: var(--brand-copper);
+  --color-brand-ivory: var(--brand-ivory);
+  --color-brand-soft-white: var(--brand-soft-white);
   --color-brand-white: var(--brand-white);
-  --color-brand-black: var(--brand-black);
 
-  /* Extended brand palette */
-  --color-orange-light: var(--orange-light);
-  --color-orange-dark: var(--orange-dark);
-  --color-yellow-light: var(--yellow-light);
-  --color-yellow-dark: var(--yellow-dark);
-
-  /* shadcn semantic colors */
+  /* Semantic shadcn colors */
   --color-background: var(--background);
   --color-foreground: var(--foreground);
-
   --color-card: var(--card);
   --color-card-foreground: var(--card-foreground);
-
   --color-popover: var(--popover);
   --color-popover-foreground: var(--popover-foreground);
-
   --color-primary: var(--primary);
   --color-primary-foreground: var(--primary-foreground);
-
   --color-secondary: var(--secondary);
   --color-secondary-foreground: var(--secondary-foreground);
-
   --color-muted: var(--muted);
   --color-muted-foreground: var(--muted-foreground);
-
   --color-accent: var(--accent);
   --color-accent-foreground: var(--accent-foreground);
-
   --color-destructive: var(--destructive);
   --color-border: var(--border);
   --color-input: var(--input);
   --color-ring: var(--ring);
 
-  /* Additional semantic feedback */
+  /* Feedback colors */
   --color-success: var(--success);
   --color-success-foreground: var(--success-foreground);
-
   --color-warning: var(--warning);
   --color-warning-foreground: var(--warning-foreground);
-
   --color-error: var(--error);
   --color-error-foreground: var(--error-foreground);
-
   --color-info: var(--info);
   --color-info-foreground: var(--info-foreground);
 
-  /* Dashboard charts */
+  /* Charts */
   --color-chart-1: var(--chart-1);
   --color-chart-2: var(--chart-2);
   --color-chart-3: var(--chart-3);
@@ -93,7 +76,7 @@
   --color-sidebar-border: var(--sidebar-border);
   --color-sidebar-ring: var(--sidebar-ring);
 
-  /* Radius scale — shadcn-compatible */
+  /* Radius scale */
   --radius-xs: calc(var(--radius) * 0.4);
   --radius-sm: calc(var(--radius) * 0.6);
   --radius-md: calc(var(--radius) * 0.8);
@@ -111,208 +94,162 @@
   --shadow-xl: var(--shadow-xl-value);
   --shadow-brand: var(--shadow-brand-value);
 
-  /* Animation timing */
+  /* Type scale */
+  --text-2xs: 0.6875rem;
+  --text-xs: 0.75rem;
+  --text-sm: 0.8125rem;
+  --text-base: 0.9375rem;
+  --text-lg: 1.0625rem;
+  --text-xl: 1.25rem;
+  --text-2xl: 1.5rem;
+  --text-3xl: 1.875rem;
+  --text-4xl: 2.25rem;
+  --text-5xl: 3rem;
+
+  /* Motion */
   --ease-brand: cubic-bezier(0.22, 1, 0.36, 1);
 }
 
-/* =========================================================
-   4. LIGHT MODE
-   Clean white surfaces with vivid orange accents
-   ========================================================= */
-
+/* 4. Light theme — shared application foundation */
 :root {
   color-scheme: light;
 
-  /* Brand colors — preserve these exact values */
-  --brand-orange: #ff4f00;
-  --brand-yellow: #ffc400;
+  /* Brand colors */
+  --brand-charcoal: #26303b;
+  --brand-copper: #9a694e;
+  --brand-ivory: #ebebdd;
+  --brand-soft-white: #f7f6f2;
   --brand-white: #ffffff;
-  --brand-black: #1c1c1c;
+  --brand-border: #d9d5ca;
+  --brand-text-muted: #6b6a63;
 
-  /* Extended brand colors */
-  --orange-light: #fff0e8;
-  --orange-dark: #d94300;
-  --yellow-light: #fff7d6;
-  --yellow-dark: #d9a500;
-
-  /* Backgrounds */
-  --background: #fffcf9;
-  --foreground: #1c1c1c;
-
-  /* Cards and elevated surfaces */
+  /* Application surfaces */
+  --background: #f7f6f2;
+  --foreground: #26303b;
   --card: #ffffff;
-  --card-foreground: #1c1c1c;
-
+  --card-foreground: #26303b;
   --popover: #ffffff;
-  --popover-foreground: #1c1c1c;
+  --popover-foreground: #26303b;
 
-  /* Primary — orange */
-  --primary: #ff4f00;
-  --primary-foreground: #ffffff;
+  /* Primary actions: charcoal text on copper for stronger contrast */
+  --primary: #9a694e;
+  --primary-foreground: #26303b;
 
-  /* Secondary — golden yellow */
-  --secondary: #fff0bf;
-  --secondary-foreground: #382900;
-
-  /* Muted surfaces */
-  --muted: #f5f2ee;
-  --muted-foreground: #706a64;
-
-  /* Accent */
-  --accent: #fff0e8;
-  --accent-foreground: #c43c00;
+  /* Secondary and muted surfaces */
+  --secondary: #ebebdd;
+  --secondary-foreground: #26303b;
+  --muted: #efeee8;
+  --muted-foreground: #62645f;
+  --accent: #f0e6de;
+  --accent-foreground: #704a36;
 
   /* Borders and focus */
-  --border: #eae3dc;
-  --input: #dcd3ca;
-  --ring: #ff4f00;
+  --border: #dedbd2;
+  --input: #d3cfc5;
+  --ring: #80563f;
+  --destructive: #b93832;
 
-  /* Destructive actions */
-  --destructive: #d92d20;
-
-  /* Status colors */
-  --success: #16803d;
+  /* Status */
+  --success: #28613b;
   --success-foreground: #ffffff;
-
-  --warning: #a66300;
+  --warning: #855710;
   --warning-foreground: #ffffff;
-
-  --error: #d92d20;
+  --error: #a3332b;
   --error-foreground: #ffffff;
-
-  --info: #2563a6;
+  --info: #34577b;
   --info-foreground: #ffffff;
 
-  /* Brand-specific shadow */
-  --shadow-xs-value: 0 1px 2px rgb(28 28 28 / 4%);
-  --shadow-sm-value: 0 1px 3px rgb(28 28 28 / 5%), 0 1px 2px rgb(28 28 28 / 3%);
-  --shadow-md-value:
-    0 4px 12px rgb(28 28 28 / 5%), 0 2px 4px rgb(28 28 28 / 3%);
-  --shadow-lg-value:
-    0 12px 28px rgb(28 28 28 / 7%), 0 4px 10px rgb(28 28 28 / 3%);
-  --shadow-xl-value:
-    0 24px 48px rgb(28 28 28 / 10%), 0 8px 20px rgb(28 28 28 / 4%);
-  --shadow-brand-value:
-    0 8px 24px rgb(255 79 0 / 20%), 0 3px 8px rgb(255 79 0 / 10%);
+  /* Charts — coordinated, distinguishable series */
+  --chart-1: #9a694e;
+  --chart-2: #26303b;
+  --chart-3: #718477;
+  --chart-4: #b28b55;
+  --chart-5: #8a8790;
 
-  /* Charts */
-  --chart-1: #ff4f00;
-  --chart-2: #ffc400;
-  --chart-3: #1c1c1c;
-  --chart-4: #d97745;
-  --chart-5: #8b8178;
+  /* Dark charcoal dashboard sidebar */
+  --sidebar: #26303b;
+  --sidebar-foreground: #f7f6f2;
+  --sidebar-primary: #c18d6e;
+  --sidebar-primary-foreground: #26303b;
+  --sidebar-accent: #35414e;
+  --sidebar-accent-foreground: #ffffff;
+  --sidebar-border: #3b4652;
+  --sidebar-ring: #c18d6e;
 
-  /* Sidebar */
-  --sidebar: #ffffff;
-  --sidebar-foreground: #1c1c1c;
-  --sidebar-primary: #ff4f00;
-  --sidebar-primary-foreground: #ffffff;
-  --sidebar-accent: #fff0e8;
-  --sidebar-accent-foreground: #c43c00;
-  --sidebar-border: #eae3dc;
-  --sidebar-ring: #ff4f00;
-
-  /* Component geometry */
+  /* Geometry */
   --radius: 0.75rem;
+
+  /* Soft, neutral shadows */
+  --shadow-xs-value: 0 1px 2px rgb(38 48 59 / 4%);
+  --shadow-sm-value: 0 1px 3px rgb(38 48 59 / 6%), 0 1px 2px rgb(38 48 59 / 3%);
+  --shadow-md-value:
+    0 4px 12px rgb(38 48 59 / 6%), 0 2px 4px rgb(38 48 59 / 3%);
+  --shadow-lg-value:
+    0 12px 28px rgb(38 48 59 / 8%), 0 4px 10px rgb(38 48 59 / 3%);
+  --shadow-xl-value:
+    0 24px 48px rgb(38 48 59 / 11%), 0 8px 20px rgb(38 48 59 / 4%);
+  --shadow-brand-value:
+    0 6px 18px rgb(154 105 78 / 18%), 0 2px 6px rgb(38 48 59 / 5%);
 }
 
-/* =========================================================
-   5. DARK MODE
-   Deep black surfaces with orange and yellow highlights
-   ========================================================= */
-
+/* 5. Dark theme — optional application-wide dark appearance */
 .dark {
   color-scheme: dark;
 
-  /* Brand colors stay consistent between themes */
-  --brand-orange: #ff4f00;
-  --brand-yellow: #ffc400;
-  --brand-white: #ffffff;
-  --brand-black: #1c1c1c;
+  --background: #1d252e;
+  --foreground: #f2f0e9;
+  --card: #26303b;
+  --card-foreground: #f2f0e9;
+  --popover: #2b3540;
+  --popover-foreground: #f2f0e9;
 
-  --orange-light: #3a1b0e;
-  --orange-dark: #ff7338;
-  --yellow-light: #382e0a;
-  --yellow-dark: #ffd44d;
+  --primary: #c18d6e;
+  --primary-foreground: #202832;
+  --secondary: #35414e;
+  --secondary-foreground: #f2f0e9;
+  --muted: #303a45;
+  --muted-foreground: #c0c0b8;
+  --accent: #40362f;
+  --accent-foreground: #e3b99e;
 
-  /* Backgrounds */
-  --background: #141312;
-  --foreground: #f8f5f1;
+  --border: #414b55;
+  --input: #4a5661;
+  --ring: #c18d6e;
+  --destructive: #e16b63;
 
-  /* Cards and elevated surfaces */
-  --card: #1d1b19;
-  --card-foreground: #f8f5f1;
-
-  --popover: #211f1d;
-  --popover-foreground: #f8f5f1;
-
-  /* Primary */
-  --primary: #ff6a24;
-  --primary-foreground: #ffffff;
-
-  /* Secondary */
-  --secondary: #352c17;
-  --secondary-foreground: #ffe18a;
-
-  /* Muted surfaces */
-  --muted: #292623;
-  --muted-foreground: #b1a9a1;
-
-  /* Accent */
-  --accent: #382117;
-  --accent-foreground: #ffad85;
-
-  /* Borders and focus */
-  --border: #39332e;
-  --input: #484039;
-  --ring: #ff7338;
-
-  /* Destructive actions */
-  --destructive: #ff6b61;
-
-  /* Status colors */
-  --success: #4ade80;
-  --success-foreground: #102a19;
-
-  --warning: #ffd166;
-  --warning-foreground: #382900;
-
-  --error: #ff8178;
+  --success: #75bd8a;
+  --success-foreground: #14271a;
+  --warning: #e5bd70;
+  --warning-foreground: #30230d;
+  --error: #ef8981;
   --error-foreground: #321412;
+  --info: #8db8df;
+  --info-foreground: #14283a;
 
-  --info: #7db8f0;
-  --info-foreground: #10243a;
+  --chart-1: #c18d6e;
+  --chart-2: #9aaf9c;
+  --chart-3: #e0bd7a;
+  --chart-4: #8db8df;
+  --chart-5: #b4a3c7;
 
-  /* Shadows */
-  --shadow-xs-value: 0 1px 2px rgb(0 0 0 / 15%);
+  --sidebar: #19212a;
+  --sidebar-foreground: #f2f0e9;
+  --sidebar-primary: #c18d6e;
+  --sidebar-primary-foreground: #202832;
+  --sidebar-accent: #303b46;
+  --sidebar-accent-foreground: #ffffff;
+  --sidebar-border: #3b4652;
+  --sidebar-ring: #c18d6e;
+
+  --shadow-xs-value: 0 1px 2px rgb(0 0 0 / 16%);
   --shadow-sm-value: 0 2px 5px rgb(0 0 0 / 18%);
   --shadow-md-value: 0 5px 14px rgb(0 0 0 / 22%);
   --shadow-lg-value: 0 12px 28px rgb(0 0 0 / 28%);
-  --shadow-xl-value: 0 24px 48px rgb(0 0 0 / 35%);
-  --shadow-brand-value: 0 8px 24px rgb(255 79 0 / 18%);
-
-  /* Charts */
-  --chart-1: #ff7338;
-  --chart-2: #ffd166;
-  --chart-3: #f8f5f1;
-  --chart-4: #e79a76;
-  --chart-5: #a69a8d;
-
-  /* Sidebar */
-  --sidebar: #191715;
-  --sidebar-foreground: #f8f5f1;
-  --sidebar-primary: #ff6a24;
-  --sidebar-primary-foreground: #ffffff;
-  --sidebar-accent: #30221b;
-  --sidebar-accent-foreground: #ffad85;
-  --sidebar-border: #39332e;
-  --sidebar-ring: #ff7338;
+  --shadow-xl-value: 0 24px 48px rgb(0 0 0 / 36%);
+  --shadow-brand-value: 0 6px 18px rgb(193 141 110 / 18%);
 }
 
-/* =========================================================
-   6. BASE STYLES
-   ========================================================= */
-
+/* 6. Base styles */
 @layer base {
   *,
   *::before,
@@ -322,7 +259,6 @@
 
   html {
     @apply font-sans;
-
     min-height: 100%;
     font-synthesis: none;
     text-rendering: optimizeLegibility;
@@ -334,17 +270,15 @@
 
   body {
     @apply bg-background text-foreground;
-
     min-width: 320px;
     min-height: 100vh;
     margin: 0;
     font-family: var(--font-sans);
-    font-size: 0.9375rem;
-    line-height: 1.65;
+    font-size: var(--text-base);
+    line-height: 1.6;
     font-feature-settings: "cv02", "cv03", "cv04", "cv11";
   }
 
-  /* Editorial typography */
   h1,
   h2,
   h3,
@@ -354,12 +288,13 @@
     font-family: var(--font-heading);
     font-weight: 500;
     line-height: 1.15;
-    letter-spacing: -0.025em;
+    letter-spacing: -0.02em;
     text-wrap: balance;
   }
 
   h1 {
     font-size: clamp(2.25rem, 5vw, 4.5rem);
+    line-height: 1.08;
   }
 
   h2 {
@@ -368,6 +303,18 @@
 
   h3 {
     font-size: clamp(1.375rem, 2.5vw, 2rem);
+  }
+
+  h4 {
+    font-size: 1.125rem;
+    line-height: 1.3;
+  }
+
+  /* Dashboard typography stays functional and compact; editorial serif is for public pages. */
+  .dashboard-shell :is(h1, h2, h3, h4, h5, h6) {
+    font-family: var(--font-sans);
+    font-weight: 600;
+    letter-spacing: -0.025em;
   }
 
   p {
@@ -400,7 +347,7 @@
   input::placeholder,
   textarea::placeholder {
     color: var(--muted-foreground);
-    opacity: 0.8;
+    opacity: 1;
   }
 
   img,
@@ -415,7 +362,7 @@
 
   ::selection {
     color: #ffffff;
-    background: #ff4f00;
+    background: #704a36;
   }
 
   :focus-visible {
@@ -427,7 +374,6 @@
     scroll-margin-top: 6rem;
   }
 
-  /* Consistent browser scrollbar */
   * {
     scrollbar-width: thin;
     scrollbar-color: var(--border) transparent;
@@ -454,58 +400,36 @@
   }
 }
 
-/* =========================================================
-   7. BRAND GRADIENTS AND REUSABLE SURFACES
-   ========================================================= */
-
+/* 7. Reusable brand surfaces and layout utilities */
 @layer utilities {
-  /* Orange-to-yellow gradient */
-  .bg-brand-gradient {
-    background-image: linear-gradient(
-      135deg,
-      #ff4f00 0%,
-      #ff7900 45%,
-      #ffc400 100%
-    );
+  /* Use on public/marketing page wrappers to give them the warmer ivory canvas */
+  .bg-marketing {
+    background-color: var(--brand-ivory);
+    color: var(--brand-charcoal);
   }
 
-  .bg-brand-gradient-horizontal {
-    background-image: linear-gradient(
-      90deg,
-      #ff4f00 0%,
-      #ff7900 50%,
-      #ffc400 100%
-    );
+  .bg-brand-charcoal {
+    background-color: var(--brand-charcoal);
+    color: var(--brand-ivory);
   }
 
-  .bg-brand-gradient-soft {
-    background-image: linear-gradient(
-      135deg,
-      var(--orange-light) 0%,
-      var(--yellow-light) 100%
-    );
+  .bg-brand-copper {
+    background-color: var(--brand-copper);
+    color: var(--brand-charcoal);
   }
 
-  .text-brand-gradient {
-    background-image: linear-gradient(
-      110deg,
-      #ff4f00 0%,
-      #ff7900 48%,
-      #d99d00 100%
-    );
-    background-clip: text;
-    -webkit-background-clip: text;
-    color: transparent;
+  .text-brand-charcoal {
+    color: var(--brand-charcoal);
   }
 
-  .border-brand-gradient {
-    border: 1px solid transparent;
-    background:
-      linear-gradient(var(--card), var(--card)) padding-box,
-      linear-gradient(135deg, #ff4f00, #ffc400) border-box;
+  .text-brand-copper {
+    color: var(--brand-copper);
   }
 
-  /* Reusable shadows */
+  .border-brand {
+    border-color: var(--brand-border);
+  }
+
   .shadow-brand {
     box-shadow: var(--shadow-brand-value);
   }
@@ -518,43 +442,34 @@
     box-shadow: var(--shadow-lg-value);
   }
 
-  /* Premium translucent surface */
   .surface-glass {
-    background: color-mix(in srgb, var(--card) 82%, transparent);
-    border: 1px solid color-mix(in srgb, var(--border) 75%, transparent);
+    background: color-mix(in srgb, var(--card) 88%, transparent);
+    border: 1px solid color-mix(in srgb, var(--border) 78%, transparent);
     backdrop-filter: blur(16px);
     -webkit-backdrop-filter: blur(16px);
   }
 
-  /* Restrained interactive lift */
   .interactive-lift {
     transition:
-      transform 240ms var(--ease-brand),
-      box-shadow 240ms var(--ease-brand),
-      border-color 200ms ease;
+      transform 220ms var(--ease-brand),
+      box-shadow 220ms var(--ease-brand),
+      border-color 180ms ease,
+      background-color 180ms ease;
   }
 
   @media (hover: hover) and (prefers-reduced-motion: no-preference) {
     .interactive-lift:hover {
-      transform: translateY(-3px);
+      transform: translateY(-2px);
       box-shadow: var(--shadow-lg-value);
     }
 
     .interactive-lift:active {
-      transform: translateY(-1px);
+      transform: translateY(0);
     }
   }
 
-  /* Decorative orange glow */
-  .brand-glow {
-    box-shadow:
-      0 0 0 1px rgb(255 79 0 / 8%),
-      0 8px 30px rgb(255 79 0 / 12%);
-  }
-
-  /* Marketing page section spacing */
   .section-padding {
-    padding-block: clamp(3.5rem, 8vw, 7rem);
+    padding-block: clamp(3rem, 7vw, 6.5rem);
   }
 
   .container-marketing {
@@ -562,7 +477,6 @@
     margin-inline: auto;
   }
 
-  /* Better text readability */
   .text-balance {
     text-wrap: balance;
   }
@@ -572,16 +486,11 @@
   }
 }
 
-/* =========================================================
-   8. ANIMATIONS
-   ========================================================= */
-
-/* Initial page entrance */
+/* 8. Motion */
 @keyframes fade-in {
   from {
     opacity: 0;
   }
-
   to {
     opacity: 1;
   }
@@ -590,9 +499,8 @@
 @keyframes slide-up {
   from {
     opacity: 0;
-    transform: translateY(16px);
+    transform: translateY(14px);
   }
-
   to {
     opacity: 1;
     transform: translateY(0);
@@ -602,45 +510,18 @@
 @keyframes slide-in-right {
   from {
     opacity: 0;
-    transform: translateX(16px);
+    transform: translateX(14px);
   }
-
   to {
     opacity: 1;
     transform: translateX(0);
   }
 }
 
-/* Gentle brand accent */
-@keyframes brand-pulse {
-  0%,
-  100% {
-    box-shadow: 0 0 0 0 rgb(255 79 0 / 0%);
-  }
-
-  50% {
-    box-shadow: 0 0 0 6px rgb(255 79 0 / 10%);
-  }
-}
-
-/* Marketing hero decoration */
-@keyframes float {
-  0%,
-  100% {
-    transform: translateY(0);
-  }
-
-  50% {
-    transform: translateY(-8px);
-  }
-}
-
-/* Shimmer for loading placeholders */
 @keyframes shimmer {
   from {
     background-position: 200% 0;
   }
-
   to {
     background-position: -200% 0;
   }
@@ -648,23 +529,15 @@
 
 @layer utilities {
   .animate-fade-in {
-    animation: fade-in 400ms ease-out both;
+    animation: fade-in 350ms ease-out both;
   }
 
   .animate-slide-up {
-    animation: slide-up 550ms var(--ease-brand) both;
+    animation: slide-up 500ms var(--ease-brand) both;
   }
 
   .animate-slide-in-right {
-    animation: slide-in-right 400ms var(--ease-brand) both;
-  }
-
-  .animate-brand-pulse {
-    animation: brand-pulse 2.4s ease-in-out infinite;
-  }
-
-  .animate-float {
-    animation: float 5s ease-in-out infinite;
+    animation: slide-in-right 350ms var(--ease-brand) both;
   }
 
   .animate-shimmer {
@@ -675,14 +548,11 @@
       var(--muted) 100%
     );
     background-size: 200% 100%;
-    animation: shimmer 1.8s linear infinite;
+    animation: shimmer 1.6s linear infinite;
   }
 }
 
-/* =========================================================
-   9. ACCESSIBILITY AND RESPONSIVE POLISH
-   ========================================================= */
-
+/* 9. Accessibility and responsive polish */
 @media (prefers-reduced-motion: reduce) {
   *,
   *::before,

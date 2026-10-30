@@ -1,186 +1,198 @@
-import { Camera, Globe, Menu, Play } from "lucide-react";
-import { Link, useLocation } from "react-router-dom";
+import { AnimatePresence, motion, useReducedMotion } from "framer-motion";
+import { ArrowUpRight, Menu, X } from "lucide-react";
+import { useEffect, useState } from "react";
+import { Link, NavLink } from "react-router-dom";
 
 import { Button } from "@/components/ui/button";
-import {
-  Sheet,
-  SheetClose,
-  SheetContent,
-  SheetHeader,
-  SheetTitle,
-  SheetTrigger,
-} from "@/components/ui/sheet";
+import { cn } from "@/lib/utils";
 
 const navigation = [
-  { label: "Home", to: "/" },
-  { label: "Rooms", to: "/rooms" },
-  { label: "About", to: "/about" },
-  { label: "Contact", to: "/contact" },
+  { label: "Home", to: "/", end: true },
+  { label: "Rooms", to: "/rooms", end: false },
+  { label: "About Us", to: "/about", end: false },
+  { label: "Contact Us", to: "/contact", end: false },
 ];
 
-export function PublicNavbar() {
-  const { pathname } = useLocation();
-  const bookingPath = pathname === "/" ? "#availability" : "/#availability";
-
+export function PublicBrand({
+  className,
+  inverted = false,
+}: {
+  className?: string;
+  inverted?: boolean;
+}) {
   return (
-    <header className="relative z-40 border-b border-border bg-background">
-      <div className="container mx-auto grid min-h-18 w-full max-w-7xl grid-cols-[1fr_auto] items-center gap-4 px-4 sm:px-6 lg:grid-cols-[1fr_auto_1fr] lg:px-8">
-        <Link
-          className="w-fit rounded-md text-foreground focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-ring"
-          to="/"
-          aria-label="Nivara Hotels home"
+    <Link
+      aria-label="Nivara Hotels home"
+      className={cn(
+        "group inline-flex min-h-11 items-center gap-3 rounded-sm focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-ring",
+        className
+      )}
+      to="/"
+    >
+      <span className="grid size-10 shrink-0 place-items-center rounded-md bg-primary font-heading text-2xl font-medium text-primary-foreground transition-colors group-hover:bg-primary/90">
+        N
+      </span>
+      <span className="flex flex-col">
+        <span
+          className={cn(
+            "font-heading text-xl leading-none font-medium",
+            inverted
+              ? "text-background dark:text-foreground"
+              : "text-foreground"
+          )}
         >
-          <span className="grid size-10 place-items-center rounded-md bg-primary font-heading text-2xl font-semibold text-primary-foreground">
-            N
-          </span>
-        </Link>
-
-        <nav
-          aria-label="Main navigation"
-          className="hidden items-center justify-center gap-6 text-base font-medium text-foreground lg:flex xl:gap-8"
+          Nivara
+        </span>
+        <span
+          className={cn(
+            "mt-1 text-[10px] leading-none font-medium tracking-[0.12em] uppercase",
+            inverted
+              ? "text-background/65 dark:text-foreground/65"
+              : "text-muted-foreground"
+          )}
         >
-          {navigation.map((item) => (
-            <Link
-              aria-current={pathname === item.to ? "page" : undefined}
-              className="whitespace-nowrap transition-colors hover:text-primary focus-visible:rounded-sm focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-ring aria-[current=page]:text-primary"
-              key={item.label}
-              to={item.to}
-            >
-              {item.label}
-            </Link>
-          ))}
-        </nav>
-
-        <div className="flex items-center justify-end gap-2 sm:gap-3">
-          <div className="hidden items-center gap-5 lg:flex">
-            <Link
-              className="text-base font-medium text-foreground transition-colors hover:text-primary focus-visible:rounded-sm focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-ring"
-              to="/login"
-            >
-              Sign Up
-            </Link>
-          </div>
-          <Button
-            className="hidden h-10 rounded-md px-5 text-sm font-semibold lg:inline-flex"
-            nativeButton={false}
-            variant="default"
-            render={<Link to={bookingPath} />}
-          >
-            Book Now
-          </Button>
-
-          <Sheet>
-            <SheetTrigger
-              render={
-                <Button
-                  aria-label="Open navigation menu"
-                  className="size-11 rounded-md lg:hidden"
-                  size="icon"
-                  variant="outline"
-                />
-              }
-            >
-              <Menu aria-hidden="true" />
-            </SheetTrigger>
-            <SheetContent
-              className="max-h-svh w-full overflow-y-auto border-border bg-background text-foreground"
-              side="top"
-            >
-              <SheetHeader className="container mx-auto flex min-h-18 w-full max-w-7xl flex-row items-center justify-between gap-0 border-b border-border px-4 py-0 sm:px-6 lg:px-8">
-                <SheetTitle className="sr-only">Nivara Hotels menu</SheetTitle>
-                <SheetClose
-                  nativeButton={false}
-                  render={
-                    <Link
-                      className="grid size-10 place-items-center rounded-md bg-primary font-heading text-2xl font-semibold text-primary-foreground focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-ring"
-                      to="/"
-                      aria-label="Nivara Hotels home"
-                    />
-                  }
-                >
-                  N
-                </SheetClose>
-              </SheetHeader>
-              <nav
-                aria-label="Mobile navigation"
-                className="container mx-auto flex w-full max-w-7xl flex-col items-start gap-1 px-4 py-5 sm:px-6 lg:px-8"
-              >
-                {navigation.map((item) => (
-                  <SheetClose
-                    nativeButton={false}
-                    key={item.label}
-                    render={
-                      <Link
-                        aria-current={pathname === item.to ? "page" : undefined}
-                        className="flex min-h-12 w-full items-center border-b border-border px-2 text-lg font-medium text-foreground transition-colors hover:text-primary focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring aria-[current=page]:text-primary"
-                        to={item.to}
-                      />
-                    }
-                  >
-                    {item.label}
-                  </SheetClose>
-                ))}
-              </nav>
-              <div className="container mx-auto grid w-full max-w-7xl grid-cols-1 gap-3 border-t border-border px-4 py-5 sm:grid-cols-2 sm:px-6 lg:px-8">
-                <SheetClose
-                  nativeButton={false}
-                  render={
-                    <Button
-                      className="h-11 w-full rounded-md text-base"
-                      nativeButton={false}
-                      variant="outline"
-                      render={<Link to="/login" />}
-                    />
-                  }
-                >
-                  Sign Up
-                </SheetClose>
-                <SheetClose
-                  nativeButton={false}
-                  render={
-                    <Button
-                      className="h-11 w-full rounded-md text-base font-semibold"
-                      nativeButton={false}
-                      variant="default"
-                      render={<Link to={bookingPath} />}
-                    />
-                  }
-                >
-                  Book Now
-                </SheetClose>
-              </div>
-            </SheetContent>
-          </Sheet>
-        </div>
-      </div>
-    </header>
+          Hotels
+        </span>
+      </span>
+    </Link>
   );
 }
 
-export function PublicSocialLinks() {
+export function PublicNavbar() {
+  const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const reduceMotion = useReducedMotion() ?? false;
+  const closeMenu = () => setIsMenuOpen(false);
+
+  useEffect(() => {
+    if (!isMenuOpen) return;
+    const closeOnEscape = (event: KeyboardEvent) => {
+      if (event.key === "Escape") setIsMenuOpen(false);
+    };
+    window.addEventListener("keydown", closeOnEscape);
+    return () => window.removeEventListener("keydown", closeOnEscape);
+  }, [isMenuOpen]);
+
   return (
-    <nav aria-label="Social media" className="mt-4 flex gap-2">
-      <a
-        aria-label="Facebook"
-        className="grid size-10 place-items-center rounded-md border border-background text-background transition-colors hover:bg-background hover:text-foreground focus-visible:outline-ring dark:border-foreground dark:text-foreground dark:hover:bg-foreground dark:hover:text-background"
-        href="https://www.facebook.com"
+    <header className="sticky top-0 z-40 border-b border-border/80 bg-background/95 text-foreground backdrop-blur-md supports-[backdrop-filter]:bg-background/85">
+      <nav
+        aria-label="Main navigation"
+        className="container mx-auto flex min-h-18 w-full max-w-7xl items-center justify-between gap-5 px-4 sm:px-6 lg:px-8"
       >
-        <Globe aria-hidden="true" className="size-4" />
-      </a>
-      <a
-        aria-label="Instagram"
-        className="grid size-10 place-items-center rounded-md border border-background text-background transition-colors hover:bg-background hover:text-foreground focus-visible:outline-ring dark:border-foreground dark:text-foreground dark:hover:bg-foreground dark:hover:text-background"
-        href="https://www.instagram.com"
-      >
-        <Camera aria-hidden="true" className="size-4" />
-      </a>
-      <a
-        aria-label="YouTube"
-        className="grid size-10 place-items-center rounded-md border border-background text-background transition-colors hover:bg-background hover:text-foreground focus-visible:outline-ring dark:border-foreground dark:text-foreground dark:hover:bg-foreground dark:hover:text-background"
-        href="https://www.youtube.com"
-      >
-        <Play aria-hidden="true" className="size-4" />
-      </a>
-    </nav>
+        <PublicBrand />
+        <div className="hidden items-center gap-7 lg:flex xl:gap-9">
+          <nav className="hidden items-center gap-9 lg:flex">
+            {navigation.map((item) => (
+              <NavLink
+                key={item.to}
+                to={item.to}
+                end={item.to === "/"}
+                className={({ isActive }) =>
+                  cn(
+                    "relative py-2 text-[13px] font-medium tracking-wide transition-colors duration-200",
+                    "after:absolute after:inset-x-0 after:-bottom-[2px] after:h-px after:origin-left after:bg-primary after:transition-transform after:duration-300",
+                    isActive
+                      ? "text-foreground after:scale-x-100"
+                      : "text-muted-foreground after:scale-x-0 hover:text-foreground hover:after:scale-x-100"
+                  )
+                }
+              >
+                {item.label}
+              </NavLink>
+            ))}
+          </nav>
+        </div>
+        <div className="hidden items-center gap-4 lg:flex">
+          <Link
+            className="min-h-11 content-center px-2 text-sm font-medium text-foreground transition-colors hover:text-primary focus-visible:rounded-sm focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-ring"
+            to="/login"
+            state={{ openAuth: true }}
+          >
+            Sign up
+          </Link>
+          <Button
+            className="h-11 px-5 font-semibold"
+            nativeButton={false}
+            render={<Link to="/rooms" />}
+            variant="default"
+          >
+            Book now
+          </Button>
+        </div>
+        <Button
+          aria-controls="public-mobile-navigation"
+          aria-expanded={isMenuOpen}
+          aria-label={
+            isMenuOpen ? "Close navigation menu" : "Open navigation menu"
+          }
+          className="size-11 lg:hidden"
+          onClick={() => setIsMenuOpen((open) => !open)}
+          size="icon"
+          variant="outline"
+        >
+          {isMenuOpen ? (
+            <X aria-hidden="true" className="size-5" />
+          ) : (
+            <Menu aria-hidden="true" className="size-5" />
+          )}
+        </Button>
+      </nav>
+      <AnimatePresence initial={false}>
+        {isMenuOpen ? (
+          <motion.div
+            animate={{ height: "auto", opacity: 1 }}
+            className="overflow-hidden border-t border-border bg-background lg:hidden"
+            exit={{ height: 0, opacity: 0 }}
+            id="public-mobile-navigation"
+            initial={reduceMotion ? false : { height: 0, opacity: 0 }}
+            transition={{ duration: reduceMotion ? 0 : 0.2, ease: "easeOut" }}
+          >
+            <div className="container mx-auto max-w-7xl px-4 py-4 sm:px-6">
+              <div className="flex flex-col">
+                {navigation.map((item) => (
+                  <NavLink
+                    end={item.end}
+                    key={item.to}
+                    onClick={closeMenu}
+                    to={item.to}
+                    className={({ isActive }) =>
+                      cn(
+                        "flex min-h-12 items-center justify-between border-b border-border px-1 text-base font-medium transition-colors hover:text-primary focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring",
+                        isActive ? "text-primary" : "text-foreground"
+                      )
+                    }
+                  >
+                    {item.label}
+                    <ArrowUpRight
+                      aria-hidden="true"
+                      className="size-4 text-muted-foreground"
+                    />
+                  </NavLink>
+                ))}
+              </div>
+              <div className="grid grid-cols-2 gap-3 pt-4">
+                <Button
+                  className="h-11"
+                  nativeButton={false}
+                  onClick={closeMenu}
+                  render={<Link to="/login" state={{ openAuth: true }} />}
+                  variant="outline"
+                >
+                  Log in
+                </Button>
+                <Button
+                  className="h-11 font-semibold"
+                  nativeButton={false}
+                  onClick={closeMenu}
+                  render={<Link to="/login" state={{ openAuth: true }} />}
+                  variant="default"
+                >
+                  Sign up
+                </Button>
+              </div>
+            </div>
+          </motion.div>
+        ) : null}
+      </AnimatePresence>
+    </header>
   );
 }
