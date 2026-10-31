@@ -1,4 +1,5 @@
-import { NoAccess } from "@/components/common/NoAccess";
+import { Navigate } from "react-router-dom";
+
 import { CustomerIssues } from "@/features/issues/components/CustomerIssues";
 import { ManagementIssue } from "@/features/issues/components/ManagementIssue";
 import { useAuth } from "@/hooks/useAuth";
@@ -13,6 +14,6 @@ export default function IssuesPage() {
     case "CUSTOMER":
       return <CustomerIssues />;
     default:
-      return <NoAccess />;
+      return <Navigate to="/dashboard" replace />;
   }
 }

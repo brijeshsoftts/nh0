@@ -1,4 +1,4 @@
-import { useParams } from "react-router-dom";
+import { useSearchParams } from "react-router-dom";
 
 import { InputField } from "@/components/common/InputField";
 import { Button } from "@/components/ui/button";
@@ -14,9 +14,10 @@ import { Spinner } from "@/components/ui/spinner";
 import { useResetPassword } from "@/features/auth/hooks/usePasswordRecovery";
 
 export default function ResetPasswordPage() {
-  const { token } = useParams<{ token: string }>();
+  const [search] = useSearchParams();
+
   const { handleSubmit, submit, register, errors, isPending } =
-    useResetPassword(token!);
+    useResetPassword(search.get("token") || "");
 
   return (
     <div className="flex min-h-screen items-center justify-center bg-background p-4 sm:p-8">

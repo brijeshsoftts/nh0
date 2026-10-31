@@ -565,6 +565,7 @@ function CheckoutFlow({
     useState<CreatePublicBookingResult | null>(null);
   const [paymentStatus, setPaymentStatus] =
     useState<PublicPaymentStatus | null>(null);
+  const [paymentNotice, setPaymentNotice] = useState("");
   const [bookingError, setBookingError] = useState("");
   const [checkoutExpired, setCheckoutExpired] = useState(false);
   const isLocked = Boolean(reservation) || createPublicBooking.isPending;
@@ -617,6 +618,7 @@ function CheckoutFlow({
 
   const onPay = () => {
     if (!reservation) return;
+    setPaymentNotice("");
     if (
       reservation.checkoutExpiresAt &&
       Date.parse(reservation.checkoutExpiresAt) <= Date.now()
@@ -627,6 +629,16 @@ function CheckoutFlow({
     void startPayment(reservation.id, reservation.bookingReference, {
       checkoutToken: reservation.checkoutToken,
       onStatus: onPaymentStatus,
+      onCancelled: () =>
+        setPaymentNotice("Payment Cancelled. No booking has been confirmed."),
+      onFailed: () =>
+        setPaymentNotice(
+          "Payment Failed. Your payment could not be completed. Please try again."
+        ),
+      onVerificationFailed: () =>
+        setPaymentNotice(
+          "Payment Verification Failed. We couldn't verify your payment. Please contact support if money was deducted."
+        ),
     });
   };
 
@@ -653,15 +665,20 @@ function CheckoutFlow({
 
   const isFormValid = form.formState.isValid;
   const isPaymentComplete = paymentStatus?.paymentStatus === "COMPLETED";
+  const hasPaymentProblem =
+    isExpired ||
+    Boolean(paymentNotice) ||
+    paymentStatus?.paymentStatus === "FAILED";
   const paymentMessage = isExpired
     ? "This 15-minute reservation hold has expired. Return to availability to choose this room again."
-    : paymentStatus?.paymentStatus === "FAILED"
-      ? "Payment was not completed. You can try again."
-      : isPaymentComplete
-        ? "Payment has been received. Reservation confirmation is still pending."
-        : paymentStatus?.paymentStatus === "PENDING"
-          ? "Payment is not confirmed yet. You can retry or wait for the status to update."
-          : "Online payment is processed through Razorpay.";
+    : paymentNotice ||
+      (paymentStatus?.paymentStatus === "FAILED"
+        ? "Payment Failed. Your payment could not be completed. Please try again."
+        : isPaymentComplete
+          ? "Payment has been received. Reservation confirmation is still pending."
+          : paymentStatus?.paymentStatus === "PENDING"
+            ? "Payment is not confirmed yet. You can retry or wait for the status to update."
+            : "Online payment is processed through Razorpay.");
 
   return (
     <form
@@ -902,17 +919,13 @@ function CheckoutFlow({
             <div
               aria-live="polite"
               className={`mt-4 border-l-2 px-4 py-3 text-sm ${
-                paymentStatus?.paymentStatus === "FAILED" || isExpired
+                hasPaymentProblem
                   ? "border-destructive bg-destructive/5 text-destructive"
                   : paymentStatus?.paymentStatus === "COMPLETED"
                     ? "border-success bg-success/5 text-success"
                     : "border-primary bg-secondary/50 text-foreground"
               }`}
-              role={
-                paymentStatus?.paymentStatus === "FAILED" || isExpired
-                  ? "alert"
-                  : "status"
-              }
+              role={hasPaymentProblem ? "alert" : "status"}
             >
               {paymentMessage}
             </div>

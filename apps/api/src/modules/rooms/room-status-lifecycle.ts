@@ -194,9 +194,10 @@ export async function confirmPaidBooking(
     select: {
       id: true,
       status: true,
+      publicCheckoutTokenHash: true,
       checkInDate: true,
       checkOutDate: true,
-      bookingRoom: { select: { assignedRoomId: true } },
+      bookingRoom: { select: { assignedRoomId: true, roomTypeId: true } },
     },
   });
 
@@ -204,7 +205,40 @@ export async function confirmPaidBooking(
     return false;
   }
 
-  const roomId = booking.bookingRoom?.assignedRoomId;
+  let roomId = booking.bookingRoom?.assignedRoomId ?? null;
+
+  if (!roomId && booking.bookingRoom) {
+    const candidates = await tx.room.findMany({
+      where: {
+        roomTypeId: booking.bookingRoom.roomTypeId,
+        isActive: true,
+        occupancyStatus: { not: OccupancyStatus.OUT_OF_ORDER },
+        housekeepingStatus: HousekeepingStatus.CLEAN,
+      },
+      orderBy: { roomNumber: 'asc' },
+      select: { id: true },
+    });
+
+    for (const candidate of candidates) {
+      const available = await canReserveRoomForBooking(tx, {
+        roomId: candidate.id,
+        bookingId,
+        checkInDate: booking.checkInDate,
+        checkOutDate: booking.checkOutDate,
+      });
+      if (!available) continue;
+
+      const assignment = await tx.bookingRoom.updateMany({
+        where: { bookingId, assignedRoomId: null },
+        data: { assignedRoomId: candidate.id },
+      });
+      if (assignment.count === 1) {
+        roomId = candidate.id;
+        break;
+      }
+    }
+  }
+
   const roomCanBeReserved = roomId
     ? await canReserveRoomForBooking(tx, {
         roomId,
@@ -215,6 +249,12 @@ export async function confirmPaidBooking(
     : false;
 
   if (!roomId || !roomCanBeReserved) {
+    if (booking.publicCheckoutTokenHash && roomId) {
+      await tx.bookingRoom.updateMany({
+        where: { bookingId, assignedRoomId: roomId },
+        data: { assignedRoomId: null },
+      });
+    }
     await tx.booking.updateMany({
       where: { id: bookingId, status: BookingStatus.PENDING },
       data: { checkoutExpiresAt: null },

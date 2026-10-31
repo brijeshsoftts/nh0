@@ -1,12 +1,23 @@
 import { Plus } from "lucide-react";
+import { Navigate } from "react-router-dom";
 
 import { Header } from "@/components/common/Header";
 import { Button } from "@/components/ui/button";
 import { CreateCustomerDialog } from "@/features/customers/components/CreateCustomerDialog";
 import { CustomerStat } from "@/features/customers/components/CustomerStat";
 import { CustomerTable } from "@/features/customers/components/CustomerTable";
+import { useAuth } from "@/hooks/useAuth";
 
 export default function CustomersPage() {
+  const { user } = useAuth();
+
+  if (
+    user?.role === "CUSTOMER" ||
+    (user?.role === "STAFF" && user.category !== "RECEPTIONIST")
+  ) {
+    return <Navigate to="/dashboard" replace />;
+  }
+
   return (
     <>
       <Header

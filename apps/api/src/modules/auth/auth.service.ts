@@ -116,7 +116,7 @@ export class AuthService {
       }),
     ]);
 
-    await this.emailsService.resetPassword(user.fullName, token, '30 minutes');
+    await this.emailsService.resetPassword(user.email, token, '30 minutes');
   }
 
   async resetPassword(token: string, dto: ResetPasswordDto): Promise<void> {

@@ -18,6 +18,7 @@ import {
 } from "lucide-react";
 import type { ReactNode } from "react";
 import { useMemo, useState } from "react";
+import { Navigate } from "react-router-dom";
 
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -29,6 +30,7 @@ import { useCreateBooking } from "@/features/bookings/hooks/useCreateBooking";
 import { CreateCustomerDialog } from "@/features/customers/components/CreateCustomerDialog";
 import { SearchCustomer } from "@/features/customers/components/SearchCustomer";
 import type { SearchCustomer as CustomerSearchResult } from "@/features/customers/customers.types";
+import { useAuth } from "@/hooks/useAuth";
 
 const TOTAL_STEPS = 5;
 const stepLabels = [
@@ -138,6 +140,7 @@ export default function NewBookingPage() {
     adults: number;
     children: number;
   } | null>(null);
+  const { user } = useAuth();
 
   const { mutate: createBooking, isPending: isCreatingBooking } =
     useCreateBooking();
@@ -151,6 +154,11 @@ export default function NewBookingPage() {
     () => rooms.find((room) => room.id === booking.roomId) ?? null,
     [booking.roomId, rooms]
   );
+
+  if (user?.role !== "ADMIN") {
+    return <Navigate to="/dashboard" replace />;
+  }
+
   const roomPrice = selectedRoom?.roomType.basePrice ?? 0;
   const subtotal = roomPrice * nights;
   const taxAmount = Math.round(subtotal * 0.18);

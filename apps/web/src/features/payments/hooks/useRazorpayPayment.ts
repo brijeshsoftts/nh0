@@ -15,6 +15,9 @@ type PaymentCheckoutContext = {
   paymentId?: string;
   checkoutToken?: string;
   onStatus?: (status: PaymentItem | PublicPaymentStatus) => void;
+  onCancelled?: () => void;
+  onFailed?: () => void;
+  onVerificationFailed?: () => void;
 };
 
 export type { PaymentCheckoutContext };
@@ -49,7 +52,8 @@ export function useRazorpayPayment() {
 
   const reconcile = async (
     paymentId: string,
-    context?: PaymentCheckoutContext
+    context?: PaymentCheckoutContext,
+    quietPending = false
   ) => {
     try {
       const payment = context?.checkoutToken
@@ -62,11 +66,21 @@ export function useRazorpayPayment() {
       context?.onStatus?.(payment);
 
       const status = payment.paymentStatus;
-      if (status === "COMPLETED") {
-        toast.success("Payment confirmed.");
+      const bookingConfirmed =
+        !("bookingStatus" in payment) || payment.bookingStatus === "CONFIRMED";
+      if (status === "COMPLETED" && bookingConfirmed) {
+        toast.success(
+          "bookingStatus" in payment
+            ? "Booking Confirmed! Your reservation has been successfully confirmed."
+            : "Payment confirmed."
+        );
+      } else if (status === "COMPLETED") {
+        toast.message("Verifying your booking. Please wait...");
       } else if (status === "FAILED") {
-        toast.error("Payment failed. You can try again.");
-      } else {
+        toast.error(
+          "Payment Failed. Your payment could not be completed. Please try again."
+        );
+      } else if (!quietPending) {
         toast.message("Payment is still being confirmed. Check back shortly.");
       }
     } catch (error) {
@@ -99,6 +113,7 @@ export function useRazorpayPayment() {
             paymentId: context?.paymentId,
           });
       let verificationStarted = false;
+      let failureHandled = false;
 
       const options: RazorpayOrderOptions = {
         key: order.keyId,
@@ -114,7 +129,8 @@ export function useRazorpayPayment() {
             paymentLock.current = false;
             setIsCheckoutOpen(false);
             if (!verificationStarted) {
-              void reconcile(order.paymentId, context);
+              if (!failureHandled) context?.onCancelled?.();
+              void reconcile(order.paymentId, context, true);
             }
           },
         },
@@ -142,14 +158,26 @@ export function useRazorpayPayment() {
             context?.onStatus?.(payment);
 
             const status = payment.paymentStatus;
-            if (status === "COMPLETED") {
-              toast.success("Payment confirmed.");
+            const bookingConfirmed =
+              !("bookingStatus" in payment) ||
+              payment.bookingStatus === "CONFIRMED";
+            if (status === "COMPLETED" && bookingConfirmed) {
+              toast.success(
+                "bookingStatus" in payment
+                  ? "Booking Confirmed! Your reservation has been successfully confirmed."
+                  : "Payment confirmed."
+              );
+            } else if (status === "COMPLETED") {
+              toast.message("Verifying your booking. Please wait...");
             } else {
-              toast.message("Payment is awaiting confirmation.");
+              toast.message("Verifying your payment. Please wait...");
             }
           } catch (error) {
-            notifyError(error);
-            await reconcile(order.paymentId, context);
+            context?.onVerificationFailed?.();
+            toast.error(
+              "Payment Verification Failed. We couldn't verify your payment. Please contact support if money was deducted."
+            );
+            await reconcile(order.paymentId, context, true);
           } finally {
             setIsVerifying(false);
           }
@@ -158,8 +186,12 @@ export function useRazorpayPayment() {
 
       const checkout = new Razorpay(options);
       checkout.on("payment.failed", () => {
-        toast.message("Payment was not confirmed. Checking its status.");
-        void reconcile(order.paymentId, context);
+        failureHandled = true;
+        context?.onFailed?.();
+        toast.error(
+          "Payment Failed. Your payment could not be completed. Please try again."
+        );
+        void reconcile(order.paymentId, context, true);
       });
       setIsCheckoutOpen(true);
       checkout.open();

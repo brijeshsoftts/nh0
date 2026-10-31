@@ -1,3 +1,5 @@
+import { Navigate } from "react-router-dom";
+
 import { NoAccess } from "@/components/common/NoAccess";
 import { CustomerDashboard } from "@/features/dashboard/components/CustomerDashboard";
 import { HousekeeperDashboard } from "@/features/dashboard/components/HousekeeperDashboard";
@@ -23,6 +25,6 @@ export default function DashboardPage() {
     case "CUSTOMER":
       return <CustomerDashboard />;
     default:
-      return <NoAccess />;
+      return <Navigate to="/" replace />;
   }
 }

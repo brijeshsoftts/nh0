@@ -1,5 +1,6 @@
 import { createBrowserRouter } from "react-router-dom";
 
+import { AuthLayout } from "@/components/layout/AuthLayout";
 import { DashboardLayout } from "@/components/layout/DashboardLayout";
 import { PublicLayout } from "@/components/layout/PublicLayout";
 import LoginPage from "@/pages/auth/Login";
@@ -38,14 +39,19 @@ export const router = createBrowserRouter([
       { path: "checkout", element: <BookingCheckout /> },
     ],
   },
-  { path: "/register", element: <RegisterPage /> },
   {
-    path: "/reset-password",
-    element: <ResetPasswordPage />,
-  },
-  {
-    path: "/login",
-    element: <LoginPage />,
+    element: <AuthLayout />,
+    children: [
+      { path: "/register", element: <RegisterPage /> },
+      {
+        path: "/reset-password",
+        element: <ResetPasswordPage />,
+      },
+      {
+        path: "/login",
+        element: <LoginPage />,
+      },
+    ],
   },
   {
     element: <DashboardLayout />,

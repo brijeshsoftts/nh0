@@ -44,7 +44,7 @@ export const resetPasswordTemplate = (
 
           <tr>
             <td align="center" style="padding: 20px 0;">
-              <a href="${env.HOST_NAME}/reset-password?token=${token}"
+              <a href="${env.CORS_ORIGIN}/reset-password?token=${token}"
                  style="display: inline-block; padding: 12px 25px;
                         background-color: #2563eb; color: #ffffff;
                         text-decoration: none; border-radius: 5px;

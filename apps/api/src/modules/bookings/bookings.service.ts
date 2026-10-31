@@ -1494,11 +1494,10 @@ export class BookingsService {
           data: {
             bookingId: createdBooking.id,
             roomTypeId: room.roomType.id,
-            assignedRoomId: room.id,
+            assignedRoomId: null,
             pricePerNight: room.roomType.basePrice,
           },
         });
-        await syncRoomOccupancyStatus(tx, room.id);
         await tx.bookingGuest.createMany({
           data: dto.guests.map((guest) => ({
             bookingId: createdBooking.id,

@@ -1,5 +1,6 @@
 import { Braces, Check, Clipboard, RefreshCw } from "lucide-react";
 import { useState } from "react";
+import { Navigate } from "react-router-dom";
 import { toast } from "sonner";
 
 import {
@@ -20,6 +21,7 @@ import {
 import { Spinner } from "@/components/ui/spinner";
 import { useAuditLogs } from "@/features/auditLog/auditLog.crud";
 import type { AuditLog, JsonValue } from "@/features/auditLog/auditLog.types";
+import { useAuth } from "@/hooks/useAuth";
 import { useDebounce } from "@/hooks/useDebounce";
 
 const ENTITY_TYPE_OPTIONS: FilterOption[] = [
@@ -113,13 +115,17 @@ export default function AuditLogsPage() {
   const [page, setPage] = useState(1);
   const [selectedLog, setSelectedLog] = useState<AuditLog | null>(null);
   const debouncedSearch = useDebounce(search, 350);
-
+  const { user } = useAuth();
   const { items, pagination, isLoading, isError, refetch } = useAuditLogs({
     search: debouncedSearch || undefined,
     entityType: entityType || undefined,
     page,
     limit: 20,
   });
+
+  if (user?.role !== "ADMIN") {
+    return <Navigate to="/dashboard" replace />;
+  }
 
   const columns: ColumnDef<AuditLog>[] = [
     {
