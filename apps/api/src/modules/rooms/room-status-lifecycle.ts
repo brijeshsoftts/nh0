@@ -4,7 +4,6 @@ import {
   BookingStatus,
   HousekeepingStatus,
   OccupancyStatus,
-  PaymentStatus,
   Prisma,
   TaskStatus,
 } from '../../types/prisma.types';
@@ -64,36 +63,13 @@ export async function canReserveRoomForBooking(
     return false;
   }
 
-  const now = new Date();
   const overlappingBooking = await tx.booking.findFirst({
     where: {
       ...(input.bookingId && { id: { not: input.bookingId } }),
       bookingRoom: { assignedRoomId: input.roomId },
       checkInDate: { lt: input.checkOutDate },
       checkOutDate: { gt: input.checkInDate },
-      OR: [
-        {
-          status: {
-            in: [BookingStatus.CONFIRMED, BookingStatus.CHECKED_IN],
-          },
-        },
-        {
-          status: BookingStatus.PENDING,
-          OR: [
-            { checkoutExpiresAt: null },
-            { checkoutExpiresAt: { gt: now } },
-            {
-              invoice: {
-                is: {
-                  payments: {
-                    some: { paymentStatus: PaymentStatus.PENDING },
-                  },
-                },
-              },
-            },
-          ],
-        },
-      ],
+      status: { in: [BookingStatus.CONFIRMED, BookingStatus.CHECKED_IN] },
     },
     select: { id: true },
   });
@@ -139,25 +115,7 @@ export async function resolveRoomOccupancyStatus(
     where: {
       bookingRoom: { assignedRoomId: roomId },
       checkOutDate: { gt: now },
-      OR: [
-        { status: BookingStatus.CONFIRMED },
-        {
-          status: BookingStatus.PENDING,
-          OR: [
-            { checkoutExpiresAt: null },
-            { checkoutExpiresAt: { gt: now } },
-            {
-              invoice: {
-                is: {
-                  payments: {
-                    some: { paymentStatus: PaymentStatus.PENDING },
-                  },
-                },
-              },
-            },
-          ],
-        },
-      ],
+      status: BookingStatus.CONFIRMED,
     },
     select: { id: true },
   });

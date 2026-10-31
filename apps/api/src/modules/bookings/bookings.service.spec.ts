@@ -1,13 +1,12 @@
-import { PaymentStatus } from '../../types/prisma.types';
-import type { Prisma } from '../../types/prisma.types';
 import type { PrismaService } from '../../prisma/prisma.service';
+import { type Prisma, PaymentStatus } from '../../types/prisma.types';
 import {
   canReserveRoomForBooking,
   syncRoomOccupancyStatus,
 } from '../rooms/room-status-lifecycle';
 
-import { CreatePublicBookingDto } from './dto/create-public-booking.dto';
 import { BookingsService } from './bookings.service';
+import { CreatePublicBookingDto } from './dto/create-public-booking.dto';
 
 jest.mock('../rooms/room-status-lifecycle', () => ({
   canReserveRoomForBooking: jest.fn().mockResolvedValue(true),
@@ -16,7 +15,11 @@ jest.mock('../rooms/room-status-lifecycle', () => ({
 }));
 
 jest.mock('../../types/prisma.types', () => ({
-  BookingStatus: { PENDING: 'PENDING' },
+  BookingStatus: {
+    PENDING: 'PENDING',
+    CONFIRMED: 'CONFIRMED',
+    CHECKED_IN: 'CHECKED_IN',
+  },
   Category: {},
   InvoiceStatus: { UNPAID: 'UNPAID' },
   OccupancyStatus: { OUT_OF_ORDER: 'OUT_OF_ORDER' },
@@ -38,7 +41,39 @@ jest.mock('../../prisma/prisma.service', () => ({
 }));
 
 describe('BookingsService public checkout', () => {
+  it('does not let pending bookings block room search', async () => {
+    const findMany = jest.fn().mockResolvedValue([]);
+    const service = new BookingsService({
+      room: { findMany },
+    } as unknown as PrismaService);
+
+    await service.findAvailableRooms({
+      checkInDate: new Date('2030-01-10T00:00:00.000Z'),
+      checkOutDate: new Date('2030-01-12T00:00:00.000Z'),
+      adults: 1,
+      children: 0,
+    });
+
+    expect(findMany).toHaveBeenCalledWith(
+      expect.objectContaining({
+        where: expect.objectContaining({
+          NOT: {
+            bookingRooms: {
+              some: {
+                booking: expect.objectContaining({
+                  status: { in: ['CONFIRMED', 'CHECKED_IN'] },
+                }),
+              },
+            },
+          },
+        }),
+      }),
+    );
+  });
+
   it('creates a pending payment attempt without assigning or occupying a room', async () => {
+    const createBookingRoom = jest.fn();
+    const createPayment = jest.fn();
     const tx = {
       booking: {
         findUnique: jest.fn().mockResolvedValue(null),
@@ -54,10 +89,10 @@ describe('BookingsService public checkout', () => {
           roomType: { id: 'room-type-id', maxGuests: 2, basePrice: 1000 },
         }),
       },
-      bookingRoom: { create: jest.fn() },
+      bookingRoom: { create: createBookingRoom },
       bookingGuest: { createMany: jest.fn() },
       invoice: { create: jest.fn().mockResolvedValue({ id: 'invoice-id' }) },
-      payment: { create: jest.fn() },
+      payment: { create: createPayment },
     } as unknown as Prisma.TransactionClient;
     const prismaService = {
       booking: { findUnique: jest.fn().mockResolvedValue(null) },
@@ -83,13 +118,13 @@ describe('BookingsService public checkout', () => {
 
     await service.createPublic(dto);
 
-    expect(tx.bookingRoom.create).toHaveBeenCalledWith({
+    expect(createBookingRoom).toHaveBeenCalledWith({
       data: expect.objectContaining({
         bookingId: 'booking-id',
         assignedRoomId: null,
       }),
     });
-    expect(tx.payment.create).toHaveBeenCalledWith({
+    expect(createPayment).toHaveBeenCalledWith({
       data: expect.objectContaining({
         paymentStatus: PaymentStatus.PENDING,
       }),

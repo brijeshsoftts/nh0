@@ -2,7 +2,7 @@ import { Injectable, NotFoundException } from '@nestjs/common';
 
 import { PrismaService } from '../../prisma/prisma.service';
 import { ListResponse } from '../../types/api.types';
-import { BookingStatus, PaymentStatus, Prisma } from '../../types/prisma.types';
+import { BookingStatus, Prisma } from '../../types/prisma.types';
 
 import { AmenitiesQueryDto } from './dto/amenities-query.dto';
 import { AvailableRoomQueryDto } from './dto/available-room-query.dot';
@@ -292,27 +292,7 @@ export class PublicService {
 
   private buildActiveBookingWhere(): Prisma.BookingWhereInput {
     return {
-      OR: [
-        {
-          status: {
-            in: [BookingStatus.CONFIRMED, BookingStatus.CHECKED_IN],
-          },
-        },
-        {
-          status: BookingStatus.PENDING,
-          OR: [
-            { checkoutExpiresAt: null },
-            { checkoutExpiresAt: { gt: new Date() } },
-            {
-              invoice: {
-                is: {
-                  payments: { some: { paymentStatus: PaymentStatus.PENDING } },
-                },
-              },
-            },
-          ],
-        },
-      ],
+      status: { in: [BookingStatus.CONFIRMED, BookingStatus.CHECKED_IN] },
     };
   }
 }

@@ -5,8 +5,8 @@ import {
   Logger,
   NotFoundException,
 } from '@nestjs/common';
-import slugify from 'slugify';
 import type {} from 'multer';
+import slugify from 'slugify';
 
 import { MAX_FILES } from '../../common/constants';
 import { deleteFile, uploadFile } from '../../config';
@@ -528,11 +528,7 @@ export class RoomTypesService {
 
     return {
       status: {
-        in: [
-          BookingStatus.PENDING,
-          BookingStatus.CONFIRMED,
-          BookingStatus.CHECKED_IN,
-        ],
+        in: [BookingStatus.CONFIRMED, BookingStatus.CHECKED_IN],
       },
       checkInDate: { lt: endDate },
       checkOutDate: { gt: startDate },

@@ -1363,27 +1363,7 @@ export class BookingsService {
     checkOutDate: Date,
   ): Prisma.BookingWhereInput {
     return {
-      OR: [
-        {
-          status: {
-            in: [BookingStatus.CONFIRMED, BookingStatus.CHECKED_IN],
-          },
-        },
-        {
-          status: BookingStatus.PENDING,
-          OR: [
-            { checkoutExpiresAt: null },
-            { checkoutExpiresAt: { gt: new Date() } },
-            {
-              invoice: {
-                is: {
-                  payments: { some: { paymentStatus: PaymentStatus.PENDING } },
-                },
-              },
-            },
-          ],
-        },
-      ],
+      status: { in: [BookingStatus.CONFIRMED, BookingStatus.CHECKED_IN] },
       checkInDate: { lt: checkOutDate },
       checkOutDate: { gt: checkInDate },
     };

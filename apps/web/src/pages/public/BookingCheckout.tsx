@@ -20,7 +20,7 @@ import {
   LockKeyhole,
   Users,
 } from "lucide-react";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useFieldArray, useForm } from "react-hook-form";
 import { Link, useParams, useSearchParams } from "react-router-dom";
 import { z } from "zod";
@@ -44,6 +44,7 @@ import type {
 } from "@/features/payments/payments.types";
 import type { AvailableRoomDetails } from "@/features/public/public.types";
 import { useAvailableRoom } from "@/features/public/useAvailableRooms";
+import { useAuth } from "@/hooks/useAuth";
 import { formatBed, formatPrice } from "@/lib/format";
 
 type StayDates = {
@@ -65,6 +66,18 @@ function parseCount(value: string | null, min: number, max: number) {
   return Number.isInteger(parsed) && parsed >= min && parsed <= max
     ? parsed
     : null;
+}
+
+function getNationalPhoneNumber(phone: string) {
+  const digits = phone.replace(/\D/g, "");
+  const nationalNumber =
+    digits.length === 12 && digits.startsWith("91")
+      ? digits.slice(2)
+      : digits.length === 11 && digits.startsWith("0")
+        ? digits.slice(1)
+        : digits;
+
+  return /^[6-9]\d{9}$/.test(nationalNumber) ? nationalNumber : "";
 }
 
 function getValidStay(searchParams: URLSearchParams): StayDates | null {
@@ -537,6 +550,7 @@ function CheckoutFlow({
   onReservationCreated: () => void;
   onPaymentConfirmed: () => void;
 }) {
+  const { isLoading: isAuthLoading, user } = useAuth();
   const schema = createPublicCheckoutSchema(adults, children);
   const form = useForm<CheckoutFormInput, unknown, CheckoutFormData>({
     resolver: zodResolver(schema),
@@ -550,6 +564,36 @@ function CheckoutFlow({
       })),
     },
   });
+  const { getFieldState, getValues, setValue } = form;
+
+  useEffect(() => {
+    if (isAuthLoading || !user) return;
+
+    if (
+      user.fullName.trim() &&
+      !getFieldState("fullName").isDirty &&
+      !getValues("fullName").trim()
+    ) {
+      setValue("fullName", user.fullName, { shouldValidate: true });
+    }
+    if (
+      user.email.trim() &&
+      !getFieldState("email").isDirty &&
+      !getValues("email").trim()
+    ) {
+      setValue("email", user.email, { shouldValidate: true });
+    }
+
+    const phone = getNationalPhoneNumber(user.phone);
+    if (
+      phone &&
+      !getFieldState("phone").isDirty &&
+      !getValues("phone").trim()
+    ) {
+      setValue("phone", phone, { shouldValidate: true });
+    }
+  }, [getFieldState, getValues, isAuthLoading, setValue, user]);
+
   const { fields } = useFieldArray({
     control: form.control,
     name: "companions",
