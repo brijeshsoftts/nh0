@@ -631,34 +631,49 @@ export class DashboardService {
     const monthStart = new Date(now.getFullYear(), now.getMonth(), 1);
     const nextMonth = new Date(now.getFullYear(), now.getMonth() + 1, 1);
 
-    const [activeRooms, occupiedRooms, arrivals, monthlyRevenue, openIssues] =
-      await Promise.all([
-        this.prismaService.room.count({ where: { isActive: true } }),
-        this.prismaService.room.count({
-          where: {
-            isActive: true,
-            occupancyStatus: OccupancyStatus.OCCUPIED,
-          },
-        }),
-        this.prismaService.booking.count({
-          where: {
-            checkInDate: { gte: today, lt: tomorrow },
-            status: { in: [BookingStatus.PENDING, BookingStatus.CONFIRMED] },
-          },
-        }),
-        this.prismaService.payment.aggregate({
-          where: {
-            paymentStatus: PaymentStatus.COMPLETED,
-            paidAt: { gte: monthStart, lt: nextMonth },
-          },
-          _sum: { amount: true },
-        }),
-        this.prismaService.issue.count({
-          where: {
-            status: { in: [IssueStatus.OPEN, IssueStatus.IN_PROGRESS] },
-          },
-        }),
-      ]);
+    const [
+      totalRooms,
+      totalCustomers,
+      totalStaff,
+      activeRooms,
+      occupiedRooms,
+      arrivals,
+      monthlyRevenue,
+      openIssues,
+    ] = await Promise.all([
+      this.prismaService.room.count(),
+      this.prismaService.user.count({
+        where: { role: UserRole.CUSTOMER, softDeletedAt: null },
+      }),
+      this.prismaService.staff.count({
+        where: { user: { is: { softDeletedAt: null } } },
+      }),
+      this.prismaService.room.count({ where: { isActive: true } }),
+      this.prismaService.room.count({
+        where: {
+          isActive: true,
+          occupancyStatus: OccupancyStatus.OCCUPIED,
+        },
+      }),
+      this.prismaService.booking.count({
+        where: {
+          checkInDate: { gte: today, lt: tomorrow },
+          status: { in: [BookingStatus.PENDING, BookingStatus.CONFIRMED] },
+        },
+      }),
+      this.prismaService.payment.aggregate({
+        where: {
+          paymentStatus: PaymentStatus.COMPLETED,
+          paidAt: { gte: monthStart, lt: nextMonth },
+        },
+        _sum: { amount: true },
+      }),
+      this.prismaService.issue.count({
+        where: {
+          status: { in: [IssueStatus.OPEN, IssueStatus.IN_PROGRESS] },
+        },
+      }),
+    ]);
 
     const occupancyRate = activeRooms
       ? Math.round((occupiedRooms / activeRooms) * 100)
@@ -672,6 +687,33 @@ export class DashboardService {
     }).format(revenue);
 
     return [
+      {
+        id: 'admin-total-rooms',
+        title: 'Total rooms',
+        value: totalRooms.toLocaleString(),
+        description: 'Active and inactive rooms',
+        icon: 'BedDouble',
+        tone: 'sky',
+        link: '/rooms',
+      },
+      {
+        id: 'admin-total-customers',
+        title: 'Total customers',
+        value: totalCustomers.toLocaleString(),
+        description: 'Registered customer accounts',
+        icon: 'Users',
+        tone: 'gold',
+        link: '/customers',
+      },
+      {
+        id: 'admin-total-staff',
+        title: 'Total staff',
+        value: totalStaff.toLocaleString(),
+        description: 'Operational staff accounts',
+        icon: 'Users',
+        tone: 'teal',
+        link: '/staff',
+      },
       {
         id: 'occupancy-rate',
         title: 'Occupancy rate',
