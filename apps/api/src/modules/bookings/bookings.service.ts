@@ -458,11 +458,7 @@ export class BookingsService {
       );
     }
     const allowedTransitions: Record<BookingStatus, BookingStatus[]> = {
-      [BookingStatus.PENDING]: [
-        BookingStatus.CONFIRMED,
-        BookingStatus.CANCELLED,
-        BookingStatus.NO_SHOW,
-      ],
+      [BookingStatus.PENDING]: [BookingStatus.CANCELLED, BookingStatus.NO_SHOW],
       [BookingStatus.CONFIRMED]: [
         BookingStatus.CHECKED_IN,
         BookingStatus.CANCELLED,
@@ -1138,8 +1134,13 @@ export class BookingsService {
     const bookingReference = `BK-${Date.now()}-${Math.random().toString(36).slice(2, 6).toUpperCase()}`;
     const paymentReference = `PAY-${Date.now()}-${Math.random().toString(36).slice(2, 7).toUpperCase()}`;
 
-    const paymentStatus = PaymentStatus.PENDING;
-    const invoiceStatus = InvoiceStatus.UNPAID;
+    const isCashPayment = dto.paymentMethod === PaymentMethod.CASH;
+    const paymentStatus = isCashPayment
+      ? PaymentStatus.COMPLETED
+      : PaymentStatus.PENDING;
+    const invoiceStatus = isCashPayment
+      ? InvoiceStatus.PAID
+      : InvoiceStatus.UNPAID;
 
     const createTransaction = () =>
       this.prismaService.$transaction(async (tx) => {
@@ -1192,7 +1193,9 @@ export class BookingsService {
             totalAmount,
             paymentMethod: dto.paymentMethod,
             specialRequest: dto.specialRequest,
-            status: BookingStatus.PENDING,
+            status: isCashPayment
+              ? BookingStatus.CONFIRMED
+              : BookingStatus.PENDING,
             bookedAt,
             createdBy,
           },
@@ -1243,8 +1246,8 @@ export class BookingsService {
             amount: totalAmount,
             paymentMethod: dto.paymentMethod,
             paymentStatus,
-            paidAt: null,
-            recordedBy: null,
+            paidAt: isCashPayment ? bookedAt : null,
+            recordedBy: isCashPayment ? createdBy : null,
           },
           select: {
             paymentMethod: true,
@@ -1263,7 +1266,9 @@ export class BookingsService {
           subtotal,
           taxAmount,
           amount: totalAmount,
-          paymentMessage: 'Payment is pending.',
+          paymentMessage: isCashPayment
+            ? 'Cash payment recorded. Booking confirmed.'
+            : 'Payment is pending.',
         };
       });
 

@@ -1304,7 +1304,12 @@ export class PaymentsService {
           invoiceStatus === InvoiceStatus.PAID &&
           invoice.booking.status === BookingStatus.PENDING
         ) {
-          await confirmPaidBooking(tx, invoice.bookingId);
+          const confirmed = await confirmPaidBooking(tx, invoice.bookingId);
+          if (!confirmed) {
+            throw new ConflictException(
+              'Cash was not recorded because the booking could not be confirmed. Recheck room availability.',
+            );
+          }
         }
 
         return {

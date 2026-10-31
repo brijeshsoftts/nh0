@@ -951,7 +951,7 @@ export default function NewBookingPage() {
                       <div className="min-w-0 flex-1">
                         <p className="font-semibold">Cash payment</p>
                         <p className="mt-1 text-xs leading-5 text-muted-foreground">
-                          Collect cash after the reservation is created.
+                          Cash is recorded as paid when this booking is created.
                         </p>
                       </div>
                       {booking.paymentMethod === "CASH" && (
@@ -1224,8 +1224,8 @@ export default function NewBookingPage() {
                   </div>
                   <div className="rounded-none rounded-xl bg-muted/40 p-3 text-xs leading-5 text-muted-foreground">
                     <MapPin className="mr-1 inline h-3.5 w-3.5" />
-                    Room assignment and payment status follow the configured
-                    booking workflow.
+                    Cash bookings are confirmed and paid on creation. Online
+                    payments remain pending until verified.
                   </div>
                 </div>
               </aside>

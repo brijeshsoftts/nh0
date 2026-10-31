@@ -3,6 +3,7 @@ import { toast } from "sonner";
 
 import { invoicesKeys } from "@/features/invoices/invoices.keys";
 import { paymentsKeys } from "@/features/payments/payments.keys";
+import { roomsKeys } from "@/features/rooms/rooms/rooms.keys";
 import { notifyError } from "@/lib/notification";
 
 import { bookingsKeys, bookingsMutationKeys } from "../bookings.keys";
@@ -19,8 +20,13 @@ export function useCreateBooking() {
         queryClient.invalidateQueries({ queryKey: bookingsKeys.lists() }),
         queryClient.invalidateQueries({ queryKey: invoicesKeys.all }),
         queryClient.invalidateQueries({ queryKey: paymentsKeys.all }),
+        queryClient.invalidateQueries({ queryKey: roomsKeys.all }),
       ]);
-      toast.success(`Booking ${response.bookingReference} created.`);
+      toast.success(
+        response.paymentMethod === "CASH"
+          ? `Booking ${response.bookingReference} confirmed and paid.`
+          : `Booking ${response.bookingReference} created.`
+      );
     },
     onError: notifyError,
   });

@@ -1,9 +1,10 @@
 import { AnimatePresence, motion, useReducedMotion } from "framer-motion";
-import { ArrowUpRight, Menu, X } from "lucide-react";
+import { ArrowUpRight, LayoutDashboard, Menu, X } from "lucide-react";
 import { useEffect, useState } from "react";
 import { Link, NavLink } from "react-router-dom";
 
 import { Button } from "@/components/ui/button";
+import { useAuth } from "@/hooks/useAuth";
 import { cn } from "@/lib/utils";
 
 const navigation = [
@@ -58,6 +59,7 @@ export function PublicBrand({
 export function PublicNavbar({ compact = false }: { compact?: boolean }) {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const reduceMotion = useReducedMotion() ?? false;
+  const { isAuthenticated, isLoading } = useAuth();
   const closeMenu = () => setIsMenuOpen(false);
 
   useEffect(() => {
@@ -105,13 +107,26 @@ export function PublicNavbar({ compact = false }: { compact?: boolean }) {
               </nav>
             </div>
             <div className="hidden items-center gap-4 lg:flex">
-              <Link
-                className="min-h-11 content-center px-2 text-sm font-medium text-foreground transition-colors hover:text-primary focus-visible:rounded-sm focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-ring"
-                to="/login"
-                state={{ openAuth: true }}
-              >
-                Sign up
-              </Link>
+              {!isLoading &&
+                (isAuthenticated ? (
+                  <Button
+                    className="h-11 px-5 font-semibold"
+                    nativeButton={false}
+                    render={<Link to="/dashboard" />}
+                    variant="outline"
+                  >
+                    <LayoutDashboard aria-hidden="true" className="size-4" />
+                    Dashboard
+                  </Button>
+                ) : (
+                  <Link
+                    className="min-h-11 content-center px-2 text-sm font-medium text-foreground transition-colors hover:text-primary focus-visible:rounded-sm focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-ring"
+                    to="/login"
+                    state={{ openAuth: true }}
+                  >
+                    Sign up
+                  </Link>
+                ))}
               <Button
                 className="h-11 px-5 font-semibold"
                 nativeButton={false}
@@ -175,26 +190,40 @@ export function PublicNavbar({ compact = false }: { compact?: boolean }) {
                     </NavLink>
                   ))}
                 </div>
-                <div className="grid grid-cols-2 gap-3 pt-4">
-                  <Button
-                    className="h-11"
-                    nativeButton={false}
-                    onClick={closeMenu}
-                    render={<Link to="/login" state={{ openAuth: true }} />}
-                    variant="outline"
-                  >
-                    Log in
-                  </Button>
-                  <Button
-                    className="h-11 font-semibold"
-                    nativeButton={false}
-                    onClick={closeMenu}
-                    render={<Link to="/login" state={{ openAuth: true }} />}
-                    variant="default"
-                  >
-                    Sign up
-                  </Button>
-                </div>
+                {!isLoading &&
+                  (isAuthenticated ? (
+                    <Button
+                      className="mt-4 h-11 w-full font-semibold"
+                      nativeButton={false}
+                      onClick={closeMenu}
+                      render={<Link to="/dashboard" />}
+                      variant="default"
+                    >
+                      <LayoutDashboard aria-hidden="true" className="size-4" />
+                      Dashboard
+                    </Button>
+                  ) : (
+                    <div className="grid grid-cols-2 gap-3 pt-4">
+                      <Button
+                        className="h-11"
+                        nativeButton={false}
+                        onClick={closeMenu}
+                        render={<Link to="/login" state={{ openAuth: true }} />}
+                        variant="outline"
+                      >
+                        Log in
+                      </Button>
+                      <Button
+                        className="h-11 font-semibold"
+                        nativeButton={false}
+                        onClick={closeMenu}
+                        render={<Link to="/login" state={{ openAuth: true }} />}
+                        variant="default"
+                      >
+                        Sign up
+                      </Button>
+                    </div>
+                  ))}
               </div>
             </motion.div>
           ) : null}
