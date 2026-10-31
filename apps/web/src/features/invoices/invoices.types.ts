@@ -65,9 +65,11 @@ export type InvoiceDetails = {
 export interface CustomerInvoice {
   id: string;
   invoiceNumber: string;
+  customerName: string;
   invoiceDate: string;
   bookingReference: string;
   totalAmount: number;
+  paidAmount: number;
   balanceDue: number;
   dueDate: string;
   status: InvoiceStatus;

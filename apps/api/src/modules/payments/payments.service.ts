@@ -1711,13 +1711,18 @@ export class PaymentsService {
     return {
       id: payment.id,
       bookingId: payment.bookingId,
+      paymentReference: payment.paymentReference,
       bookingReference: payment.invoice.booking.bookingReference,
+      customerName: payment.customer?.fullName ?? 'Guest',
       date: (payment.paidAt ?? payment.createdAt).toISOString(),
       invoiceNumber: payment.invoice.invoiceNumber,
       transactionId: payment.transactionId,
       amount: payment.amount,
       paymentMethod: payment.paymentMethod,
       status: payment.paymentStatus,
+      paidAt: payment.paidAt?.toISOString() ?? null,
+      recordedByName: payment.recorder?.fullName ?? null,
+      createdAt: payment.createdAt.toISOString(),
     };
   }
 

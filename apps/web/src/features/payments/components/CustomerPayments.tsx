@@ -1,5 +1,5 @@
 import { formatDate } from "date-fns";
-import { Download, EllipsisVertical, Eye, RefreshCcw } from "lucide-react";
+import { EllipsisVertical, Eye, RefreshCcw } from "lucide-react";
 
 import { type ColumnDef, DataTable } from "@/components/common/DataTable";
 import {
@@ -18,11 +18,12 @@ import { useListParams } from "@/hooks/useListParams";
 import { formatPrice } from "@/lib/format";
 
 import { usePaymentsStats } from "../hooks/usePaymentsStats";
-import { usePayments } from "../payments.crud";
 import { useRazorpayPayment } from "../hooks/useRazorpayPayment";
-import type { CustomerPayment } from "../payments.types";
+import { usePayments } from "../payments.crud";
+import type { CustomerPayment, PaymentItem } from "../payments.types";
 
 import { filters } from "./ManagementPayments";
+import { PaymentDownload } from "./PaymentDownload";
 
 function Stats() {
   const { data, isLoading, isError } = usePaymentsStats();
@@ -118,6 +119,21 @@ function PaymentsTable() {
 
 function ActionDropdownMenu({ payment }: { payment: CustomerPayment }) {
   const { startPayment, isPending } = useRazorpayPayment();
+  const receipt: PaymentItem = {
+    id: payment.id,
+    bookingId: payment.bookingId,
+    paymentReference: payment.paymentReference,
+    transactionId: payment.transactionId,
+    invoiceNumber: payment.invoiceNumber,
+    bookingReference: payment.bookingReference,
+    customerName: payment.customerName,
+    amount: payment.amount,
+    paymentMethod: payment.paymentMethod,
+    paymentStatus: payment.status,
+    paidAt: payment.paidAt,
+    recordedByName: payment.recordedByName,
+    createdAt: payment.createdAt,
+  };
 
   return (
     <>
@@ -152,8 +168,7 @@ function ActionDropdownMenu({ payment }: { payment: CustomerPayment }) {
             </DropdownMenuItem>
           )}
           <DropdownMenuItem>
-            <Download />
-            Download
+            <PaymentDownload payment={receipt} />
           </DropdownMenuItem>
         </DropdownMenuContent>
       </DropdownMenu>

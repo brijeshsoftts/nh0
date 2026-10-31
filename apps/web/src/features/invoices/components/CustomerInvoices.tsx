@@ -1,5 +1,5 @@
 import { formatDate } from "date-fns";
-import { CreditCard, Download, EllipsisVertical, Eye } from "lucide-react";
+import { CreditCard, EllipsisVertical, Eye } from "lucide-react";
 
 import { type ColumnDef, DataTable } from "@/components/common/DataTable";
 import { InvoiceBadge } from "@/components/common/EnumBadges";
@@ -18,6 +18,7 @@ import { useInvoicesStats } from "../hooks/useInvoicesStats";
 import { useInvoices } from "../invoices.crud";
 import type { CustomerInvoice } from "../invoices.types";
 
+import { InvoiceDownload } from "./InvoiceDownload";
 import { filters } from "./ManagementInvoices";
 
 function Stats() {
@@ -155,8 +156,19 @@ function ActionDropdownMenu({ invoice }: { invoice: CustomerInvoice }) {
             Pay
           </DropdownMenuItem>
           <DropdownMenuItem>
-            <Download />
-            Download
+            <InvoiceDownload
+              invoice={{
+                id: invoice.id,
+                invoiceNumber: invoice.invoiceNumber,
+                customerName: invoice.customerName,
+                bookingReference: invoice.bookingReference,
+                totalAmount: invoice.totalAmount,
+                paidAmount: invoice.paidAmount,
+                balanceDue: invoice.balanceDue,
+                status: invoice.status,
+                issuedAt: invoice.invoiceDate,
+              }}
+            />
           </DropdownMenuItem>
         </DropdownMenuContent>
       </DropdownMenu>

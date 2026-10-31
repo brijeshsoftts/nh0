@@ -385,9 +385,12 @@ export class InvoicesService {
     return {
       id: invoice.id,
       invoiceNumber: invoice.invoiceNumber,
+      customerName:
+        invoice.customer?.fullName ?? invoice.booking.guestName ?? 'Guest',
       invoiceDate: invoice.issuedAt.toISOString().slice(0, 10),
       bookingReference: invoice.booking.bookingReference,
       totalAmount: invoice.totalAmount,
+      paidAmount,
       balanceDue: Math.max(0, invoice.totalAmount - paidAmount),
       dueDate: invoice.booking.checkOutDate.toISOString().slice(0, 10),
       status: invoice.status,

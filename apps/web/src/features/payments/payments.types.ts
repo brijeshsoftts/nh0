@@ -90,11 +90,16 @@ export type RecordQrPaymentResponse = CreateCashPaymentResponse;
 export interface CustomerPayment {
   id: string;
   bookingId: string;
+  paymentReference: string;
   bookingReference: string;
+  customerName: string;
   date: string;
   invoiceNumber: string;
   transactionId: string | null;
   amount: number;
   paymentMethod: PaymentMethod;
   status: PaymentStatus;
+  paidAt: string | null;
+  recordedByName: string | null;
+  createdAt: string;
 }
