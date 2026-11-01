@@ -30,7 +30,7 @@ const navLinks = [
 
 function Logo() {
   return (
-    <div className="flex items-center gap-3">
+    <Link to="/" className="flex items-center gap-3">
       {/* Logo Mark - Arched Background matching screenshot */}
       <div className="relative flex h-12 w-10 items-end justify-center overflow-hidden rounded-t-full rounded-b-sm bg-secondary pb-1">
         <Palmtree
@@ -48,7 +48,7 @@ function Logo() {
           Hotel & Resort
         </span>
       </div>
-    </div>
+    </Link>
   );
 }
 

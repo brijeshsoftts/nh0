@@ -1,10 +1,13 @@
 // import { ChevronRight } from "lucide-react";
 
 import {
+  animate,
   motion,
   useAnimationFrame,
+  useInView,
   useMotionValue,
   useReducedMotion,
+  useTransform,
 } from "framer-motion";
 import {
   ArrowRight,
@@ -17,11 +20,13 @@ import {
   Trophy,
   Users,
 } from "lucide-react";
-import { useRef } from "react";
+import { useEffect, useRef } from "react";
 import { Link } from "react-router-dom";
 
 import HeroImage from "@/assets/cta_image.png";
 import { Button } from "@/components/ui/button";
+import { HoverText } from "@/features/public/components/hoverText";
+import { ImageMotion } from "@/features/public/components/ImageMotion";
 
 import { sectionEyebrowClassName, sectionHeadingClassName } from "./Landing";
 // import {
@@ -51,15 +56,15 @@ function HeroSection() {
       {/* Content Container */}
       <div className="relative z-20 container mx-auto flex h-full flex-col items-start justify-center px-6 pt-12 md:px-12">
         <div className="max-w-140">
-          <span className="mb-2 block text-xs font-bold tracking-[0.15em] text-background uppercase">
+          <span className="mb-2 block text-xs font-bold tracking-[0.15em] text-white/70 uppercase">
             About Us
           </span>
 
-          <h1 className="mb-6 font-heading text-4xl leading-[1.05] tracking-tight text-background sm:text-5xl md:text-6xl lg:text-[72px]">
+          <h1 className="mb-6 font-heading text-4xl leading-[1.05] tracking-tight text-white sm:text-5xl md:text-6xl lg:text-[72px]">
             More Than <br /> Just a Stay
           </h1>
 
-          <p className="mb-6 max-w-105 text-base leading-relaxed font-light text-background/80 md:text-lg">
+          <p className="mb-6 max-w-105 text-base leading-relaxed font-light text-white/80 md:text-lg">
             At Sahara Sands, we believe travel is not just about reaching a
             destination, but about creating memories that last a lifetime.
           </p>
@@ -103,9 +108,13 @@ function StorySection() {
 
             {/* Heading */}
             <h2 className={sectionHeadingClassName}>
-              A Journey Inspired <br />
-              by{" "}
-              <span className="text-primary italic">Nature & Hospitality</span>
+              <HoverText staggerDelay={30} duration={400}>
+                A Journey Inspired <br />
+                by{" "}
+                <span className="text-primary italic">
+                  Nature & Hospitality
+                </span>
+              </HoverText>
             </h2>
 
             {/* Paragraph 1 */}
@@ -137,10 +146,11 @@ function StorySection() {
           {/* Right Column: Image & Floating Badge */}
           <div className="relative mt-8 h-100 w-full md:h-120 lg:mt-0 lg:h-130">
             {/* Main Image */}
-            <img
+            <ImageMotion
               src={HeroImage}
               alt="Sahara Sands resort exterior at dusk"
               className="h-full w-full rounded-3xl object-cover shadow-sm"
+              hoverScale={1.03}
             />
 
             {/* Floating Badge */}
@@ -159,6 +169,42 @@ function StorySection() {
         </div>
       </div>
     </section>
+  );
+}
+
+function AnimatedStatValue({ value }: { value: string }) {
+  const valueRef = useRef<HTMLSpanElement>(null);
+  const isInView = useInView(valueRef, { once: true, amount: 0.8 });
+  const shouldReduceMotion = useReducedMotion();
+  const count = useMotionValue(0);
+  const numericValue = Number.parseFloat(value);
+  const suffix = value.replace(/[\d.]/g, "");
+  const decimalPlaces = value.includes(".") ? value.split(".")[1].length : 0;
+  const displayValue = useTransform(
+    count,
+    (currentValue) => `${currentValue.toFixed(decimalPlaces)}${suffix}`
+  );
+
+  useEffect(() => {
+    if (!isInView) return;
+
+    if (shouldReduceMotion) {
+      count.set(numericValue);
+      return;
+    }
+
+    const controls = animate(count, numericValue, {
+      duration: 2,
+      ease: "easeOut",
+    });
+
+    return () => controls.stop();
+  }, [count, isInView, numericValue, shouldReduceMotion]);
+
+  return (
+    <motion.span ref={valueRef} aria-label={value}>
+      {displayValue}
+    </motion.span>
   );
 }
 
@@ -209,7 +255,7 @@ function StatsSection() {
                 <div className="flex flex-col justify-center">
                   <div className="flex items-center gap-1.5">
                     <span className="font-heading text-2xl leading-none font-bold tracking-tight text-foreground md:text-[28px]">
-                      {stat.value}
+                      <AnimatedStatValue value={stat.value} />
                     </span>
                     {stat.hasStar && (
                       <Star className="mb-0.5 h-5 w-5 fill-primary text-primary" />
@@ -268,8 +314,10 @@ function ValuesSection() {
 
             {/* Heading */}
             <h2 className={sectionHeadingClassName}>
-              What <br />
-              <span className="text-primary">Drives Us</span>
+              <HoverText staggerDelay={30} duration={400}>
+                What <br />
+                <span className="text-primary">Drives Us</span>
+              </HoverText>
             </h2>
 
             {/* Paragraph */}
@@ -327,10 +375,11 @@ function ExperienceSection() {
           {/* Left Column: Image & Floating Badge */}
           <div className="relative h-100 w-full md:h-125 lg:h-135">
             {/* Main Image */}
-            <img
+            <ImageMotion
               src={HeroImage}
               alt="Sahara Sands luxury ocean view room"
               className="h-full w-full rounded-3xl object-cover shadow-sm"
+              hoverScale={1.03}
             />
 
             {/* Floating Badge */}
@@ -351,8 +400,10 @@ function ExperienceSection() {
 
             {/* Heading */}
             <h2 className={sectionHeadingClassName}>
-              Creating Memorable <br />
-              Stays <span className="text-primary">Since 2015</span>
+              <HoverText staggerDelay={30} duration={400}>
+                Creating Memorable <br />
+                Stays <span className="text-primary">Since 2015</span>
+              </HoverText>
             </h2>
 
             {/* Description */}
@@ -458,11 +509,12 @@ function GalleryStripSection() {
                     transition={{ duration: 0.2, ease: "easeOut" }}
                     className="relative h-35 w-70 shrink-0 overflow-hidden rounded-2xl border border-border/40 shadow-sm sm:h-40 sm:w-[320px] md:h-45 md:w-95 md:rounded-[20px] lg:h-50 lg:w-105 xl:w-115"
                   >
-                    <img
+                    <ImageMotion
                       src={img.src}
                       alt={copy === 0 ? img.alt : ""}
                       className="h-full w-full object-cover"
-                      loading="lazy"
+
+                      hoverScale={1.03}
                     />
                   </motion.div>
                 ))}

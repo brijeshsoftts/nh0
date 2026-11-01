@@ -1,6 +1,14 @@
 import { cn } from "cn";
 import { format, startOfToday } from "date-fns";
-import { AnimatePresence, motion, useReducedMotion } from "framer-motion";
+import {
+  animate,
+  AnimatePresence,
+  motion,
+  useInView,
+  useMotionValue,
+  useReducedMotion,
+  useTransform,
+} from "framer-motion";
 import {
   ArrowLeft,
   ArrowRight,
@@ -43,6 +51,8 @@ import {
   PopoverTrigger,
 } from "@/components/ui/popover";
 import { Separator } from "@/components/ui/separator";
+import { HoverText } from "@/features/public/components/hoverText";
+import { ImageMotion } from "@/features/public/components/ImageMotion";
 import { RoomCard } from "@/features/public/components/RoomCard";
 import { rooms, testimonials } from "@/features/public/public.mock";
 
@@ -52,14 +62,81 @@ export const sectionEyebrowClassName =
 export const sectionHeadingClassName =
   "mb-6 font-heading text-3xl leading-[1.1] tracking-tight text-foreground md:text-4xl";
 
+const heroImages = [
+  HeorImage,
+  "https://images.unsplash.com/photo-1611892440504-42a792e24d32?auto=format&fit=crop&w=2400&q=85",
+  "https://images.unsplash.com/photo-1542314831-068cd1dbfeeb?auto=format&fit=crop&w=2400&q=85",
+  "https://images.unsplash.com/photo-1571896349842-33c89424de2d?auto=format&fit=crop&w=2400&q=85",
+  "https://images.unsplash.com/photo-1566073771259-6a8506099945?auto=format&fit=crop&w=2400&q=85",
+];
+
+function AnimatedHeroStat({ value }: { value: string }) {
+  const valueRef = React.useRef<HTMLSpanElement>(null);
+  const isInView = useInView(valueRef, { once: true, amount: 0.8 });
+  const shouldReduceMotion = useReducedMotion();
+  const count = useMotionValue(0);
+  const numericValue = Number.parseFloat(value);
+  const suffix = value.replace(/[\d.]/g, "");
+  const decimalPlaces = value.includes(".") ? value.split(".")[1].length : 0;
+  const displayValue = useTransform(
+    count,
+    (currentValue) => `${currentValue.toFixed(decimalPlaces)}${suffix}`
+  );
+
+  React.useEffect(() => {
+    if (!isInView) return;
+
+    if (shouldReduceMotion) {
+      count.set(numericValue);
+      return;
+    }
+
+    const controls = animate(count, numericValue, {
+      duration: 2,
+      ease: "easeOut",
+    });
+
+    return () => controls.stop();
+  }, [count, isInView, numericValue, shouldReduceMotion]);
+
+  return (
+    <motion.span ref={valueRef} aria-label={value}>
+      {displayValue}
+    </motion.span>
+  );
+}
+
 function HeroSection() {
   const navigate = useNavigate();
+  const shouldReduceMotion = useReducedMotion();
+  const [activeHeroImage, setActiveHeroImage] = React.useState(0);
+  const [isHeroHovered, setIsHeroHovered] = React.useState(false);
   const today = startOfToday();
   const [checkInDate, setCheckInDate] = React.useState<Date>();
   const [checkOutDate, setCheckOutDate] = React.useState<Date>();
   const [adults, setAdults] = React.useState(2);
   const [children, setChildren] = React.useState(0);
   const [bookingError, setBookingError] = React.useState("");
+
+  React.useEffect(() => {
+    heroImages.forEach((src) => {
+      const image = new Image();
+      image.src = src;
+    });
+  }, []);
+
+  React.useEffect(() => {
+    if (shouldReduceMotion || isHeroHovered) return;
+
+    const timerId = window.setTimeout(() => {
+      const randomIndex = Math.floor(Math.random() * (heroImages.length - 1));
+      setActiveHeroImage(
+        randomIndex >= activeHeroImage ? randomIndex + 1 : randomIndex
+      );
+    }, 5000);
+
+    return () => window.clearTimeout(timerId);
+  }, [activeHeroImage, isHeroHovered, shouldReduceMotion]);
 
   const handleSearchRooms = () => {
     if (!checkInDate || !checkOutDate) {
@@ -83,17 +160,43 @@ function HeroSection() {
   };
 
   return (
-    <section className="relative w-full bg-background pt-10 font-sans">
+    <section
+      className="relative w-full bg-background pt-10 font-sans"
+      onMouseEnter={() => setIsHeroHovered(true)}
+      onMouseLeave={() => setIsHeroHovered(false)}
+    >
       {/* Background Image & Blend Layer */}
-      <div className="absolute top-0 right-0 z-0 h-150 w-full md:h-175 md:w-[100%] lg:h-[min(85vh,900px)]">
-        {/* Placeholder image closely matching the coastal resort bedroom vibe */}
-        <img
-          src={HeorImage}
-          alt="Luxury Resort Ocean View"
-          className="h-full w-full object-cover object-center"
-        />
-        {/* Soft gradient mask blending the image into the solid left background */}
-        <div className="absolute inset-0 w-[0%] bg-linear-to-r from-background via-background/95 to-background/50 sm:w-[00%] sm:to-transparent" />
+      <div className="absolute top-0 right-0 z-0 h-150 w-full overflow-hidden md:h-175 md:w-full lg:h-[min(85vh,900px)]">
+        <AnimatePresence initial={false}>
+          <motion.img
+            key={activeHeroImage}
+            src={heroImages[activeHeroImage]}
+            alt=""
+            aria-hidden="true"
+            initial={{
+              opacity: 0,
+              scale: shouldReduceMotion ? 1 : 1.04,
+            }}
+            animate={{
+              opacity: 1,
+              scale: shouldReduceMotion
+                ? 1
+                : activeHeroImage % 2 === 0
+                  ? 1.1
+                  : 1,
+            }}
+            exit={{ opacity: 0 }}
+            transition={{
+              opacity: { duration: shouldReduceMotion ? 0 : 1.2 },
+              scale: {
+                duration: shouldReduceMotion ? 0 : 5.5,
+                ease: "linear",
+              },
+            }}
+            className="absolute inset-0 h-full w-full object-cover object-center"
+          />
+        </AnimatePresence>
+        <div className="absolute inset-0 bg-linear-to-r from-black/60 via-black/30 to-black/10" />
       </div>
 
       {/* Left Content Area */}
@@ -104,7 +207,8 @@ function HeroSection() {
           </span>
 
           <h1 className="mb-6 font-heading text-4xl leading-[1.05] tracking-tight text-white sm:text-5xl md:text-6xl lg:text-[72px]">
-            Your Escape to <span className="italic">Tranquility</span>
+            <HoverText text="Your Escape to" staggerDelay={30} duration={400} />{" "}
+            <HoverText text="Tranquility" staggerDelay={30} duration={400} />
           </h1>
 
           <p className="mb-6 max-w-105 text-base leading-relaxed font-light text-white/80 md:text-lg">
@@ -123,7 +227,9 @@ function HeroSection() {
           {/* Stats Row */}
           <div className="mt-8 flex items-center gap-8 text-white">
             <div className="flex flex-col">
-              <span className="font-serif text-2xl font-semibold">100+</span>
+              <span className="font-serif text-2xl font-semibold">
+                <AnimatedHeroStat value="100+" />
+              </span>
               <span className="mt-1 text-xs text-white/70">Luxury Rooms</span>
             </div>
 
@@ -131,7 +237,7 @@ function HeroSection() {
 
             <div className="flex flex-col">
               <span className="flex items-center font-serif text-2xl font-semibold">
-                4.8{" "}
+                <AnimatedHeroStat value="4.8" />{" "}
                 <Star className="mb-1 ml-1 h-4 w-4 fill-primary text-primary" />
               </span>
               <span className="mt-1 text-xs text-white/70">Guest Rating</span>
@@ -140,7 +246,9 @@ function HeroSection() {
             <Separator orientation="vertical" className="h-10 bg-border" />
 
             <div className="flex flex-col">
-              <span className="font-serif text-2xl font-semibold">10+</span>
+              <span className="font-serif text-2xl font-semibold">
+                <AnimatedHeroStat value="10+" />
+              </span>
               <span className="mt-1 text-xs text-white/70">Destinations</span>
             </div>
           </div>
@@ -148,7 +256,7 @@ function HeroSection() {
       </div>
 
       {/* Booking Bar */}
-      <div className="relative z-30 container mx-auto flex flex-col items-center px-4 pb-8 md:px-8">
+      <div className="relative z-30 container mx-auto flex flex-col items-center px-4 pb-8 md:absolute md:-bottom-8 md:px-8">
         <div className="grid w-full max-w-200 grid-cols-1 items-center gap-2 rounded-3xl border border-border bg-card p-2 text-card-foreground shadow-[0_8px_30px_rgb(0,0,0,0.06)] sm:grid-cols-2 lg:flex lg:justify-between lg:gap-0 lg:rounded-[2.5rem] lg:p-3">
           {/* Check In */}
           <Popover>
@@ -355,11 +463,13 @@ function AboutSection() {
           {/* Left Column: Image & Floating Badge */}
           <div className="relative h-full min-h-100 w-full lg:min-h-125">
             {/* Main Resort Image */}
-            <img
+            <ImageMotion
               src="https://manasresort.in/_next/image?url=%2Fimages%2Frooms%2Frooms-view.jpg&w=1920&q=75"
               alt="Our resort pool"
               className="h-full w-full rounded-3xl object-cover shadow-sm lg:rounded-[2.5rem]"
+              hoverScale={1.03}
             />
+            <img />
 
             {/* Floating Badge */}
             <div className="absolute bottom-6 left-6 flex items-center gap-4 rounded-2xl bg-card px-6 py-4 text-card-foreground shadow-lg md:bottom-8 md:left-8">
@@ -377,8 +487,10 @@ function AboutSection() {
 
             {/* Heading */}
             <h2 className={sectionHeadingClassName}>
-              Where Comfort <br />
-              Meets <span className="pr-2 text-primary italic">Elegance</span>
+              <HoverText staggerDelay={30} duration={400}>
+                Where Comfort <br />
+                Meets <span className="pr-2 text-primary italic">Elegance</span>
+              </HoverText>
             </h2>
 
             {/* Paragraph */}
@@ -455,8 +567,10 @@ function FeaturedRoomsSection() {
 
             {/* Heading */}
             <h2 className={sectionHeadingClassName}>
-              Handpicked Rooms for a{" "}
-              <span className="pr-2 text-primary italic">Perfect Stay</span>
+              <HoverText staggerDelay={30} duration={400}>
+                Handpicked Rooms for a{" "}
+                <span className="pr-2 text-primary italic">Perfect Stay</span>
+              </HoverText>
             </h2>
           </div>
           <Button
@@ -504,8 +618,10 @@ function AmenitiesSection() {
           <div className="max-w-2xl">
             <span className={sectionEyebrowClassName}>Our Amenities</span>
             <h2 className={sectionHeadingClassName}>
-              Everything You Need for a{" "}
-              <span className="text-primary italic">Relaxing Stay</span>
+              <HoverText staggerDelay={30} duration={400}>
+                Everything You Need for a{" "}
+                <span className="text-primary italic">Relaxing Stay</span>
+              </HoverText>
             </h2>
           </div>
         </div>
@@ -669,7 +785,9 @@ function TestimonialsSection() {
           <div className="max-w-2xl">
             <span className={sectionEyebrowClassName}>Guest Testimonials</span>
             <h2 className={sectionHeadingClassName}>
-              What our <span className="text-primary italic">Guest Say</span>
+              <HoverText staggerDelay={30} duration={400}>
+                What our <span className="text-primary italic">Guest Say</span>
+              </HoverText>
             </h2>
             <span className="text-muted-foreground">
               Real experiences from our happy guests.
@@ -779,7 +897,11 @@ function FAQSection() {
           <div className="max-w-2xl">
             <span className={sectionEyebrowClassName}>FAQ</span>
             <h2 className={sectionHeadingClassName}>
-              Frequently Asked Questions
+              <HoverText
+                text="Frequently Asked Questions"
+                staggerDelay={30}
+                duration={400}
+              />
             </h2>
           </div>
         </div>
@@ -832,8 +954,10 @@ function CTASection() {
                 "text-white drop-shadow-sm"
               )}
             >
-              Ready for a <br />
-              Memorable Stay?
+              <HoverText staggerDelay={30} duration={400}>
+                Ready for a <br />
+                Memorable Stay?
+              </HoverText>
             </h2>
 
             {/* Description */}
