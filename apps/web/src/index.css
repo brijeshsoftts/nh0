@@ -1,7 +1,7 @@
 /* =========================================================
-   NIVARA HOTELS — BRAND DESIGN SYSTEM
+   SAHARA SANDS — BRAND DESIGN SYSTEM
    Tailwind CSS v4 + shadcn/ui
-   Brand: Deep Charcoal / Warm Copper / Warm Ivory
+   Palette: Earth Brown / Sand Gold / Beige / Warm Taupe
    Typography: Playfair Display + Inter
    ========================================================= */
 
@@ -22,34 +22,38 @@
   --font-heading:
     "Playfair Display Variable", "Playfair Display", Georgia, serif;
 
-  /* Brand palette */
-  --color-brand-charcoal: var(--brand-charcoal);
-  --color-brand-copper: var(--brand-copper);
+  /* Brand colors */
+  --color-brand-primary: var(--brand-primary);
+  --color-brand-secondary: var(--brand-secondary);
+  --color-brand-accent: var(--brand-accent);
+  --color-brand-muted: var(--brand-muted);
   --color-brand-ivory: var(--brand-ivory);
-  --color-brand-soft-white: var(--brand-soft-white);
-  --color-brand-white: var(--brand-white);
+  --color-brand-foreground: var(--brand-foreground);
 
-  /* Semantic shadcn colors */
+  /* Semantic colors */
   --color-background: var(--background);
   --color-foreground: var(--foreground);
   --color-card: var(--card);
   --color-card-foreground: var(--card-foreground);
   --color-popover: var(--popover);
   --color-popover-foreground: var(--popover-foreground);
+
   --color-primary: var(--primary);
   --color-primary-foreground: var(--primary-foreground);
   --color-secondary: var(--secondary);
   --color-secondary-foreground: var(--secondary-foreground);
+
   --color-muted: var(--muted);
   --color-muted-foreground: var(--muted-foreground);
   --color-accent: var(--accent);
   --color-accent-foreground: var(--accent-foreground);
+
   --color-destructive: var(--destructive);
   --color-border: var(--border);
   --color-input: var(--input);
   --color-ring: var(--ring);
 
-  /* Feedback colors */
+  /* Feedback */
   --color-success: var(--success);
   --color-success-foreground: var(--success-foreground);
   --color-warning: var(--warning);
@@ -76,7 +80,7 @@
   --color-sidebar-border: var(--sidebar-border);
   --color-sidebar-ring: var(--sidebar-ring);
 
-  /* Radius scale */
+  /* Radius */
   --radius-xs: calc(var(--radius) * 0.4);
   --radius-sm: calc(var(--radius) * 0.6);
   --radius-md: calc(var(--radius) * 0.8);
@@ -94,7 +98,7 @@
   --shadow-xl: var(--shadow-xl-value);
   --shadow-brand: var(--shadow-brand-value);
 
-  /* Type scale */
+  /* Typography scale */
   --text-2xs: 0.6875rem;
   --text-xs: 0.75rem;
   --text-sm: 0.8125rem;
@@ -110,146 +114,190 @@
   --ease-brand: cubic-bezier(0.22, 1, 0.36, 1);
 }
 
-/* 4. Light theme — shared application foundation */
+/* =========================================================
+   4. LIGHT THEME
+   Default application theme
+   ========================================================= */
+
 :root {
   color-scheme: light;
 
-  /* Brand colors */
-  --brand-charcoal: #26303b;
-  --brand-copper: #9a694e;
-  --brand-ivory: #ebebdd;
-  --brand-soft-white: #f7f6f2;
-  --brand-white: #ffffff;
-  --brand-border: #d9d5ca;
-  --brand-text-muted: #6b6a63;
+  /* Official Sahara Sands palette */
+  --brand-primary: #8b6b4c;
+  --brand-secondary: #e0d2b8;
+  --brand-accent: #c8ad7f;
+  --brand-muted: #a49079;
+  --brand-ivory: #f5f0e9;
+  --brand-foreground: #342a22;
 
   /* Application surfaces */
-  --background: #f7f6f2;
-  --foreground: #26303b;
-  --card: #ffffff;
-  --card-foreground: #26303b;
-  --popover: #ffffff;
-  --popover-foreground: #26303b;
+  --background: #f7f3ec;
+  --foreground: #342a22;
 
-  /* Primary actions: charcoal text on copper for stronger contrast */
-  --primary: #9a694e;
-  --primary-foreground: #26303b;
+  --card: #fbf9f5;
+  --card-foreground: #342a22;
 
-  /* Secondary and muted surfaces */
-  --secondary: #ebebdd;
-  --secondary-foreground: #26303b;
-  --muted: #efeee8;
-  --muted-foreground: #62645f;
-  --accent: #f0e6de;
-  --accent-foreground: #704a36;
+  --popover: #fbf9f5;
+  --popover-foreground: #342a22;
+
+  /* Primary actions */
+  --primary: #8b6b4c;
+  --primary-foreground: #ffffff;
+
+  /* Secondary actions */
+  --secondary: #e0d2b8;
+  --secondary-foreground: #342a22;
+
+  /* Muted surfaces */
+  --muted: #f0e9de;
+  --muted-foreground: #746452;
+
+  /* Accent surfaces */
+  --accent: #eae0d1;
+  --accent-foreground: #6f5036;
 
   /* Borders and focus */
-  --border: #dedbd2;
-  --input: #d3cfc5;
-  --ring: #80563f;
-  --destructive: #b93832;
+  --border: #e2d8c9;
+  --input: #d6c8b5;
+  --ring: #8b6b4c;
 
-  /* Status */
-  --success: #28613b;
+  /* Destructive */
+  --destructive: #704b3a;
+
+  /* Feedback colors stay within the brand palette */
+  --success: #52634a;
   --success-foreground: #ffffff;
-  --warning: #855710;
+
+  --warning: #8b6b4c;
   --warning-foreground: #ffffff;
-  --error: #a3332b;
+
+  --error: #704b3a;
   --error-foreground: #ffffff;
-  --info: #34577b;
-  --info-foreground: #ffffff;
 
-  /* Charts — coordinated, distinguishable series */
-  --chart-1: #9a694e;
-  --chart-2: #26303b;
-  --chart-3: #718477;
-  --chart-4: #b28b55;
-  --chart-5: #8a8790;
+  --info: #a49079;
+  --info-foreground: #342a22;
 
-  /* Dark charcoal dashboard sidebar */
-  --sidebar: #26303b;
-  --sidebar-foreground: #f7f6f2;
-  --sidebar-primary: #c18d6e;
-  --sidebar-primary-foreground: #26303b;
-  --sidebar-accent: #35414e;
-  --sidebar-accent-foreground: #ffffff;
-  --sidebar-border: #3b4652;
-  --sidebar-ring: #c18d6e;
+  /* Charts — Sahara palette */
+  --chart-1: #8b6b4c;
+  --chart-2: #c8ad7f;
+  --chart-3: #a49079;
+  --chart-4: #e0d2b8;
+  --chart-5: #6f5036;
+
+  /* Light sidebar */
+  --sidebar: #f5f0e9;
+  --sidebar-foreground: #342a22;
+
+  --sidebar-primary: #8b6b4c;
+  --sidebar-primary-foreground: #ffffff;
+
+  --sidebar-accent: #e0d2b8;
+  --sidebar-accent-foreground: #342a22;
+
+  --sidebar-border: #e2d8c9;
+  --sidebar-ring: #8b6b4c;
 
   /* Geometry */
   --radius: 0.75rem;
 
-  /* Soft, neutral shadows */
-  --shadow-xs-value: 0 1px 2px rgb(38 48 59 / 4%);
-  --shadow-sm-value: 0 1px 3px rgb(38 48 59 / 6%), 0 1px 2px rgb(38 48 59 / 3%);
+  /* Shadows */
+  --shadow-xs-value: 0 1px 2px rgb(52 42 34 / 4%);
+
+  --shadow-sm-value: 0 1px 3px rgb(52 42 34 / 6%), 0 1px 2px rgb(52 42 34 / 3%);
+
   --shadow-md-value:
-    0 4px 12px rgb(38 48 59 / 6%), 0 2px 4px rgb(38 48 59 / 3%);
+    0 4px 12px rgb(52 42 34 / 7%), 0 2px 4px rgb(52 42 34 / 3%);
+
   --shadow-lg-value:
-    0 12px 28px rgb(38 48 59 / 8%), 0 4px 10px rgb(38 48 59 / 3%);
+    0 12px 28px rgb(52 42 34 / 9%), 0 4px 10px rgb(52 42 34 / 4%);
+
   --shadow-xl-value:
-    0 24px 48px rgb(38 48 59 / 11%), 0 8px 20px rgb(38 48 59 / 4%);
+    0 24px 48px rgb(52 42 34 / 12%), 0 8px 20px rgb(52 42 34 / 5%);
+
   --shadow-brand-value:
-    0 6px 18px rgb(154 105 78 / 18%), 0 2px 6px rgb(38 48 59 / 5%);
+    0 6px 18px rgb(139 107 76 / 18%), 0 2px 6px rgb(52 42 34 / 5%);
 }
 
-/* 5. Dark theme — optional application-wide dark appearance */
+/* =========================================================
+   5. DARK THEME
+   Optional application-wide dark appearance
+   ========================================================= */
+
 .dark {
   color-scheme: dark;
 
-  --background: #1d252e;
-  --foreground: #f2f0e9;
-  --card: #26303b;
-  --card-foreground: #f2f0e9;
-  --popover: #2b3540;
-  --popover-foreground: #f2f0e9;
+  --background: #29231d;
+  --foreground: #f5f0e9;
 
-  --primary: #c18d6e;
-  --primary-foreground: #202832;
-  --secondary: #35414e;
-  --secondary-foreground: #f2f0e9;
-  --muted: #303a45;
-  --muted-foreground: #c0c0b8;
-  --accent: #40362f;
-  --accent-foreground: #e3b99e;
+  --card: #342b23;
+  --card-foreground: #f5f0e9;
 
-  --border: #414b55;
-  --input: #4a5661;
-  --ring: #c18d6e;
-  --destructive: #e16b63;
+  --popover: #3b3027;
+  --popover-foreground: #f5f0e9;
 
-  --success: #75bd8a;
-  --success-foreground: #14271a;
-  --warning: #e5bd70;
-  --warning-foreground: #30230d;
-  --error: #ef8981;
-  --error-foreground: #321412;
-  --info: #8db8df;
-  --info-foreground: #14283a;
+  --primary: #c8ad7f;
+  --primary-foreground: #342a22;
 
-  --chart-1: #c18d6e;
-  --chart-2: #9aaf9c;
-  --chart-3: #e0bd7a;
-  --chart-4: #8db8df;
-  --chart-5: #b4a3c7;
+  --secondary: #514131;
+  --secondary-foreground: #f5f0e9;
 
-  --sidebar: #19212a;
-  --sidebar-foreground: #f2f0e9;
-  --sidebar-primary: #c18d6e;
-  --sidebar-primary-foreground: #202832;
-  --sidebar-accent: #303b46;
-  --sidebar-accent-foreground: #ffffff;
-  --sidebar-border: #3b4652;
-  --sidebar-ring: #c18d6e;
+  --muted: #42372d;
+  --muted-foreground: #c4b39c;
 
+  --accent: #514131;
+  --accent-foreground: #e0d2b8;
+
+  --destructive: #a49079;
+
+  --border: #554639;
+  --input: #62503e;
+  --ring: #c8ad7f;
+
+  --success: #c8ad7f;
+  --success-foreground: #342a22;
+
+  --warning: #a49079;
+  --warning-foreground: #342a22;
+
+  --error: #c8ad7f;
+  --error-foreground: #342a22;
+
+  --info: #e0d2b8;
+  --info-foreground: #342a22;
+
+  --chart-1: #c8ad7f;
+  --chart-2: #a49079;
+  --chart-3: #e0d2b8;
+  --chart-4: #8b6b4c;
+  --chart-5: #f5f0e9;
+
+  /* Dark sidebar */
+  --sidebar: #342b23;
+  --sidebar-foreground: #f5f0e9;
+
+  --sidebar-primary: #c8ad7f;
+  --sidebar-primary-foreground: #342a22;
+
+  --sidebar-accent: #514131;
+  --sidebar-accent-foreground: #f5f0e9;
+
+  --sidebar-border: #554639;
+  --sidebar-ring: #c8ad7f;
+
+  /* Dark shadows */
   --shadow-xs-value: 0 1px 2px rgb(0 0 0 / 16%);
   --shadow-sm-value: 0 2px 5px rgb(0 0 0 / 18%);
   --shadow-md-value: 0 5px 14px rgb(0 0 0 / 22%);
   --shadow-lg-value: 0 12px 28px rgb(0 0 0 / 28%);
   --shadow-xl-value: 0 24px 48px rgb(0 0 0 / 36%);
-  --shadow-brand-value: 0 6px 18px rgb(193 141 110 / 18%);
+
+  --shadow-brand-value: 0 6px 18px rgb(200 173 127 / 15%);
 }
 
-/* 6. Base styles */
+/* =========================================================
+   6. BASE STYLES
+   ========================================================= */
+
 @layer base {
   *,
   *::before,
@@ -259,6 +307,7 @@
 
   html {
     @apply font-sans;
+
     min-height: 100%;
     font-synthesis: none;
     text-rendering: optimizeLegibility;
@@ -270,15 +319,18 @@
 
   body {
     @apply bg-background text-foreground;
+
     min-width: 0;
     min-height: 100vh;
     margin: 0;
+
     font-family: var(--font-sans);
     font-size: var(--text-base);
     line-height: 1.6;
     font-feature-settings: "cv02", "cv03", "cv04", "cv11";
   }
 
+  /* Editorial headings */
   h1,
   h2,
   h3,
@@ -310,7 +362,7 @@
     line-height: 1.3;
   }
 
-  /* Dashboard typography stays functional and compact; editorial serif is for public pages. */
+  /* Functional dashboard typography */
   .dashboard-shell :is(h1, h2, h3, h4, h5, h6) {
     font-family: var(--font-sans);
     font-weight: 600;
@@ -362,7 +414,7 @@
 
   ::selection {
     color: #ffffff;
-    background: #704a36;
+    background: #8b6b4c;
   }
 
   :focus-visible {
@@ -374,6 +426,7 @@
     scroll-margin-top: 6rem;
   }
 
+  /* Scrollbars */
   * {
     scrollbar-width: thin;
     scrollbar-color: var(--border) transparent;
@@ -397,175 +450,5 @@
 
   ::-webkit-scrollbar-thumb:hover {
     background-color: var(--muted-foreground);
-  }
-}
-
-/* 7. Reusable brand surfaces and layout utilities */
-@layer utilities {
-  /* Use on public/marketing page wrappers to give them the warmer ivory canvas */
-  .bg-marketing {
-    background-color: var(--brand-ivory);
-    color: var(--brand-charcoal);
-  }
-
-  .bg-brand-charcoal {
-    background-color: var(--brand-charcoal);
-    color: var(--brand-ivory);
-  }
-
-  .bg-brand-copper {
-    background-color: var(--brand-copper);
-    color: var(--brand-charcoal);
-  }
-
-  .text-brand-charcoal {
-    color: var(--brand-charcoal);
-  }
-
-  .text-brand-copper {
-    color: var(--brand-copper);
-  }
-
-  .border-brand {
-    border-color: var(--brand-border);
-  }
-
-  .shadow-brand {
-    box-shadow: var(--shadow-brand-value);
-  }
-
-  .shadow-surface {
-    box-shadow: var(--shadow-md-value);
-  }
-
-  .shadow-surface-hover {
-    box-shadow: var(--shadow-lg-value);
-  }
-
-  .surface-glass {
-    background: color-mix(in srgb, var(--card) 88%, transparent);
-    border: 1px solid color-mix(in srgb, var(--border) 78%, transparent);
-    backdrop-filter: blur(16px);
-    -webkit-backdrop-filter: blur(16px);
-  }
-
-  .interactive-lift {
-    transition:
-      transform 220ms var(--ease-brand),
-      box-shadow 220ms var(--ease-brand),
-      border-color 180ms ease,
-      background-color 180ms ease;
-  }
-
-  @media (hover: hover) and (prefers-reduced-motion: no-preference) {
-    .interactive-lift:hover {
-      transform: translateY(-2px);
-      box-shadow: var(--shadow-lg-value);
-    }
-
-    .interactive-lift:active {
-      transform: translateY(0);
-    }
-  }
-
-  .section-padding {
-    padding-block: clamp(3rem, 7vw, 6.5rem);
-  }
-
-  .container-marketing {
-    width: min(100% - 2rem, 80rem);
-    margin-inline: auto;
-  }
-
-  .text-balance {
-    text-wrap: balance;
-  }
-
-  .text-pretty {
-    text-wrap: pretty;
-  }
-}
-
-/* 8. Motion */
-@keyframes fade-in {
-  from {
-    opacity: 0;
-  }
-  to {
-    opacity: 1;
-  }
-}
-
-@keyframes slide-up {
-  from {
-    opacity: 0;
-    transform: translateY(14px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
-}
-
-@keyframes slide-in-right {
-  from {
-    opacity: 0;
-    transform: translateX(14px);
-  }
-  to {
-    opacity: 1;
-    transform: translateX(0);
-  }
-}
-
-@keyframes shimmer {
-  from {
-    background-position: 200% 0;
-  }
-  to {
-    background-position: -200% 0;
-  }
-}
-
-@layer utilities {
-  .animate-fade-in {
-    animation: fade-in 350ms ease-out both;
-  }
-
-  .animate-slide-up {
-    animation: slide-up 500ms var(--ease-brand) both;
-  }
-
-  .animate-slide-in-right {
-    animation: slide-in-right 350ms var(--ease-brand) both;
-  }
-
-  .animate-shimmer {
-    background-image: linear-gradient(
-      90deg,
-      var(--muted) 0%,
-      var(--card) 50%,
-      var(--muted) 100%
-    );
-    background-size: 200% 100%;
-    animation: shimmer 1.6s linear infinite;
-  }
-}
-
-/* 9. Accessibility and responsive polish */
-@media (prefers-reduced-motion: reduce) {
-  *,
-  *::before,
-  *::after {
-    scroll-behavior: auto !important;
-    animation-duration: 0.01ms !important;
-    animation-iteration-count: 1 !important;
-    transition-duration: 0.01ms !important;
-  }
-}
-
-@media (max-width: 640px) {
-  .container-marketing {
-    width: min(100% - 2rem, 80rem);
   }
 }

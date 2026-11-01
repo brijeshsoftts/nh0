@@ -1,285 +1,349 @@
+import { cn } from "cn";
+import { format, startOfToday } from "date-fns";
 import { AnimatePresence, motion, useReducedMotion } from "framer-motion";
 import {
+  ArrowLeft,
   ArrowRight,
-  ArrowUpRight,
-  ChevronLeft,
-  ChevronRight,
-  MessageSquareQuote,
+  Bed,
+  BrushCleaning,
+  Calendar as CalendarIcon,
+  Dumbbell,
+  Flower2,
+  Leaf,
+  MapPin,
+  Minus,
+  Plane,
+  Plus,
+  ShieldCheck,
   Star,
+  User,
+  UserRound,
+  Utensils,
+  Waves,
+  Wifi,
 } from "lucide-react";
-import { useState } from "react";
-import { Link } from "react-router-dom";
+import * as React from "react";
+import { Link, useNavigate } from "react-router-dom";
 
-import { AvailabilitySearch } from "@/components/common/AvailabilitySearch";
+import CTAImage from "@/assets/cta_image.png";
 import {
   Accordion,
   AccordionContent,
   AccordionItem,
   AccordionTrigger,
 } from "@/components/ui/accordion";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
+import { Calendar } from "@/components/ui/calendar";
+import { Card } from "@/components/ui/card";
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/ui/popover";
+import { Separator } from "@/components/ui/separator";
 import { RoomCard } from "@/features/public/components/RoomCard";
-import { HERO_IMAGE } from "@/features/public/public.mock";
-import type { AvailableRoomListItem } from "@/features/public/public.types";
-import { useAvailableRooms } from "@/features/public/useAvailableRooms";
-import { getAmenityIcon } from "@/lib/amenity-icons";
+import { rooms, testimonials } from "@/features/public/public.mock";
 
-const aboutImage =
-  "https://images.unsplash.com/photo-1600210492486-724fe5c67fb0?auto=format&fit=crop&w=1400&q=85";
-const closingImage =
-  "https://images.unsplash.com/photo-1600607687939-ce8a6c25118c?auto=format&fit=crop&w=2200&q=90";
-const amenityImages = [
-  "https://images.unsplash.com/photo-1571896349842-33c89424de2d?auto=format&fit=crop&w=900&q=85",
-  "https://images.unsplash.com/photo-1414235077428-338989a2e8c0?auto=format&fit=crop&w=900&q=85",
-  "https://images.unsplash.com/photo-1611892440504-42a792e24d32?auto=format&fit=crop&w=900&q=85",
-  "https://images.unsplash.com/photo-1540555700478-4be289fbecef?auto=format&fit=crop&w=900&q=85",
-  "https://images.unsplash.com/photo-1534438327276-14e5300c3a48?auto=format&fit=crop&w=900&q=85",
-  "https://images.unsplash.com/photo-1566073771259-6a8506099945?auto=format&fit=crop&w=900&q=85",
-];
-
-function getAmenityImage(name: string, index: number) {
-  const label = name.toLowerCase();
-  if (label.includes("pool")) return amenityImages[0];
-  if (label.includes("restaurant") || label.includes("dining")) {
-    return amenityImages[1];
-  }
-  if (label.includes("spa")) return amenityImages[3];
-  if (label.includes("fitness") || label.includes("gym")) {
-    return amenityImages[4];
-  }
-  if (label.includes("wifi") || label.includes("wi-fi")) {
-    return amenityImages[2];
-  }
-  return amenityImages[index % amenityImages.length];
-}
-
-const questions = [
-  {
-    question: "What are the check-in and check-out timings?",
-    answer:
-      "Timings can vary by property. Please contact the hotel before your visit to confirm the details for your stay.",
-  },
-  {
-    question: "How can I book a room?",
-    answer:
-      "Choose your dates and guest count in the availability search. You can then review the rooms listed for those dates and continue to booking.",
-  },
-  {
-    question: "What payment methods are accepted?",
-    answer:
-      "Available payment methods are shown during booking. Contact the hotel if you need help before making a reservation.",
-  },
-  {
-    question: "Can I cancel or modify my booking?",
-    answer:
-      "Cancellation and change options depend on your reservation. Check the terms shown with your booking or contact the hotel for assistance.",
-  },
-  {
-    question: "Are additional charges applicable?",
-    answer:
-      "Any applicable taxes or charges are shown with the room and booking details before you confirm.",
-  },
-];
-
-function SectionHeading({
-  eyebrow,
-  title,
-  description,
-  id,
-}: {
-  eyebrow: string;
-  title: string;
-  description?: string;
-  id?: string;
-}) {
-  return (
-    <div className="max-w-2xl">
-      <p className="text-xs font-semibold tracking-[0.14em] text-accent-foreground uppercase">
-        {eyebrow}
-      </p>
-      <h2
-        className="mt-3 font-heading text-3xl leading-[1.12] font-medium text-foreground sm:text-4xl lg:text-5xl"
-        id={id}
-      >
-        {title}
-      </h2>
-      {description ? (
-        <p className="mt-4 max-w-xl text-base leading-relaxed text-muted-foreground">
-          {description}
-        </p>
-      ) : null}
-    </div>
-  );
-}
+const sectionPaddingClassName = "py-16 md:py-24 lg:py-28";
+const sectionEyebrowClassName =
+  "mb-4 block text-[10px] font-bold tracking-[0.2em] text-primary uppercase md:text-xs";
+const sectionHeadingClassName =
+  "mb-6 font-serif text-3xl leading-[1.1] tracking-tight text-foreground md:text-4xl";
 
 function HeroSection() {
-  const reduceMotion = useReducedMotion() ?? false;
+  const navigate = useNavigate();
+  const today = startOfToday();
+  const [checkInDate, setCheckInDate] = React.useState<Date>();
+  const [checkOutDate, setCheckOutDate] = React.useState<Date>();
+  const [adults, setAdults] = React.useState(2);
+  const [children, setChildren] = React.useState(0);
+  const [bookingError, setBookingError] = React.useState("");
+
+  const handleSearchRooms = () => {
+    if (!checkInDate || !checkOutDate) {
+      setBookingError("Select both check-in and check-out dates.");
+      return;
+    }
+
+    if (checkInDate < today || checkOutDate <= checkInDate) {
+      setBookingError("Check-out must be after check-in.");
+      return;
+    }
+
+    const params = new URLSearchParams({
+      checkInDate: format(checkInDate, "yyyy-MM-dd"),
+      checkOutDate: format(checkOutDate, "yyyy-MM-dd"),
+      adults: String(adults),
+      children: String(children),
+      page: "1",
+    });
+    navigate(`/rooms?${params.toString()}#availability`);
+  };
 
   return (
-    <>
-      <section className="relative overflow-hidden bg-background">
-        <div className="container mx-auto grid min-h-[610px] w-full max-w-7xl items-center gap-9 px-4 pb-24 pt-10 sm:px-6 sm:pb-28 md:grid-cols-[0.76fr_1.24fr] md:gap-8 md:pt-14 lg:px-8 lg:pb-32 lg:pt-16">
-          <motion.div
-            animate={{ opacity: 1, y: 0 }}
-            className="relative z-10 max-w-xl py-5 md:py-12"
-            initial={reduceMotion ? false : { opacity: 0, y: 18 }}
-            transition={{ duration: reduceMotion ? 0 : 0.6, ease: "easeOut" }}
+    <section className="relative w-full bg-background pt-10 font-sans">
+      {/* Background Image & Blend Layer */}
+      <div className="absolute top-0 right-0 z-0 h-150 w-full md:h-175 md:w-[65%] lg:h-[min(85vh,900px)]">
+        {/* Placeholder image closely matching the coastal resort bedroom vibe */}
+        <img
+          src="https://images.unsplash.com/photo-1590490359683-658d3d23f972?q=80&w=2000&auto=format&fit=crop"
+          alt="Luxury Resort Ocean View"
+          className="h-full w-full object-cover object-center"
+        />
+        {/* Soft gradient mask blending the image into the solid left background */}
+        <div className="absolute inset-0 w-[90%] bg-linear-to-r from-background via-background/95 to-background/50 sm:w-[50%] sm:to-transparent" />
+      </div>
+
+      {/* Left Content Area */}
+      <div className="relative z-10 container mx-auto flex min-h-150 flex-col justify-center px-6 pb-10 md:px-12 lg:min-h-[min(85vh,900px)]">
+        <div className="max-w-135">
+          <span className="mb-2 block text-xs font-bold tracking-[0.15em] text-primary uppercase">
+            A Luxury Stay Experience
+          </span>
+
+          <h1 className="mb-6 font-serif text-4xl leading-[1.05] tracking-tight text-foreground sm:text-5xl md:text-6xl lg:text-[72px]">
+            Your Escape to{" "}
+            <span className="text-primary italic">Tranquility</span>
+          </h1>
+
+          <p className="mb-6 max-w-105 text-base leading-relaxed font-light text-foreground/80 md:text-lg">
+            Experience comfort, elegance and warm hospitality in the heart of
+            breathtaking destinations.
+          </p>
+
+          <Button
+            nativeButton={false}
+            render={<Link to="/rooms" />}
+            className="h-12 rounded-full bg-primary px-8 text-sm font-medium text-primary-foreground shadow-md transition-all hover:bg-primary/90"
           >
-            <p className="text-xs font-semibold tracking-[0.16em] text-accent-foreground uppercase">
-              More than just a stay
-            </p>
-            <h1 className="mt-5 max-w-lg font-heading text-5xl leading-[1.03] font-medium tracking-[-0.035em] text-foreground sm:text-6xl lg:text-[4.5rem]">
-              A place to slow down.
-            </h1>
-            <p className="mt-6 max-w-md text-base leading-7 text-muted-foreground sm:text-lg sm:leading-8">
-              Experience thoughtfully designed spaces, warm hospitality and the
-              comfort of feeling at home. Whether you’re here for business or
-              leisure, every stay at Nivara is made to feel special.
-            </p>
-            <a
-              className="mt-8 inline-flex min-h-11 items-center gap-2 border-b border-primary pb-1 text-sm font-semibold text-foreground transition-colors hover:text-accent-foreground focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-ring"
-              href="#rooms"
-            >
-              Explore our rooms
-              <ArrowUpRight aria-hidden="true" className="size-4" />
-            </a>
-          </motion.div>
-          <div className="relative md:ml-3 lg:ml-8">
-            <div className="absolute -top-5 right-8 z-10 hidden h-24 w-24 rounded-full border border-primary/60 md:block" />
-            <img
-              alt="A sunlit boutique hotel guest room with considered details and natural materials"
-              className="relative aspect-[1.18] w-full object-cover object-center md:aspect-[1.14]"
-              fetchPriority="high"
-              src={HERO_IMAGE}
-            />
-            <div className="absolute -bottom-5 -left-3 hidden max-w-52 bg-card px-5 py-4 shadow-md sm:block lg:-left-8">
-              <p className="font-heading text-xl text-foreground">Stay awhile</p>
-              <p className="mt-1 text-xs leading-relaxed text-muted-foreground">
-                Thoughtful comfort, from the moment you arrive.
-              </p>
+            Explore Rooms <ArrowRight className="ml-2 h-4 w-4" />
+          </Button>
+
+          {/* Stats Row */}
+          <div className="mt-8 flex items-center gap-8 text-foreground">
+            <div className="flex flex-col">
+              <span className="font-serif text-2xl font-semibold">100+</span>
+              <span className="mt-1 text-xs text-foreground/70">
+                Luxury Rooms
+              </span>
+            </div>
+
+            <Separator orientation="vertical" className="h-10 bg-border" />
+
+            <div className="flex flex-col">
+              <span className="flex items-center font-serif text-2xl font-semibold">
+                4.8{" "}
+                <Star className="mb-1 ml-1 h-4 w-4 fill-primary text-primary" />
+              </span>
+              <span className="mt-1 text-xs text-foreground/70">
+                Guest Rating
+              </span>
+            </div>
+
+            <Separator orientation="vertical" className="h-10 bg-border" />
+
+            <div className="flex flex-col">
+              <span className="font-serif text-2xl font-semibold">10+</span>
+              <span className="mt-1 text-xs text-foreground/70">
+                Destinations
+              </span>
             </div>
           </div>
         </div>
-      </section>
-      <div
-        className="relative z-10 container mx-auto -mt-16 w-full max-w-7xl px-4 sm:px-6 lg:-mt-20 lg:px-8"
-        id="availability"
-      >
-        <div className="mb-3 flex items-center gap-3 px-1">
-          <span className="h-px w-8 bg-primary" />
-          <p className="text-xs font-semibold tracking-[0.14em] text-accent-foreground uppercase">
-            Plan your stay
-          </p>
-        </div>
-        <AvailabilitySearch className="rounded-md p-5 sm:p-6" />
       </div>
-    </>
-  );
-}
 
-function AboutSection() {
-  return (
-    <section
-      aria-labelledby="about-title"
-      className="container mx-auto grid w-full max-w-7xl items-center gap-9 px-4 py-20 sm:px-6 sm:py-24 md:grid-cols-[1.08fr_0.92fr] md:gap-16 lg:px-8 lg:py-32"
-      id="about"
-    >
-      <div className="relative">
-        <img
-          alt="A calm, naturally lit hotel lounge"
-          className="aspect-[1.12] w-full object-cover sm:aspect-[1.3]"
-          loading="lazy"
-          src={aboutImage}
-        />
-        <div className="absolute -right-2 -bottom-4 hidden h-24 w-24 border-r border-b border-primary sm:block" />
-      </div>
-      <div className="max-w-xl md:py-8">
-        <SectionHeading
-          eyebrow="ABOUT NIVARA"
-          id="about-title"
-          title="Hospitality with a personal touch."
-        />
-        <p className="mt-5 text-base leading-relaxed text-muted-foreground">
-          At Nivara, we believe a great stay is about more than just a room. It’s
-          about the little moments — a warm welcome, thoughtful service and
-          spaces that make you feel at ease.
-        </p>
-        <Button
-          className="mt-7 h-11 px-5"
-          nativeButton={false}
-          render={<Link to="/about" />}
-          variant="outline"
-        >
-          Discover our story
-          <ChevronRight aria-hidden="true" className="size-4" />
-        </Button>
-      </div>
-    </section>
-  );
-}
-
-function FeaturedRooms({
-  rooms,
-  isLoading,
-  isError,
-  onRetry,
-}: {
-  rooms: AvailableRoomListItem[];
-  isLoading: boolean;
-  isError: boolean;
-  onRetry: () => void;
-}) {
-  return (
-    <section className="bg-muted" id="rooms">
-      <div className="container mx-auto max-w-7xl px-4 py-16 sm:px-6 sm:py-20 lg:px-8 lg:py-28">
-        <div className="mb-9 flex flex-col gap-5 sm:mb-12 sm:flex-row sm:items-end sm:justify-between">
-          <SectionHeading
-            description="Thoughtfully designed rooms for every kind of stay."
-            eyebrow="ROOMS & SUITES"
-            title="Find your kind of comfort."
-          />
-          <Button
-            className="h-11 self-start px-5 sm:self-auto"
-            nativeButton={false}
-            render={<Link to="/rooms" />}
-            variant="outline"
-          >
-            View all rooms
-            <ArrowRight aria-hidden="true" className="size-4" />
-          </Button>
-        </div>
-        {isLoading ? (
-          <div
-            aria-busy="true"
-            aria-label="Loading rooms"
-            className="grid gap-8 sm:grid-cols-2 lg:grid-cols-3"
-          >
-            {Array.from({ length: 3 }, (_, index) => (
-              <div className="animate-pulse" key={index}>
-                <div className="aspect-[1.45] rounded-lg bg-background" />
-                <div className="mt-5 h-5 w-2/3 rounded bg-background" />
-                <div className="mt-3 h-4 w-full rounded bg-background" />
+      {/* Booking Bar */}
+      <div className="relative z-30 container mx-auto flex flex-col items-center px-4 pb-8 md:px-8">
+        <div className="grid w-full max-w-200 grid-cols-1 items-center gap-2 rounded-3xl border border-border bg-card p-2 text-card-foreground shadow-[0_8px_30px_rgb(0,0,0,0.06)] sm:grid-cols-2 lg:flex lg:justify-between lg:gap-0 lg:rounded-[2.5rem] lg:p-3">
+          {/* Check In */}
+          <Popover>
+            <PopoverTrigger
+              render={
+                <button
+                  type="button"
+                  className="flex w-full flex-1 items-center gap-4 rounded-2xl px-4 py-3 text-left transition-colors hover:bg-muted/50 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring lg:w-auto lg:px-6 lg:py-2"
+                />
+              }
+            >
+              <CalendarIcon className="h-5 w-5 shrink-0 text-primary" />
+              <div className="flex flex-col">
+                <span className="text-[10px] font-semibold tracking-wider text-foreground/60 uppercase">
+                  Check In
+                </span>
+                <span className="text-sm font-medium whitespace-nowrap text-foreground">
+                  {checkInDate
+                    ? format(checkInDate, "MMM dd, yyyy")
+                    : "Select Date"}
+                </span>
               </div>
-            ))}
-          </div>
-        ) : isError ? (
-          <div className="border-y border-border py-8" role="status">
-            <p className="text-base text-foreground">
-              Room details are unavailable right now.
-            </p>
-            <Button className="mt-4" onClick={onRetry} variant="outline">
-              Try again
+            </PopoverTrigger>
+            <PopoverContent
+              className="w-auto rounded-2xl border-border p-0"
+              align="start"
+            >
+              <Calendar
+                mode="single"
+                selected={checkInDate}
+                disabled={(date) => date < today}
+                onSelect={(date) => {
+                  setCheckInDate(date);
+                  if (date && checkOutDate && checkOutDate <= date) {
+                    setCheckOutDate(undefined);
+                  }
+                  setBookingError("");
+                }}
+              />
+            </PopoverContent>
+          </Popover>
+
+          <Separator
+            orientation="vertical"
+            className="hidden h-14 bg-border lg:block"
+          />
+
+          {/* Check Out */}
+          <Popover>
+            <PopoverTrigger
+              render={
+                <button
+                  type="button"
+                  className="flex w-full flex-1 items-center gap-4 rounded-2xl px-4 py-3 text-left transition-colors hover:bg-muted/50 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring lg:w-auto lg:px-6 lg:py-2"
+                />
+              }
+            >
+              <CalendarIcon className="h-5 w-5 shrink-0 text-primary" />
+              <div className="flex flex-col">
+                <span className="text-[10px] font-semibold tracking-wider text-foreground/60 uppercase">
+                  Check Out
+                </span>
+                <span className="text-sm font-medium whitespace-nowrap text-foreground">
+                  {checkOutDate
+                    ? format(checkOutDate, "MMM dd, yyyy")
+                    : "Select Date"}
+                </span>
+              </div>
+            </PopoverTrigger>
+            <PopoverContent
+              className="w-auto rounded-2xl border-border p-0"
+              align="start"
+            >
+              <Calendar
+                mode="single"
+                selected={checkOutDate}
+                disabled={(date) => date <= (checkInDate ?? today)}
+                onSelect={(date) => {
+                  setCheckOutDate(date);
+                  setBookingError("");
+                }}
+              />
+            </PopoverContent>
+          </Popover>
+
+          <Separator
+            orientation="vertical"
+            className="hidden h-14 bg-border lg:block"
+          />
+
+          {/* Guests */}
+          <Popover>
+            <PopoverTrigger
+              render={
+                <button
+                  type="button"
+                  className="flex w-full flex-1 items-center gap-4 rounded-2xl px-4 py-3 text-left transition-colors hover:bg-muted/50 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring lg:w-auto lg:px-6 lg:py-2"
+                />
+              }
+            >
+              <User className="h-5 w-5 shrink-0 text-primary" />
+              <div className="flex flex-col">
+                <span className="text-[10px] font-semibold tracking-wider text-foreground/60 uppercase">
+                  Guests
+                </span>
+                <span className="text-sm font-medium whitespace-nowrap text-foreground">
+                  {adults} {adults === 1 ? "Adult" : "Adults"}, {children}{" "}
+                  {children === 1 ? "Child" : "Children"}
+                </span>
+              </div>
+            </PopoverTrigger>
+            <PopoverContent
+              className="w-72 rounded-2xl border-border p-4"
+              align="start"
+            >
+              <div className="space-y-4">
+                {[
+                  {
+                    label: "Adults",
+                    count: adults,
+                    setCount: setAdults,
+                    min: 1,
+                  },
+                  {
+                    label: "Children",
+                    count: children,
+                    setCount: setChildren,
+                    min: 0,
+                  },
+                ].map(({ label, count, setCount, min }) => (
+                  <div
+                    key={label}
+                    className="flex items-center justify-between"
+                  >
+                    <span className="text-sm font-medium text-foreground">
+                      {label}
+                    </span>
+                    <div className="flex items-center gap-3">
+                      <Button
+                        type="button"
+                        variant="outline"
+                        size="icon"
+                        className="h-8 w-8"
+                        aria-label={`Decrease ${label.toLowerCase()}`}
+                        disabled={count <= min}
+                        onClick={() => setCount((current) => current - 1)}
+                      >
+                        <Minus className="h-4 w-4" />
+                      </Button>
+                      <span className="w-5 text-center text-sm tabular-nums">
+                        {count}
+                      </span>
+                      <Button
+                        type="button"
+                        variant="outline"
+                        size="icon"
+                        className="h-8 w-8"
+                        aria-label={`Increase ${label.toLowerCase()}`}
+                        disabled={count >= 10}
+                        onClick={() => setCount((current) => current + 1)}
+                      >
+                        <Plus className="h-4 w-4" />
+                      </Button>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </PopoverContent>
+          </Popover>
+
+          <Separator
+            orientation="vertical"
+            className="hidden h-14 bg-border lg:block"
+          />
+
+          {/* Search Button */}
+          <div className="w-full shrink-0 px-2 pb-2 sm:col-span-2 lg:w-auto lg:pb-0">
+            <Button
+              type="button"
+              onClick={handleSearchRooms}
+              className="h-12 w-full rounded-full bg-primary px-8 text-sm font-medium text-primary-foreground transition-all hover:bg-primary/90 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring lg:h-14 lg:w-auto"
+            >
+              Search Rooms <ArrowRight className="ml-2 h-4 w-4" />
             </Button>
           </div>
-        ) : rooms.length ? (
-          <div className="grid gap-x-6 gap-y-10 sm:grid-cols-2 lg:grid-cols-3 lg:gap-x-8">
-            {rooms.slice(0, 3).map((room) => (
-              <RoomCard key={room.id} room={room} showTaxNote />
-            ))}
-          </div>
-        ) : (
-          <p className="border-y border-border py-8 text-base text-muted-foreground">
-            Room details will appear here when they are published.
+        </div>
+        {bookingError && (
+          <p role="alert" className="mt-3 text-sm text-destructive">
+            {bookingError}
           </p>
         )}
       </div>
@@ -287,264 +351,396 @@ function FeaturedRooms({
   );
 }
 
-function AmenitiesSection({ rooms }: { rooms: AvailableRoomListItem[] }) {
-  const amenities = Array.from(
-    new Map(
-      rooms
-        .flatMap((room) => room.amenities)
-        .map((amenity) => [amenity.name, amenity])
-    ).values()
-  ).slice(0, 6);
-
+function AboutSection() {
   return (
     <section
-      aria-labelledby="amenities-title"
-      className="bg-secondary/45"
-      id="amenities"
+      className={cn("w-full bg-background font-sans", sectionPaddingClassName)}
     >
-      <div className="container mx-auto max-w-7xl px-4 py-20 sm:px-6 sm:py-24 lg:px-8 lg:py-28">
-        <div className="mb-10 flex flex-col justify-between gap-5 md:mb-12 md:flex-row md:items-end">
-          <SectionHeading
-            description="A few considered details, gathered from the amenities listed with our rooms."
-            eyebrow="THE LITTLE THINGS"
-            id="amenities-title"
-            title="Everything you need, thoughtfully arranged."
-          />
-          <Link
-            className="inline-flex min-h-11 items-center gap-2 self-start border-b border-primary pb-1 text-sm font-semibold text-foreground hover:text-accent-foreground focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-ring md:mb-1"
-            to="/rooms"
-          >
-            Explore the rooms <ArrowUpRight aria-hidden="true" className="size-4" />
-          </Link>
+      <div className="container mx-auto px-4 md:px-8 lg:px-12">
+        <div className="grid grid-cols-1 items-center gap-12 lg:grid-cols-2 lg:gap-20">
+          {/* Left Column: Image & Floating Badge */}
+          <div className="relative h-full min-h-100 w-full lg:min-h-125">
+            {/* Main Resort Image */}
+            <img
+              src="https://manasresort.in/_next/image?url=%2Fimages%2Frooms%2Frooms-view.jpg&w=1920&q=75"
+              alt="Sahara Sands Resort Pool"
+              className="h-full w-full rounded-3xl object-cover shadow-sm lg:rounded-[2.5rem]"
+            />
+
+            {/* Floating Badge */}
+            <div className="absolute bottom-6 left-6 flex items-center gap-4 rounded-2xl bg-card px-6 py-4 text-card-foreground shadow-lg md:bottom-8 md:left-8">
+              <Leaf className="h-6 w-6 -scale-x-100 text-primary" />
+              <p className="text-sm leading-tight font-medium">
+                A Place to <br /> Relax & Reconnect
+              </p>
+            </div>
+          </div>
+
+          {/* Right Column: Content */}
+          <div className="flex flex-col justify-center">
+            {/* Eyebrow */}
+            <span className={sectionEyebrowClassName}>About Sahara Sands</span>
+
+            {/* Heading */}
+            <h2 className={sectionHeadingClassName}>
+              Where Comfort <br />
+              Meets <span className="pr-2 text-primary italic">Elegance</span>
+            </h2>
+
+            {/* Paragraph */}
+            <p className="mb-12 max-w-135 text-base leading-relaxed font-light text-foreground/70 md:text-lg">
+              Sahara Sands is more than just a place to stay. It's a perfect
+              blend of modern luxury, natural beauty and heartfelt hospitality.
+              Whether you're here for a vacation, business or a special
+              celebration, we make every moment memorable.
+            </p>
+
+            {/* Features Row */}
+            <div className="flex flex-col gap-6 sm:flex-row sm:gap-8">
+              {/* Feature 1 */}
+              <div className="flex items-center gap-3">
+                <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-[10px] bg-primary text-primary-foreground">
+                  <Bed className="h-5 w-5" />
+                </div>
+                <div className="flex flex-col">
+                  <span className="text-[13px] font-bold text-foreground">
+                    Premium Rooms
+                  </span>
+                  <span className="mt-0.5 text-2xs text-foreground/60">
+                    Modern & Comfortable
+                  </span>
+                </div>
+              </div>
+
+              {/* Feature 2 */}
+              <div className="flex items-center gap-3">
+                <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-[10px] bg-primary text-primary-foreground">
+                  <ShieldCheck className="h-5 w-5" />
+                </div>
+                <div className="flex flex-col">
+                  <span className="text-[13px] font-bold text-foreground">
+                    Exceptional Service
+                  </span>
+                  <span className="mt-0.5 text-2xs text-foreground/60">
+                    Always at Your Care
+                  </span>
+                </div>
+              </div>
+
+              {/* Feature 3 */}
+              <div className="flex items-center gap-3">
+                <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-[10px] bg-primary text-primary-foreground">
+                  <MapPin className="h-5 w-5" />
+                </div>
+                <div className="flex flex-col">
+                  <span className="text-[13px] font-bold text-foreground">
+                    Scenic Locations
+                  </span>
+                  <span className="mt-0.5 text-2xs text-foreground/60">
+                    Near Top Attractions
+                  </span>
+                </div>
+              </div>
+            </div>
+          </div>
         </div>
-      {amenities.length ? (
-        <ul className="grid grid-cols-2 gap-3 sm:grid-cols-3 sm:gap-5">
+      </div>
+    </section>
+  );
+}
+
+function FeaturedRoomsSection() {
+  return (
+    <section
+      className={cn("w-full bg-muted font-sans", sectionPaddingClassName)}
+    >
+      <div className="container mx-auto px-4 md:px-8 lg:px-12">
+        <div className="flex flex-col items-start justify-between md:flex-row md:items-center">
+          <div>
+            <span className={sectionEyebrowClassName}>Featured Rooms</span>
+
+            {/* Heading */}
+            <h2 className={sectionHeadingClassName}>
+              Handpicked Rooms for a{" "}
+              <span className="pr-2 text-primary italic">Perfect Stay</span>
+            </h2>
+          </div>
+          <Button
+            nativeButton={false}
+            render={<Link to="/rooms" />}
+            className="h-11"
+            variant="link"
+          >
+            View All Rooms <ArrowRight className="ml-2 h-4 w-4" />
+          </Button>
+        </div>
+
+        <div className="mt-8 grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
+          {rooms.map((room) => (
+            <RoomCard key={room.id} room={room} />
+          ))}
+        </div>
+      </div>
+    </section>
+  );
+}
+
+function AmenitiesSection() {
+  const amenities = [
+    { name: "Swimming Pool", icon: Waves },
+    { name: "Fine Dining", icon: Utensils },
+    { name: "Spa & Wellness", icon: Flower2 },
+    { name: "Fitness Center", icon: Dumbbell },
+    { name: "Free Wi-Fi", icon: Wifi },
+    { name: "24/7 Reception", icon: UserRound },
+    { name: "Airport Transfer", icon: Plane },
+    { name: "Housekeeping", icon: BrushCleaning },
+  ];
+  return (
+    <section
+      className={cn(
+        "w-full border-t border-border/40 bg-background font-sans",
+        sectionPaddingClassName
+      )}
+    >
+      <div className="container mx-auto px-4 md:px-8 lg:px-12">
+        {/* Top Content Row */}
+        <div className="flex flex-col justify-between gap-8 lg:flex-row lg:items-end">
+          {/* Left: Eyebrow & Heading */}
+          <div className="max-w-2xl">
+            <span className={sectionEyebrowClassName}>Our Amenities</span>
+            <h2 className={sectionHeadingClassName}>
+              Everything You Need for a{" "}
+              <span className="text-primary italic">Relaxing Stay</span>
+            </h2>
+          </div>
+        </div>
+
+        {/* Amenities Grid */}
+        <div className="mt-8 grid grid-cols-2 gap-x-4 gap-y-6 sm:grid-cols-4 lg:grid-cols-8">
           {amenities.map((amenity, index) => {
-            const Icon = getAmenityIcon(amenity.icon);
+            const Icon = amenity.icon;
             return (
-              <li
-                className={`group relative isolate flex aspect-[1.05] items-end overflow-hidden bg-foreground text-white ${index === 0 ? "sm:col-span-2 sm:row-span-2 sm:aspect-auto" : ""}`}
-                key={amenity.name}
-              >
-                <img
-                  alt=""
-                  className="absolute inset-0 -z-20 size-full object-cover transition-transform duration-700 group-hover:scale-[1.03] motion-reduce:transition-none"
-                  loading="lazy"
-                  src={getAmenityImage(amenity.name, index)}
-                />
-                <span className="absolute inset-0 -z-10 bg-gradient-to-t from-black/75 via-black/10 to-transparent" />
-                <span className="flex w-full items-center justify-between gap-2 p-3 sm:p-5">
-                  <span className="font-heading text-base leading-tight sm:text-xl">{amenity.name}</span>
-                  <Icon aria-hidden="true" className="size-4 shrink-0 text-white/90 sm:size-5" strokeWidth={1.6} />
+              <div key={index} className="flex flex-col items-center">
+                {/* Icon Circle */}
+                <div className="mb-5 flex h-22 w-22 items-center justify-center rounded-full bg-secondary transition-transform duration-300 group-hover:-translate-y-2 group-hover:shadow-sm">
+                  <Icon className="h-8 w-8 stroke-[1.5] text-foreground" />
+                </div>
+
+                {/* Label */}
+                <span className="text-center text-[13px] font-semibold tracking-wide text-foreground">
+                  {amenity.name}
                 </span>
-              </li>
+              </div>
             );
           })}
-        </ul>
-      ) : (
-        <p className="border-y border-border py-6 text-sm text-muted-foreground">
-          Room amenities will appear here when published room details are available.
-        </p>
-      )}
+        </div>
       </div>
     </section>
   );
 }
 
 function TestimonialsSection() {
-  const [activeIndex, setActiveIndex] = useState(0);
-  const [direction, setDirection] = useState(1);
-  const reduceMotion = useReducedMotion() ?? false;
-  const testimonials = [
-    {
-      name: "Ananya S.",
-      city: "Chennai",
-      room: "Deluxe room",
-      quote:
-        "The room felt calm, the booking details were clear, and check-in was straightforward.",
-    },
-    {
-      name: "Rohan K.",
-      city: "Pune",
-      room: "Double room",
-      quote:
-        "I appreciated having space to unwind after a full day out. Everything I needed was easy to find.",
-    },
-    {
-      name: "Meera D.",
-      city: "Mumbai",
-      room: "Suite",
-      quote:
-        "A comfortable stay with thoughtful touches. The room was clean and restful.",
-    },
-    {
-      name: "Kunal P.",
-      city: "Hyderabad",
-      room: "Deluxe room",
-      quote:
-        "Finding a room for my dates was simple, and the details matched what I expected.",
-    },
-    {
-      name: "Aisha R.",
-      city: "Kochi",
-      room: "Double room",
-      quote:
-        "The welcoming atmosphere made the stay feel easy from the moment I arrived.",
-    },
-    {
-      name: "Nikhil M.",
-      city: "New Delhi",
-      room: "Suite",
-      quote: "I had a relaxing stay and appreciated the well-arranged room.",
-    },
-  ];
-  const move = (step: number) => {
-    setDirection(step);
+  const [activeIndex, setActiveIndex] = React.useState(0);
+  const [direction, setDirection] = React.useState<-1 | 1>(1);
+  const shouldReduceMotion = useReducedMotion();
+
+  React.useEffect(() => {
+    if (shouldReduceMotion || testimonials.length < 2) return;
+
+    const intervalId = window.setInterval(() => {
+      setDirection(1);
+      setActiveIndex((current) => (current + 1) % testimonials.length);
+    }, 5000);
+
+    return () => window.clearInterval(intervalId);
+  }, [shouldReduceMotion]);
+
+  const visibleTestimonials = Array.from(
+    { length: Math.min(3, testimonials.length) },
+    (_, offset) => testimonials[(activeIndex + offset) % testimonials.length]
+  );
+
+  const navigateTestimonials = (nextDirection: -1 | 1) => {
+    setDirection(nextDirection);
     setActiveIndex(
-      (current) => (current + step + testimonials.length) % testimonials.length
+      (current) =>
+        (current + nextDirection + testimonials.length) % testimonials.length
     );
   };
-  const visibleTestimonials = [-1, 0, 1].map((offset) => ({
-    testimonial:
-      testimonials[
-        (activeIndex + offset + testimonials.length) % testimonials.length
-      ],
-    isActive: offset === 0,
-  }));
+
+  interface TestimonialData {
+    id: string;
+    name: string;
+    location: string;
+    content: string;
+    rating: number;
+    avatarUrl: string;
+  }
+
+  interface TestimonialCardProps {
+    testimonial: TestimonialData;
+    className?: string;
+  }
+
+  function TestimonialCard({ testimonial, className }: TestimonialCardProps) {
+    return (
+      // Wrapper to handle the absolute positioned corner accent
+      <motion.div
+        className={cn(
+          "relative w-full max-w-105 pt-1.5 pl-1.5 font-sans",
+          className
+        )}
+        whileHover={shouldReduceMotion ? undefined : { y: -4 }}
+        whileTap={shouldReduceMotion ? undefined : { scale: 0.96 }}
+        transition={{ type: "spring", duration: 0.3, bounce: 0 }}
+      >
+        {/* Decorative top-left corner arc */}
+        <div className="absolute top-0 left-0 z-0 h-10 w-10 rounded-tl-[28px] border-t-2 border-l-2 border-primary/70" />
+
+        {/* Main Card */}
+        <Card className="relative z-10 rounded-[24px] border-border/40 bg-card p-7 shadow-[0_4px_24px_rgb(0,0,0,0.04)] md:p-8">
+          {/* Header: Quotes & Stars inline */}
+          <div className="mb-5 flex items-center gap-4">
+            {/* Custom Quote Icon matching the chunky, filled style */}
+            <svg
+              width="32"
+              height="32"
+              viewBox="0 0 24 24"
+              fill="currentColor"
+              className="text-secondary"
+            >
+              <path d="M14.017 18L14.017 10.609C14.017 4.905 17.748 1.039 23 0L23.995 2.151C21.563 3.068 20 5.789 20 8H24V18H14.017ZM0 18V10.609C0 4.905 3.748 1.038 9 0L9.996 2.151C7.563 3.068 6 5.789 6 8H9.983L9.983 18L0 18Z" />
+            </svg>
+
+            {/* Dynamic Star Rating */}
+            <div className="mt-1 flex gap-1">
+              {Array.from({ length: 5 }).map((_, i) => (
+                <Star
+                  key={i}
+                  className={cn(
+                    "h-4 w-4",
+                    i < testimonial.rating
+                      ? "fill-primary text-primary"
+                      : "fill-muted text-muted/50"
+                  )}
+                />
+              ))}
+            </div>
+          </div>
+
+          {/* Content */}
+          <p className="mb-8 line-clamp-4 text-[15px] leading-relaxed text-foreground/80">
+            {testimonial.content}
+          </p>
+
+          {/* Author Info */}
+          <div className="flex items-center gap-3">
+            <Avatar className="h-11 w-11 border border-border/60">
+              <AvatarImage
+                src={testimonial.avatarUrl}
+                alt={testimonial.name}
+                className="object-cover"
+              />
+              <AvatarFallback className="bg-secondary text-sm font-medium text-secondary-foreground">
+                {testimonial.name.charAt(0)}
+              </AvatarFallback>
+            </Avatar>
+
+            <div className="flex flex-col justify-center">
+              <span className="text-[15px] leading-tight font-semibold text-foreground">
+                {testimonial.name}
+              </span>
+              <span className="mt-0.5 text-[13px] text-foreground/60">
+                {testimonial.location}
+              </span>
+            </div>
+          </div>
+        </Card>
+      </motion.div>
+    );
+  }
 
   return (
-    <section className="overflow-hidden bg-muted" id="testimonials">
-      <div className="container mx-auto max-w-7xl px-4 py-16 sm:px-6 sm:py-20 lg:px-8 lg:py-24">
-        <div className="mb-10 flex flex-col gap-5 sm:mb-12 md:flex-row md:items-end md:justify-between">
-          <SectionHeading
-            description="A glimpse of the welcome we hope every guest will remember."
-            eyebrow="GUEST STORIES"
-            title="Experiences worth sharing."
-          />
-          <span className="self-start border border-border px-3 py-2 text-xs text-muted-foreground md:mb-1">
-            Illustrative sample content
-          </span>
+    <section
+      className={cn(
+        "w-full border-t border-border/40 bg-muted font-sans",
+        sectionPaddingClassName
+      )}
+    >
+      <div className="container mx-auto px-4 md:px-8 lg:px-12">
+        {/* Top Content Row */}
+        <div className="flex flex-col justify-between gap-8 lg:flex-row lg:items-end">
+          {/* Left: Eyebrow & Heading */}
+          <div className="max-w-2xl">
+            <span className={sectionEyebrowClassName}>Guest Testimonials</span>
+            <h2 className={sectionHeadingClassName}>
+              What our <span className="text-primary italic">Guest Say</span>
+            </h2>
+            <span className="text-muted-foreground">
+              Real experiences from our happy guests.
+            </span>
+          </div>
+          <div className="flex gap-3">
+            <Button
+              type="button"
+              variant="outline"
+              size="icon"
+              aria-label="Previous testimonials"
+              onClick={() => navigateTestimonials(-1)}
+            >
+              <ArrowLeft className="size-4" />
+            </Button>
+            <Button
+              type="button"
+              variant="outline"
+              size="icon"
+              aria-label="Next testimonials"
+              onClick={() => navigateTestimonials(1)}
+            >
+              <ArrowRight className="size-4" />
+            </Button>
+          </div>
         </div>
-
         <div
+          role="region"
           aria-label="Guest testimonials"
           aria-roledescription="carousel"
-          className="mx-auto max-w-6xl"
-          role="region"
+          aria-live="polite"
+          className="mt-8"
         >
-          <div className="min-h-72">
-            <AnimatePresence mode="wait" initial={false}>
-              <motion.div
-                animate={{ opacity: 1, x: 0 }}
-                className="grid grid-cols-1 gap-4 lg:grid-cols-3 lg:items-center lg:gap-5"
-                exit={{
-                  opacity: reduceMotion ? 1 : 0,
-                  x: reduceMotion ? 0 : direction * -28,
-                }}
-                initial={
-                  reduceMotion ? false : { opacity: 0, x: direction * 28 }
-                }
-                key={activeIndex}
-                transition={{
-                  duration: reduceMotion ? 0 : 0.28,
-                  ease: "easeOut",
-                }}
-              >
-                {visibleTestimonials.map(({ testimonial, isActive }) => (
-                  <figure
-                    aria-label={`${testimonial.name} from ${testimonial.city}`}
-                    aria-roledescription="slide"
-                    className={`${
-                      isActive
-                        ? "flex min-h-72 bg-foreground text-background shadow-lg dark:bg-card dark:text-card-foreground"
-                        : "hidden min-h-64 bg-card text-card-foreground shadow-sm lg:flex lg:translate-y-5"
-                    } flex-col justify-between rounded-lg p-6 sm:p-8`}
-                    key={testimonial.name}
-                  >
-                    <div>
-                      <MessageSquareQuote
-                        aria-hidden="true"
-                        className="size-6 text-primary"
-                        strokeWidth={1.5}
-                      />
-                      {isActive ? (
-                        <div
-                          aria-label="Illustrative rating: five out of five"
-                          className="mt-4 flex items-center gap-1 text-primary"
-                        >
-                          {Array.from({ length: 5 }, (_, index) => (
-                            <Star
-                              aria-hidden="true"
-                              className="size-3.5 fill-current"
-                              key={index}
-                            />
-                          ))}
-                          <span className="ml-2 text-[11px] text-background/70 dark:text-muted-foreground">
-                            Sample rating
-                          </span>
-                        </div>
-                      ) : null}
-                      <blockquote
-                        className={`${isActive ? "text-background dark:text-card-foreground" : "text-card-foreground"} mt-5 font-heading text-lg leading-relaxed sm:text-xl`}
-                      >
-                        “{testimonial.quote}”
-                      </blockquote>
-                    </div>
-                    <figcaption className="mt-7 flex items-center gap-3">
-                      <span
-                        aria-hidden="true"
-                        className={`${isActive ? "bg-primary text-primary-foreground" : "bg-secondary text-secondary-foreground"} grid size-11 shrink-0 place-items-center rounded-full text-sm font-semibold`}
-                      >
-                        {testimonial.name
-                          .split(" ")
-                          .map((part) => part[0])
-                          .join("")}
-                      </span>
-                      <span className="min-w-0">
-                        <span className="block text-sm font-semibold">
-                          {testimonial.name}
-                        </span>
-                        <span
-                          className={`${isActive ? "text-background/70 dark:text-muted-foreground" : "text-muted-foreground"} mt-0.5 block text-xs`}
-                        >
-                          {testimonial.city} <span aria-hidden="true">·</span>{" "}
-                          {testimonial.room}
-                        </span>
-                      </span>
-                    </figcaption>
-                  </figure>
-                ))}
-              </motion.div>
-            </AnimatePresence>
-          </div>
-
-          <div className="mt-8 flex items-center justify-center gap-4">
-            <Button
-              aria-label="Show previous testimonial"
-              className="size-11 rounded-full"
-              onClick={() => move(-1)}
-              size="icon"
-              variant="outline"
+          <AnimatePresence mode="wait" initial={false} custom={direction}>
+            <motion.div
+              key={activeIndex}
+              custom={direction}
+              initial={{
+                opacity: 0,
+                x: shouldReduceMotion ? 0 : direction * 24,
+              }}
+              animate={{ opacity: 1, x: 0 }}
+              exit={{
+                opacity: 0,
+                x: shouldReduceMotion ? 0 : direction * -24,
+              }}
+              transition={
+                shouldReduceMotion
+                  ? { duration: 0.15 }
+                  : { type: "spring", duration: 0.35, bounce: 0 }
+              }
+              className="grid grid-cols-1 gap-8 sm:grid-cols-2 lg:grid-cols-3"
             >
-              <ChevronLeft aria-hidden="true" className="size-5" />
-            </Button>
-            <p
-              aria-live="polite"
-              className="min-w-16 text-center text-xs font-medium text-muted-foreground tabular-nums"
-            >
-              {String(activeIndex + 1).padStart(2, "0")} /{" "}
-              {String(testimonials.length).padStart(2, "0")}
-            </p>
-            <Button
-              aria-label="Show next testimonial"
-              className="size-11 rounded-full"
-              onClick={() => move(1)}
-              size="icon"
-              variant="outline"
-            >
-              <ChevronRight aria-hidden="true" className="size-5" />
-            </Button>
-          </div>
+              {visibleTestimonials.map((testimonial, index) => (
+                <TestimonialCard
+                  key={testimonial.id}
+                  testimonial={testimonial}
+                  className={cn(
+                    index > 0 && "hidden sm:block",
+                    index > 1 && "hidden lg:block"
+                  )}
+                />
+              ))}
+            </motion.div>
+          </AnimatePresence>
         </div>
       </div>
     </section>
@@ -552,99 +748,136 @@ function TestimonialsSection() {
 }
 
 function FAQSection() {
+  const faqData = [
+    {
+      question: "What time is check-in and check-out?",
+      answer:
+        "Check-in begins at 3:00 PM, and check-out is at 11:00 AM. Early check-in and late check-out can be requested and are subject to availability.",
+    },
+    {
+      question: "Do you offer airport pickup?",
+      answer:
+        "Yes, we provide luxury airport transfer services. Please contact our concierge desk at least 24 hours prior to your arrival to arrange your pickup.",
+    },
+    {
+      question: "Is breakfast included in the room rate?",
+      answer:
+        "Breakfast inclusions depend on the room package selected during booking. Our Premium and Suite packages typically include a complimentary continental breakfast.",
+    },
+    {
+      question: "Are pets allowed?",
+      answer:
+        "While we love animals, to ensure a tranquil and allergen-free environment for all our guests, pets are not permitted on the property.",
+    },
+  ];
   return (
     <section
-      className="container mx-auto grid w-full max-w-7xl gap-8 px-4 py-16 sm:px-6 sm:py-20 md:grid-cols-[0.75fr_1.25fr] md:gap-16 lg:px-8 lg:py-28"
-      id="faq"
+      className={cn(
+        "w-full border-t border-border/40 bg-background font-sans",
+        sectionPaddingClassName
+      )}
     >
-      <div>
-        <p className="text-xs font-semibold tracking-[0.14em] text-accent-foreground uppercase">
-          Need to know
-        </p>
-        <h2 className="mt-4 max-w-sm font-heading text-3xl leading-tight font-medium text-foreground sm:text-4xl">
-          A few things you may want to know.
-        </h2>
-        <p className="mt-4 max-w-sm text-base leading-relaxed text-muted-foreground">
-          Find a quick answer before you plan your stay. Booking specific terms
-          are shown during reservation.
-        </p>
-      </div>
-      <Accordion className="border-t border-border">
-        {questions.map(({ question, answer }, index) => (
-          <AccordionItem
-            className="border-border"
-            key={question}
-            value={`faq-${index}`}
-          >
-            <AccordionTrigger className="min-h-14 rounded-none border-0 px-0 py-4 text-left text-base font-medium text-foreground hover:no-underline focus-visible:ring-2 focus-visible:ring-ring">
-              {question}
-            </AccordionTrigger>
-            <AccordionContent className="pb-5 text-sm leading-relaxed text-muted-foreground">
-              {answer}
-            </AccordionContent>
-          </AccordionItem>
-        ))}
-      </Accordion>
-    </section>
-  );
-}
+      <div className="container mx-auto max-w-4xl px-4 md:px-8 lg:px-12">
+        {/* Header Section */}
 
-function FinalBookingSection() {
-  return (
-    <section className="relative isolate overflow-hidden bg-foreground text-background">
-      <img
-        alt=""
-        className="absolute inset-0 -z-20 size-full object-cover"
-        loading="lazy"
-        src={closingImage}
-      />
-      <div className="absolute inset-0 -z-10 bg-foreground/75" />
-      <div className="container mx-auto flex min-h-[380px] max-w-7xl flex-col items-start justify-center gap-7 px-4 py-16 sm:px-6 md:flex-row md:items-center md:justify-between lg:px-8 lg:py-20">
-        <div className="max-w-2xl">
-          <p className="text-xs font-semibold tracking-[0.15em] text-background/80 uppercase">
-            Nivara Hotels
-          </p>
-          <h2 className="mt-4 font-heading text-4xl leading-tight font-medium sm:text-5xl">
-            Your next stay starts here.
-          </h2>
-          <p className="mt-4 max-w-xl text-base leading-relaxed text-background/85">
-            Book your stay with Nivara and enjoy a comfortable, thoughtfully arranged experience.
-          </p>
+        <div className="flex flex-col justify-between gap-8 lg:flex-row lg:items-end">
+          {/* Left: Eyebrow & Heading */}
+          <div className="max-w-2xl">
+            <span className={sectionEyebrowClassName}>FAQ</span>
+            <h2 className={sectionHeadingClassName}>
+              Frequently Asked Questions
+            </h2>
+          </div>
         </div>
-        <Button
-          className="h-12 shrink-0 px-6 font-semibold"
-          nativeButton={false}
-          render={<a href="#availability" />}
-          variant="secondary"
-        >
-          Book now
-          <ArrowRight aria-hidden="true" className="size-4" />
-        </Button>
+
+        {/* Accordion List */}
+        <Accordion className="mt-8 w-full space-y-4">
+          {faqData.map((faq, index) => (
+            <AccordionItem
+              key={index}
+              value={`item-${index}`}
+              className="rounded-2xl border-none bg-card px-6 shadow-[0_2px_10px_rgb(0,0,0,0.02)] md:px-8"
+            >
+              <AccordionTrigger className="py-5 text-left text-[15px] font-medium text-foreground hover:no-underline md:py-6 md:text-base [&[data-state=open]>svg]:text-primary">
+                {faq.question}
+              </AccordionTrigger>
+              <AccordionContent className="pr-6 pb-6 text-[14px] leading-relaxed text-foreground/70 md:pr-12 md:text-[15px]">
+                {faq.answer}
+              </AccordionContent>
+            </AccordionItem>
+          ))}
+        </Accordion>
       </div>
     </section>
   );
 }
 
-export default function LandingPage() {
-  const { rooms, isLoading, isError, refetch } = useAvailableRooms({
-    page: 1,
-    limit: 3,
-  });
-
+function CTASection() {
   return (
-    <div className="min-w-0 bg-background text-foreground" id="top">
+    <>
+      {/* CTA Card Container */}
+      <div className="relative flex min-h-105 w-full items-center overflow-hidden shadow-sm">
+        {/* Background Image */}
+        <img
+          src={CTAImage}
+          alt="Luxury resort sunset view from balcony"
+          className="absolute inset-0 h-full w-full object-cover object-center"
+          // Fallback Unsplash image if the local file isn't linked yet:
+          // src="https://images.unsplash.com/photo-1571896349842-33c89424de2d?q=80&w=2080&auto=format&fit=crop"
+        />
+
+        <div className="absolute inset-0 w-full bg-linear-to-r from-[#7a5b3e] via-[#7a5b3e]/80 to-transparent md:w-[75%]" />
+
+        {/* Content Area */}
+        <div className="container mx-auto">
+          <div className="relative z-10 flex max-w-150 flex-col items-start px-8 py-12 text-white md:px-16">
+            {/* Heading */}
+            <h2
+              className={cn(
+                sectionHeadingClassName,
+                "text-white drop-shadow-sm"
+              )}
+            >
+              Ready for a <br />
+              Memorable Stay?
+            </h2>
+
+            {/* Description */}
+            <p className="mb-10 max-w-95 font-sans text-[15px] leading-[1.6] font-light text-white/90 md:text-base">
+              Book now and enjoy special rates,{" "}
+              <br className="hidden sm:block" />
+              exclusive offers and a luxury experience{" "}
+              <br className="hidden sm:block" />
+              like never before.
+            </p>
+
+            {/* Action Button */}
+            <Button
+              nativeButton={false}
+              render={<Link to="/rooms" />}
+              className="group h-11 rounded-full px-7 text-[14px] font-semibold shadow-md transition-all"
+              variant="secondary"
+            >
+              Book Your Stay
+              <ArrowRight className="ml-2.5 h-4 w-4 transition-transform group-hover:translate-x-1" />
+            </Button>
+          </div>
+        </div>
+      </div>
+    </>
+  );
+}
+
+export default function Landing() {
+  return (
+    <>
       <HeroSection />
       <AboutSection />
-      <FeaturedRooms
-        isError={isError}
-        isLoading={isLoading}
-        onRetry={() => void refetch()}
-        rooms={rooms}
-      />
-      <AmenitiesSection rooms={rooms} />
+      <FeaturedRoomsSection />
+      <AmenitiesSection />
       <TestimonialsSection />
       <FAQSection />
-      <FinalBookingSection />
-    </div>
+      <CTASection />
+    </>
   );
 }

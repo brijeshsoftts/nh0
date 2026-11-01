@@ -2,7 +2,7 @@ import { createBrowserRouter } from "react-router-dom";
 
 import { AuthLayout } from "@/components/layout/AuthLayout";
 import { DashboardLayout } from "@/components/layout/DashboardLayout";
-import { PublicLayout } from "@/components/layout/PublicLayout";
+// import { PublicLayout } from "@/components/layout/PublicLayout";
 import LoginPage from "@/pages/auth/Login";
 import RegisterPage from "@/pages/auth/Register";
 import ResetPasswordPage from "@/pages/auth/ResetPassword";
@@ -25,6 +25,8 @@ import ContactPage from "@/pages/public/Contact";
 import LandingPage from "@/pages/public/Landing";
 import RoomDetails from "@/pages/public/RoomDetails";
 import RoomsPage from "@/pages/public/Rooms";
+
+import { PublicLayout } from "./layout/PublicLayout";
 
 export const router = createBrowserRouter([
   {

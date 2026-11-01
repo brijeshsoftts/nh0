@@ -260,3 +260,189 @@ export const MOCK_ROOM = {
     isAvailable: false,
   },
 };
+
+export const rooms = [
+  {
+    id: "room-001",
+    title: "Deluxe King Room",
+    price: 4500,
+    description:
+      "A spacious and elegant room featuring a king-size bed, modern interiors, and premium amenities for a comfortable stay.",
+    maxGuests: 2,
+    bedCount: 1,
+    image: {
+      url: "https://images.unsplash.com/photo-1611892440504-42a792e24d32",
+      altText: "Luxury deluxe king hotel room",
+    },
+    amenities: [
+      { name: "Free Wi-Fi", icon: "Wifi" },
+      { name: "Air Conditioning", icon: "Wind" },
+      { name: "Smart TV", icon: "Tv" },
+      { name: "Coffee Maker", icon: "Coffee" },
+      { name: "Private Bathroom", icon: "Bath" },
+    ],
+  },
+  {
+    id: "room-002",
+    title: "Executive Suite",
+    price: 7500,
+    description:
+      "Experience luxury in our executive suite with a separate living area, premium furnishings, and stunning city views.",
+    maxGuests: 3,
+    bedCount: 2,
+    image: {
+      url: "https://images.unsplash.com/photo-1590490360182-c33d57733427",
+      altText: "Elegant executive hotel suite",
+    },
+    amenities: [
+      { name: "Free Wi-Fi", icon: "Wifi" },
+      { name: "Air Conditioning", icon: "Wind" },
+      { name: "Smart TV", icon: "Tv" },
+      { name: "Mini Bar", icon: "Wine" },
+      { name: "Luxury Bathroom", icon: "Bath" },
+      { name: "Room Service", icon: "Utensils" },
+    ],
+  },
+  {
+    id: "room-003",
+    title: "Family Room",
+    price: 6000,
+    description:
+      "Perfect for families, this spacious room offers comfortable bedding, plenty of space, and amenities for everyone.",
+    maxGuests: 4,
+    bedCount: 2,
+    image: {
+      url: "https://images.unsplash.com/photo-1566665797739-1674de7a421a",
+      altText: "Spacious family hotel room",
+    },
+    amenities: [
+      { name: "Free Wi-Fi", icon: "Wifi" },
+      { name: "Air Conditioning", icon: "Wind" },
+      { name: "Smart TV", icon: "Tv" },
+      { name: "Mini Refrigerator", icon: "Snowflake" },
+      { name: "Coffee Maker", icon: "Coffee" },
+      { name: "Private Bathroom", icon: "Bath" },
+    ],
+  },
+  {
+    id: "room-004",
+    title: "Ocean View Room",
+    price: 8500,
+    description:
+      "Wake up to breathtaking ocean views in this beautifully designed room with a private balcony and premium comforts.",
+    maxGuests: 2,
+    bedCount: 1,
+    image: {
+      url: "https://images.unsplash.com/photo-1571896349842-33c89424de2d",
+      altText: "Hotel room overlooking the ocean",
+    },
+    amenities: [
+      { name: "Free Wi-Fi", icon: "Wifi" },
+      { name: "Ocean View", icon: "Waves" },
+      { name: "Private Balcony", icon: "Mountain" },
+      { name: "Air Conditioning", icon: "Wind" },
+      { name: "Smart TV", icon: "Tv" },
+      { name: "Coffee Maker", icon: "Coffee" },
+    ],
+  },
+  {
+    id: "room-005",
+    title: "Standard Twin Room",
+    price: 3500,
+    description:
+      "A cozy and affordable room with twin beds, ideal for friends or business travelers looking for a relaxing stay.",
+    maxGuests: 2,
+    bedCount: 2,
+    image: {
+      url: "https://images.unsplash.com/photo-1631049307264-da0ec9d70304",
+      altText: "Standard twin bed hotel room",
+    },
+    amenities: [
+      { name: "Free Wi-Fi", icon: "Wifi" },
+      { name: "Air Conditioning", icon: "Wind" },
+      { name: "Smart TV", icon: "Tv" },
+      { name: "Private Bathroom", icon: "Bath" },
+      { name: "Free Parking", icon: "Car" },
+    ],
+  },
+  {
+    id: "room-006",
+    title: "Presidential Suite",
+    price: 15000,
+    description:
+      "The ultimate luxury experience featuring an expansive living space, premium services, elegant interiors, and exclusive facilities.",
+    maxGuests: 4,
+    bedCount: 2,
+    image: {
+      url: "https://images.unsplash.com/photo-1601918774946-25832a4be0d6",
+      altText: "Premium presidential hotel suite",
+    },
+    amenities: [
+      { name: "Free Wi-Fi", icon: "Wifi" },
+      { name: "Luxury Bathroom", icon: "Bath" },
+      { name: "Smart TV", icon: "Tv" },
+      { name: "Mini Bar", icon: "Wine" },
+      { name: "Coffee Maker", icon: "Coffee" },
+      { name: "Private Gym Access", icon: "Dumbbell" },
+      { name: "Room Service", icon: "Utensils" },
+      { name: "Free Parking", icon: "Car" },
+    ],
+  },
+];
+
+export const testimonials = [
+  {
+    id: "testimonial-001",
+    name: "Aarav Sharma",
+    location: "Mumbai, India",
+    content:
+      "An absolutely wonderful experience! The rooms were spacious, clean, and beautifully designed. The staff was incredibly welcoming, and the service exceeded our expectations. Would definitely visit again!",
+    rating: 5,
+    avatarUrl: "https://i.pravatar.cc/150?img=12",
+  },
+  {
+    id: "testimonial-002",
+    name: "Priya Mehta",
+    location: "Delhi, India",
+    content:
+      "We had a fantastic weekend getaway. The ambiance was peaceful, the food was delicious, and every little detail was taken care of. Highly recommended for couples and families!",
+    rating: 5,
+    avatarUrl: "https://i.pravatar.cc/150?img=47",
+  },
+  {
+    id: "testimonial-003",
+    name: "Rahul Verma",
+    location: "Bangalore, India",
+    content:
+      "Great value for money! The check-in process was smooth, the room was comfortable, and all amenities were exactly as advertised. Looking forward to staying here again.",
+    rating: 4,
+    avatarUrl: "https://i.pravatar.cc/150?img=11",
+  },
+  {
+    id: "testimonial-004",
+    name: "Emily Johnson",
+    location: "London, United Kingdom",
+    content:
+      "One of the best hotel experiences I've ever had. The hospitality was outstanding, and the views from our room were breathtaking. Everything felt luxurious and thoughtfully arranged.",
+    rating: 5,
+    avatarUrl: "https://i.pravatar.cc/150?img=44",
+  },
+  {
+    id: "testimonial-005",
+    name: "Ananya Kapoor",
+    location: "Jaipur, India",
+    content:
+      "A beautiful property with excellent hospitality. The interiors were elegant, the rooms were spotless, and the breakfast spread was amazing. A perfect place to relax and unwind.",
+    rating: 5,
+    avatarUrl: "https://i.pravatar.cc/150?img=45",
+  },
+  {
+    id: "testimonial-006",
+    name: "Daniel Smith",
+    location: "New York, USA",
+    content:
+      "I stayed here during a business trip and was genuinely impressed. Fast Wi-Fi, comfortable beds, excellent room service, and a very professional team. Definitely worth recommending.",
+    rating: 4,
+    avatarUrl: "https://i.pravatar.cc/150?img=13",
+  },
+];
