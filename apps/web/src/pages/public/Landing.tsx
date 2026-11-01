@@ -49,7 +49,7 @@ const sectionPaddingClassName = "py-16 md:py-24 lg:py-28";
 const sectionEyebrowClassName =
   "mb-4 block text-[10px] font-bold tracking-[0.2em] text-primary uppercase md:text-xs";
 const sectionHeadingClassName =
-  "mb-6 font-serif text-3xl leading-[1.1] tracking-tight text-foreground md:text-4xl";
+  "mb-6 font-heading text-3xl leading-[1.1] tracking-tight text-foreground md:text-4xl";
 
 function HeroSection() {
   const navigate = useNavigate();
@@ -102,7 +102,7 @@ function HeroSection() {
             A Luxury Stay Experience
           </span>
 
-          <h1 className="mb-6 font-serif text-4xl leading-[1.05] tracking-tight text-foreground sm:text-5xl md:text-6xl lg:text-[72px]">
+          <h1 className="mb-6 font-heading text-4xl leading-[1.05] tracking-tight text-foreground sm:text-5xl md:text-6xl lg:text-[72px]">
             Your Escape to{" "}
             <span className="text-primary italic">Tranquility</span>
           </h1>

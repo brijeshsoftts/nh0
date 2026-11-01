@@ -41,7 +41,7 @@ function Logo() {
 
       {/* Logo Text */}
       <div className="flex flex-col justify-center">
-        <span className="font-serif text-[26px] leading-none tracking-wide text-primary">
+        <span className="font-heading text-[26px] leading-none tracking-wide text-primary">
           Nivara
         </span>
         <span className="mt-1 font-sans text-[9px] font-medium tracking-[0.25em] text-primary/80 uppercase">
