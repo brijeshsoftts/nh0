@@ -363,7 +363,7 @@ function AboutSection() {
             {/* Main Resort Image */}
             <img
               src="https://manasresort.in/_next/image?url=%2Fimages%2Frooms%2Frooms-view.jpg&w=1920&q=75"
-              alt="Sahara Sands Resort Pool"
+              alt="Our resort pool"
               className="h-full w-full rounded-3xl object-cover shadow-sm lg:rounded-[2.5rem]"
             />
 
@@ -379,7 +379,7 @@ function AboutSection() {
           {/* Right Column: Content */}
           <div className="flex flex-col justify-center">
             {/* Eyebrow */}
-            <span className={sectionEyebrowClassName}>About Sahara Sands</span>
+            <span className={sectionEyebrowClassName}>About Our Resort</span>
 
             {/* Heading */}
             <h2 className={sectionHeadingClassName}>
@@ -389,8 +389,8 @@ function AboutSection() {
 
             {/* Paragraph */}
             <p className="mb-12 max-w-135 text-base leading-relaxed font-light text-foreground/70 md:text-lg">
-              Sahara Sands is more than just a place to stay. It's a perfect
-              blend of modern luxury, natural beauty and heartfelt hospitality.
+              Our resort is more than just a place to stay. It's a perfect blend
+              of modern luxury, natural beauty and heartfelt hospitality.
               Whether you're here for a vacation, business or a special
               celebration, we make every moment memorable.
             </p>
