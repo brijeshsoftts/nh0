@@ -942,19 +942,23 @@ function CTASection() {
           // src="https://images.unsplash.com/photo-1571896349842-33c89424de2d?q=80&w=2080&auto=format&fit=crop"
         />
 
-        <div className="absolute inset-0 w-full bg-linear-to-r from-[#7a5b3e] via-[#7a5b3e]/80 to-transparent md:w-[75%]" />
+        <div className="absolute inset-0 w-full bg-linear-to-r from-black/50 via-black/80 to-transparent md:w-[75%]" />
 
         {/* Content Area */}
         <div className="container mx-auto">
-          <div className="relative z-10 flex max-w-150 flex-col items-start px-8 py-12 text-white md:px-16">
+          <div className="relative z-10 flex max-w-150 flex-col items-start px-8 py-12 text-primary-foreground md:px-16">
             {/* Heading */}
             <h2
               className={cn(
                 sectionHeadingClassName,
-                "text-white drop-shadow-sm"
+                "text-primary-foreground drop-shadow-sm"
               )}
             >
-              <HoverText staggerDelay={30} duration={400}>
+              <HoverText
+                staggerDelay={30}
+                duration={400}
+                className="text-white"
+              >
                 Ready for a <br />
                 Memorable Stay?
               </HoverText>
