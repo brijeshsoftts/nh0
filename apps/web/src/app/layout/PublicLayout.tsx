@@ -234,7 +234,7 @@ function Footer() {
   };
 
   return (
-    <footer className="w-full bg-background pt-16 pb-8 font-sans">
+    <footer className="w-full bg-secondary pt-16 pb-8 font-sans">
       <div className="container mx-auto px-6 md:px-12 lg:px-16">
         {/* Main Grid: Responsive column mapping */}
         <div className="grid grid-cols-1 gap-12 pb-14 md:grid-cols-2 lg:grid-cols-4 lg:gap-8">
@@ -327,7 +327,7 @@ function Footer() {
               >
                 Subscribe to our newsletter
               </label>
-              <div className="relative flex w-full items-center rounded-2xl border border-border bg-secondary/40 p-1">
+              <div className="relative flex w-full items-center rounded-2xl border border-border bg-accent p-1">
                 <Input
                   id="newsletter-email"
                   name="email"

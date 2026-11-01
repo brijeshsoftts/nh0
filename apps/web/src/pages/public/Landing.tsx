@@ -26,6 +26,7 @@ import * as React from "react";
 import { Link, useNavigate } from "react-router-dom";
 
 import CTAImage from "@/assets/cta_image.png";
+import HeorImage from "@/assets/landing_hero.png";
 import {
   Accordion,
   AccordionContent,
@@ -46,9 +47,9 @@ import { RoomCard } from "@/features/public/components/RoomCard";
 import { rooms, testimonials } from "@/features/public/public.mock";
 
 const sectionPaddingClassName = "py-16 md:py-24 lg:py-28";
-const sectionEyebrowClassName =
+export const sectionEyebrowClassName =
   "mb-4 block text-[10px] font-bold tracking-[0.2em] text-primary uppercase md:text-xs";
-const sectionHeadingClassName =
+export const sectionHeadingClassName =
   "mb-6 font-heading text-3xl leading-[1.1] tracking-tight text-foreground md:text-4xl";
 
 function HeroSection() {
@@ -84,30 +85,29 @@ function HeroSection() {
   return (
     <section className="relative w-full bg-background pt-10 font-sans">
       {/* Background Image & Blend Layer */}
-      <div className="absolute top-0 right-0 z-0 h-150 w-full md:h-175 md:w-[65%] lg:h-[min(85vh,900px)]">
+      <div className="absolute top-0 right-0 z-0 h-150 w-full md:h-175 md:w-[100%] lg:h-[min(85vh,900px)]">
         {/* Placeholder image closely matching the coastal resort bedroom vibe */}
         <img
-          src="https://images.unsplash.com/photo-1590490359683-658d3d23f972?q=80&w=2000&auto=format&fit=crop"
+          src={HeorImage}
           alt="Luxury Resort Ocean View"
           className="h-full w-full object-cover object-center"
         />
         {/* Soft gradient mask blending the image into the solid left background */}
-        <div className="absolute inset-0 w-[90%] bg-linear-to-r from-background via-background/95 to-background/50 sm:w-[50%] sm:to-transparent" />
+        <div className="absolute inset-0 w-[0%] bg-linear-to-r from-background via-background/95 to-background/50 sm:w-[00%] sm:to-transparent" />
       </div>
 
       {/* Left Content Area */}
       <div className="relative z-10 container mx-auto flex min-h-150 flex-col justify-center px-6 pb-10 md:px-12 lg:min-h-[min(85vh,900px)]">
         <div className="max-w-135">
-          <span className="mb-2 block text-xs font-bold tracking-[0.15em] text-primary uppercase">
+          <span className="mb-2 block text-xs font-bold tracking-[0.15em] text-white/70 uppercase">
             A Luxury Stay Experience
           </span>
 
-          <h1 className="mb-6 font-heading text-4xl leading-[1.05] tracking-tight text-foreground sm:text-5xl md:text-6xl lg:text-[72px]">
-            Your Escape to{" "}
-            <span className="text-primary italic">Tranquility</span>
+          <h1 className="mb-6 font-heading text-4xl leading-[1.05] tracking-tight text-white sm:text-5xl md:text-6xl lg:text-[72px]">
+            Your Escape to <span className="italic">Tranquility</span>
           </h1>
 
-          <p className="mb-6 max-w-105 text-base leading-relaxed font-light text-foreground/80 md:text-lg">
+          <p className="mb-6 max-w-105 text-base leading-relaxed font-light text-white/80 md:text-lg">
             Experience comfort, elegance and warm hospitality in the heart of
             breathtaking destinations.
           </p>
@@ -121,12 +121,10 @@ function HeroSection() {
           </Button>
 
           {/* Stats Row */}
-          <div className="mt-8 flex items-center gap-8 text-foreground">
+          <div className="mt-8 flex items-center gap-8 text-white">
             <div className="flex flex-col">
               <span className="font-serif text-2xl font-semibold">100+</span>
-              <span className="mt-1 text-xs text-foreground/70">
-                Luxury Rooms
-              </span>
+              <span className="mt-1 text-xs text-white/70">Luxury Rooms</span>
             </div>
 
             <Separator orientation="vertical" className="h-10 bg-border" />
@@ -136,18 +134,14 @@ function HeroSection() {
                 4.8{" "}
                 <Star className="mb-1 ml-1 h-4 w-4 fill-primary text-primary" />
               </span>
-              <span className="mt-1 text-xs text-foreground/70">
-                Guest Rating
-              </span>
+              <span className="mt-1 text-xs text-white/70">Guest Rating</span>
             </div>
 
             <Separator orientation="vertical" className="h-10 bg-border" />
 
             <div className="flex flex-col">
               <span className="font-serif text-2xl font-semibold">10+</span>
-              <span className="mt-1 text-xs text-foreground/70">
-                Destinations
-              </span>
+              <span className="mt-1 text-xs text-white/70">Destinations</span>
             </div>
           </div>
         </div>
