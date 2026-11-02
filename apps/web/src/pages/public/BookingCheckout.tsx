@@ -1,1211 +1,738 @@
-import { zodResolver } from "@hookform/resolvers/zod";
-import { AxiosError } from "axios";
+import { ChevronRight } from "lucide-react";
+import { Link, useParams } from "react-router-dom";
+
+import HeroImage from "@/assets/landing_hero.png";
 import {
-  differenceInCalendarDays,
-  format,
-  isValid,
-  parseISO,
-  startOfToday,
-} from "date-fns";
-import { motion, useReducedMotion } from "framer-motion";
-import {
-  ArrowLeft,
-  ArrowRight,
-  BedDouble,
-  CalendarDays,
-  Check,
-  ChevronRight,
-  CreditCard,
-  LoaderCircle,
-  LockKeyhole,
-  Users,
-} from "lucide-react";
-import { useEffect, useState } from "react";
-import { useFieldArray, useForm } from "react-hook-form";
-import { Link, useParams, useSearchParams } from "react-router-dom";
-import { z } from "zod";
+  Breadcrumb,
+  BreadcrumbItem,
+  BreadcrumbLink,
+  BreadcrumbList,
+  BreadcrumbPage,
+  BreadcrumbSeparator,
+} from "@/components/ui/breadcrumb";
+import { HoverText } from "@/features/public/components/hoverText";
 
-import { InputField } from "@/components/common/InputField";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { Skeleton } from "@/components/ui/skeleton";
-import type {
-  CreatePublicBookingInput,
-  CreatePublicBookingResult,
-} from "@/features/bookings/bookings.types";
-import { useAvailableBookingRooms } from "@/features/bookings/hooks/useAvailableBookingRooms";
-import { useCreatePublicBooking } from "@/features/bookings/hooks/useCreatePublicBooking";
-import { createPublicCheckoutSchema } from "@/features/bookings/schemas/public-checkout.schema";
-import { useRazorpayPayment } from "@/features/payments/hooks/useRazorpayPayment";
-import type {
-  PaymentItem,
-  PublicPaymentStatus,
-} from "@/features/payments/payments.types";
-import type { AvailableRoomDetails } from "@/features/public/public.types";
-import { useAvailableRoom } from "@/features/public/useAvailableRooms";
-import { useAuth } from "@/hooks/useAuth";
-import { formatBed, formatPrice } from "@/lib/format";
-
-type StayDates = {
-  checkInDate: string;
-  checkOutDate: string;
-  checkIn: Date;
-  checkOut: Date;
-};
-
-type CheckoutSchema = ReturnType<typeof createPublicCheckoutSchema>;
-type CheckoutFormInput = z.input<CheckoutSchema>;
-type CheckoutFormData = z.output<CheckoutSchema>;
-
-const CHECKOUT_FORM_ID = "nivara-public-checkout-form";
-
-function parseCount(value: string | null, min: number, max: number) {
-  if (value === null || !/^\d+$/.test(value)) return null;
-  const parsed = Number(value);
-  return Number.isInteger(parsed) && parsed >= min && parsed <= max
-    ? parsed
-    : null;
-}
-
-function getNationalPhoneNumber(phone: string) {
-  const digits = phone.replace(/\D/g, "");
-  const nationalNumber =
-    digits.length === 12 && digits.startsWith("91")
-      ? digits.slice(2)
-      : digits.length === 11 && digits.startsWith("0")
-        ? digits.slice(1)
-        : digits;
-
-  return /^[6-9]\d{9}$/.test(nationalNumber) ? nationalNumber : "";
-}
-
-function getValidStay(searchParams: URLSearchParams): StayDates | null {
-  const checkInDate = searchParams.get("checkInDate");
-  const checkOutDate = searchParams.get("checkOutDate");
-  if (
-    !checkInDate ||
-    !checkOutDate ||
-    !/^\d{4}-\d{2}-\d{2}$/.test(checkInDate) ||
-    !/^\d{4}-\d{2}-\d{2}$/.test(checkOutDate)
-  ) {
-    return null;
-  }
-
-  const checkIn = parseISO(checkInDate);
-  const checkOut = parseISO(checkOutDate);
-  if (
-    !isValid(checkIn) ||
-    !isValid(checkOut) ||
-    checkIn < startOfToday() ||
-    checkOut <= checkIn
-  ) {
-    return null;
-  }
-
-  return { checkInDate, checkOutDate, checkIn, checkOut };
-}
-
-function getEditSearchHref(stay: StayDates, adults: number, children: number) {
-  const params = new URLSearchParams({
-    checkInDate: stay.checkInDate,
-    checkOutDate: stay.checkOutDate,
-    adults: String(adults),
-    children: String(children),
-  });
-  return `/rooms?${params.toString()}#availability`;
-}
-
-function getErrorMessage(error: unknown) {
-  if (error instanceof AxiosError) {
-    const data = error.response?.data as { message?: unknown } | undefined;
-    if (typeof data?.message === "string") return data.message;
-  }
-  return "We couldn't reserve this room. Check availability and try again.";
-}
-
-function getPhotoAlt(altText: string | null, roomName: string) {
-  if (
-    !altText ||
-    /^(pasted image|image)(?:\s*\(\d+\))?(?:\.[a-z0-9]+)?$/i.test(
-      altText.trim()
-    )
-  ) {
-    return `${roomName} room photo`;
-  }
-  return altText.trim();
-}
-
-function CheckoutProgress({
-  currentStep,
-  complete = false,
-}: {
-  currentStep: number;
-  complete?: boolean;
-}) {
-  const steps = ["Room selected", "Guest details", "Payment", "Confirmation"];
+function HeroSection() {
+  const { slug } = useParams();
 
   return (
-    <ol
-      aria-label="Booking progress"
-      className="grid grid-cols-2 gap-x-3 gap-y-4 border-y border-border py-4 sm:grid-cols-4"
-    >
-      {steps.map((label, index) => {
-        const step = index + 1;
-        const isComplete = step < currentStep || complete;
-        const isCurrent = step === currentStep && !complete;
-        return (
-          <li
-            aria-current={isCurrent ? "step" : undefined}
-            className="flex min-w-0 items-center gap-2"
-            key={label}
-          >
-            <span
-              className={`grid size-7 shrink-0 place-items-center rounded-full text-xs font-semibold ${
-                isComplete
-                  ? "bg-primary text-primary-foreground"
-                  : isCurrent
-                    ? "bg-foreground text-background"
-                    : "bg-muted text-muted-foreground"
-              }`}
-            >
-              {isComplete ? (
-                <Check aria-hidden="true" className="size-4" />
-              ) : (
-                step
-              )}
-            </span>
-            <span
-              className={`truncate text-xs sm:text-sm ${
-                isCurrent || isComplete
-                  ? "font-medium text-foreground"
-                  : "text-muted-foreground"
-              }`}
-            >
-              {label}
-            </span>
-          </li>
-        );
-      })}
-    </ol>
-  );
-}
+    <section className="relative flex h-[50vh] max-h-70 min-h-50 w-full items-center overflow-hidden font-sans">
+      {/* Background Image */}
+      {/* Referencing the exact image file provided */}
+      <img
+        src={HeroImage}
+        alt="Sahara Sands resort pool at sunset"
+        className="absolute inset-0 z-0 h-full w-full object-cover object-center"
+      />
 
-function CheckoutNotice({
-  title,
-  children,
-  to = "/rooms#availability",
-}: {
-  title: string;
-  children: string;
-  to?: string;
-}) {
-  return (
-    <div className="border-y border-border py-12 sm:py-16">
-      <p className="text-sm font-medium text-muted-foreground">
-        Reservation checkout
-      </p>
-      <h2 className="mt-2 font-heading text-2xl font-medium text-foreground sm:text-3xl">
-        {title}
-      </h2>
-      <p className="mt-3 max-w-xl text-sm leading-6 text-muted-foreground sm:text-base">
-        {children}
-      </p>
-      <Button
-        className="mt-6 h-12"
-        nativeButton={false}
-        render={<Link to={to} />}
-        variant="outline"
-      >
-        <ArrowLeft aria-hidden="true" className="size-4" />
-        Return to rooms
-      </Button>
-    </div>
-  );
-}
+      {/* Gradient Overlay for Text Readability */}
+      {/* Uses the semantic foreground token (Deep Warm Brown) to blend naturally with the brand palette */}
+      <div className="absolute inset-0 w-[90%] bg-linear-to-r from-background via-background/95 to-background/50 sm:w-[00%] sm:to-transparent" />
 
-function BookingSummary({
-  room,
-  stay,
-  adults,
-  children,
-  reservation,
-}: {
-  room: AvailableRoomDetails;
-  stay: StayDates;
-  adults: number;
-  children: number;
-  reservation: CreatePublicBookingResult | null;
-}) {
-  const [imageFailed, setImageFailed] = useState(false);
-  const primaryImage =
-    room.images.find((image) => image.isPrimary) ?? room.images[0] ?? null;
-  const nights = differenceInCalendarDays(stay.checkOut, stay.checkIn);
+      {/* Content Container */}
+      <div className="relative z-20 container mx-auto flex h-full flex-col items-start justify-center px-6 pt-12 md:px-12">
+        <div className="">
+          <Breadcrumb>
+            <BreadcrumbList className="text-white/70 sm:gap-2">
+              <BreadcrumbItem>
+                <BreadcrumbLink className="text-[13px] text-white/70 transition-colors hover:text-white md:text-[14px]">
+                  <Link to="/">Home</Link>
+                </BreadcrumbLink>
+              </BreadcrumbItem>
+              <BreadcrumbSeparator className="text-white/50">
+                <ChevronRight className="h-3.5 w-3.5" />
+              </BreadcrumbSeparator>
+              <BreadcrumbItem>
+                <BreadcrumbLink className="text-[13px] text-white/70 transition-colors hover:text-white md:text-[14px]">
+                  <Link to="/rooms">Rooms</Link>
+                </BreadcrumbLink>
+              </BreadcrumbItem>
+              <BreadcrumbSeparator className="text-white/50">
+                <ChevronRight className="h-3.5 w-3.5" />
+              </BreadcrumbSeparator>
+              <BreadcrumbItem>
+                <BreadcrumbPage className="text-[13px] text-white/70 transition-colors hover:text-white md:text-[14px]">
+                  <Link to={`/rooms/${slug}`}>
+                    {slug?.replaceAll("-", " ")}
+                  </Link>
+                </BreadcrumbPage>
+              </BreadcrumbItem>
+              <BreadcrumbSeparator className="text-white/50">
+                <ChevronRight className="h-3.5 w-3.5" />
+              </BreadcrumbSeparator>
+              <BreadcrumbItem>
+                <BreadcrumbPage className="text-[13px] text-white md:text-[14px]">
+                  Checkout
+                </BreadcrumbPage>
+              </BreadcrumbItem>
+            </BreadcrumbList>
+          </Breadcrumb>
 
-  return (
-    <aside
-      aria-labelledby="booking-summary-title"
-      className="h-fit border border-border bg-card text-card-foreground shadow-sm"
-    >
-      <div className="p-4 sm:p-5">
-        <h2
-          className="font-heading text-xl font-medium text-foreground"
-          id="booking-summary-title"
-        >
-          Booking Summary
-        </h2>
-        <div className="mt-4 grid grid-cols-[7rem_minmax(0,1fr)] gap-4 sm:grid-cols-[8rem_minmax(0,1fr)]">
-          <div className="aspect-4/3 overflow-hidden bg-muted">
-            {primaryImage && !imageFailed ? (
-              <img
-                alt={getPhotoAlt(primaryImage.altText, room.name)}
-                className="size-full object-cover"
-                height={240}
-                loading="eager"
-                onError={() => setImageFailed(true)}
-                src={primaryImage.url}
-                width={320}
-              />
-            ) : (
-              <div className="grid size-full place-items-center text-muted-foreground">
-                <BedDouble aria-hidden="true" className="size-8" />
-              </div>
-            )}
-          </div>
-          <div className="min-w-0 self-center">
-            <h3 className="line-clamp-2 font-heading text-lg font-medium text-foreground">
-              {room.name}
-            </h3>
-            <p className="mt-1 line-clamp-2 text-xs leading-5 text-muted-foreground">
-              {room.description ||
-                "Room details are provided by Nivara Hotels."}
-            </p>
-          </div>
-        </div>
+          <h1 className="mb-6 font-heading text-4xl tracking-tight text-white sm:text-5xl md:text-6xl lg:text-[72px]">
+            <HoverText staggerDelay={30} duration={400}>
+              Complete your <span className="text-primary">Booking</span>
+            </HoverText>
+          </h1>
 
-        <ul className="mt-4 flex flex-wrap gap-x-4 gap-y-2 text-xs text-muted-foreground">
-          <li className="inline-flex items-center gap-1.5">
-            <BedDouble aria-hidden="true" className="size-3.5 text-primary" />
-            {formatBed(room.bedType, room.bedCount)}
-          </li>
-          {room.sizeSqFt ? <li>{room.sizeSqFt} sq ft</li> : null}
-          <li className="inline-flex items-center gap-1.5">
-            <Users aria-hidden="true" className="size-3.5 text-primary" />
-            Up to {room.maxGuests}
-          </li>
-        </ul>
+          <p className="mb-6 text-base leading-relaxed font-light text-white/80 md:text-lg">
+            Just a few more details to confirm your stay at Nivara.
+          </p>
 
-        <dl className="mt-5 divide-y divide-border border-y border-border text-sm">
-          <div className="flex items-start justify-between gap-4 py-3">
-            <dt className="text-muted-foreground">Check-in</dt>
-            <dd className="text-right font-medium text-foreground">
-              {format(stay.checkIn, "EEE, dd MMM yyyy")}
-            </dd>
-          </div>
-          <div className="flex items-start justify-between gap-4 py-3">
-            <dt className="text-muted-foreground">Check-out</dt>
-            <dd className="text-right font-medium text-foreground">
-              {format(stay.checkOut, "EEE, dd MMM yyyy")}
-            </dd>
-          </div>
-          <div className="flex items-start justify-between gap-4 py-3">
-            <dt className="text-muted-foreground">Length of stay</dt>
-            <dd className="text-right font-medium text-foreground">
-              {nights} night{nights === 1 ? "" : "s"}
-            </dd>
-          </div>
-          <div className="flex items-start justify-between gap-4 py-3">
-            <dt className="text-muted-foreground">Guests</dt>
-            <dd className="text-right font-medium text-foreground">
-              {adults} adult{adults === 1 ? "" : "s"}
-              {children
-                ? `, ${children} ${children === 1 ? "child" : "children"}`
-                : ""}
-            </dd>
-          </div>
-        </dl>
-
-        <div className="mt-5 border-t border-border pt-4">
-          <div className="flex items-baseline justify-between gap-4 text-sm">
-            <span className="text-muted-foreground">Room rate</span>
-            <span className="font-medium text-foreground">
-              {formatPrice(room.basePrice)} / night
-            </span>
-          </div>
-          <div className="mt-4 flex flex-wrap items-baseline justify-between gap-x-4 gap-y-1">
-            <span className="font-semibold text-foreground">Total payable</span>
-            {reservation ? (
-              <span className="font-heading text-2xl font-semibold text-foreground">
-                {formatPrice(reservation.totalAmount)}
-              </span>
-            ) : (
-              <span className="max-w-40 text-right text-xs leading-5 text-muted-foreground">
-                Shown before payment
-              </span>
-            )}
-          </div>
-          {!reservation ? (
-            <p className="mt-2 text-xs leading-5 text-muted-foreground">
-              The booking service confirms your total before payment.
-            </p>
-          ) : null}
+          {/* Breadcrumb Navigation */}
         </div>
       </div>
-    </aside>
-  );
-}
-
-function CheckoutAction({
-  reservation,
-  isFormValid,
-  isCreating,
-  isPaying,
-  isCheckoutOpen,
-  isExpired,
-  paymentStatus,
-  onPay,
-}: {
-  reservation: CreatePublicBookingResult | null;
-  isFormValid: boolean;
-  isCreating: boolean;
-  isPaying: boolean;
-  isCheckoutOpen: boolean;
-  isExpired: boolean;
-  paymentStatus: PublicPaymentStatus | null;
-  onPay: () => void;
-}) {
-  if (!reservation) {
-    return (
-      <Button
-        className="h-12 w-full font-semibold"
-        disabled={!isFormValid || isCreating}
-        form={CHECKOUT_FORM_ID}
-        type="submit"
-        variant="default"
-      >
-        {isCreating ? (
-          <>
-            <LoaderCircle aria-hidden="true" className="size-4 animate-spin" />
-            Holding room
-          </>
-        ) : (
-          <>
-            Continue to payment
-            <ArrowRight aria-hidden="true" className="size-4" />
-          </>
-        )}
-      </Button>
-    );
-  }
-
-  const isPaymentComplete = paymentStatus?.paymentStatus === "COMPLETED";
-  const isBusy = isPaying || isCheckoutOpen;
-  const buttonLabel = isExpired
-    ? "Reservation hold expired"
-    : isBusy
-      ? "Processing payment"
-      : isPaymentComplete
-        ? "Payment received"
-        : paymentStatus?.paymentStatus === "FAILED"
-          ? "Retry payment"
-          : "Pay Now";
-
-  return (
-    <Button
-      className="h-12 w-full font-semibold"
-      disabled={isExpired || isBusy || isPaymentComplete}
-      onClick={onPay}
-      type="button"
-      variant="default"
-    >
-      {isBusy ? (
-        <LoaderCircle aria-hidden="true" className="size-4 animate-spin" />
-      ) : (
-        <CreditCard aria-hidden="true" className="size-4" />
-      )}
-      {buttonLabel}
-    </Button>
-  );
-}
-
-function ReservationConfirmation({
-  room,
-  stay,
-  adults,
-  children,
-  reservation,
-  payment,
-  guestName,
-  guestEmail,
-  guestPhone,
-}: {
-  room: AvailableRoomDetails;
-  stay: StayDates;
-  adults: number;
-  children: number;
-  reservation: CreatePublicBookingResult;
-  payment: PublicPaymentStatus;
-  guestName: string;
-  guestEmail: string;
-  guestPhone: string;
-}) {
-  return (
-    <section
-      aria-labelledby="reservation-confirmed-title"
-      className="mx-auto max-w-3xl border-y border-border py-10 sm:py-14"
-    >
-      <div className="flex size-12 items-center justify-center rounded-full bg-success text-success-foreground">
-        <Check aria-hidden="true" className="size-6" />
-      </div>
-      <p className="mt-5 text-sm font-medium text-success">Payment confirmed</p>
-      <h2
-        className="mt-2 font-heading text-3xl font-medium text-foreground sm:text-4xl"
-        id="reservation-confirmed-title"
-      >
-        Your reservation is confirmed
-      </h2>
-      <p className="mt-3 text-sm leading-6 text-muted-foreground sm:text-base">
-        Booking reference {payment.bookingReference}
-      </p>
-
-      <dl className="mt-8 grid gap-x-8 border-y border-border sm:grid-cols-2">
-        <div className="border-b border-border py-4 sm:col-span-2">
-          <dt className="text-xs text-muted-foreground">Room</dt>
-          <dd className="mt-1 font-heading text-xl font-medium text-foreground">
-            {room.name}
-          </dd>
-        </div>
-        <div className="border-b border-border py-4">
-          <dt className="text-xs text-muted-foreground">Check-in</dt>
-          <dd className="mt-1 text-sm font-medium text-foreground">
-            {format(stay.checkIn, "EEE, dd MMM yyyy")}
-          </dd>
-        </div>
-        <div className="border-b border-border py-4">
-          <dt className="text-xs text-muted-foreground">Check-out</dt>
-          <dd className="mt-1 text-sm font-medium text-foreground">
-            {format(stay.checkOut, "EEE, dd MMM yyyy")}
-          </dd>
-        </div>
-        <div className="border-b border-border py-4">
-          <dt className="text-xs text-muted-foreground">Guests</dt>
-          <dd className="mt-1 text-sm font-medium text-foreground">
-            {adults} adult{adults === 1 ? "" : "s"}
-            {children
-              ? `, ${children} ${children === 1 ? "child" : "children"}`
-              : ""}
-          </dd>
-        </div>
-        <div className="border-b border-border py-4">
-          <dt className="text-xs text-muted-foreground">Payment status</dt>
-          <dd className="mt-1 text-sm font-medium text-foreground">
-            {payment.paymentStatus}
-          </dd>
-        </div>
-        <div className="border-b border-border py-4 sm:col-span-2">
-          <dt className="text-xs text-muted-foreground">Lead guest</dt>
-          <dd className="mt-1 text-sm font-medium text-foreground">
-            {guestName}
-          </dd>
-          <dd className="text-sm text-muted-foreground">{guestEmail}</dd>
-          <dd className="text-sm text-muted-foreground">{guestPhone}</dd>
-        </div>
-        <div className="flex items-baseline justify-between gap-4 py-4 sm:col-span-2">
-          <dt className="font-semibold text-foreground">Amount paid</dt>
-          <dd className="font-heading text-2xl font-semibold text-foreground">
-            {formatPrice(payment.paidAmount || reservation.totalAmount)}
-          </dd>
-        </div>
-      </dl>
-
-      <Button
-        className="mt-7 h-12"
-        nativeButton={false}
-        render={<Link to="/rooms" />}
-        variant="outline"
-      >
-        Explore rooms
-        <ArrowRight aria-hidden="true" className="size-4" />
-      </Button>
     </section>
   );
 }
 
-function CheckoutFlow({
-  room,
-  stay,
-  adults,
-  children,
-  inventoryRoomId,
-  editHref,
-  onReservationCreated,
-  onPaymentConfirmed,
-}: {
-  room: AvailableRoomDetails;
-  stay: StayDates;
-  adults: number;
-  children: number;
-  inventoryRoomId: string;
-  editHref: string;
-  onReservationCreated: () => void;
-  onPaymentConfirmed: () => void;
-}) {
-  const { isLoading: isAuthLoading, user } = useAuth();
-  const schema = createPublicCheckoutSchema(adults, children);
-  const form = useForm<CheckoutFormInput, unknown, CheckoutFormData>({
-    resolver: zodResolver(schema),
-    mode: "onChange",
-    defaultValues: {
-      fullName: "",
-      email: "",
-      phone: "",
-      companions: Array.from({ length: adults + children - 1 }, () => ({
-        fullName: "",
-      })),
-    },
-  });
-  const { getFieldState, getValues, setValue } = form;
+import {
+  ArrowLeft,
+  ArrowRight,
+  Baby,
+  Bed,
+  Calendar,
+  ChevronDown,
+  CircleDot,
+  CreditCard,
+  Globe,
+  Info,
+  Landmark,
+  Lock,
+  Mail,
+  MessageSquare,
+  Moon,
+  Phone,
+  Scaling,
+  ShieldCheck,
+  Tag,
+  User,
+  Users,
+} from "lucide-react";
+import * as React from "react";
+import { FaCcMastercard, FaCcVisa, FaGooglePay } from "react-icons/fa";
+import { SiPaytm, SiPhonepe } from "react-icons/si";
 
-  useEffect(() => {
-    if (isAuthLoading || !user) return;
+import { Button } from "@/components/ui/button";
+import { Card } from "@/components/ui/card";
+import { Checkbox } from "@/components/ui/checkbox";
+import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea";
+import { cn } from "@/lib/utils";
 
-    if (
-      user.fullName.trim() &&
-      !getFieldState("fullName").isDirty &&
-      !getValues("fullName").trim()
-    ) {
-      setValue("fullName", user.fullName, { shouldValidate: true });
-    }
-    if (
-      user.email.trim() &&
-      !getFieldState("email").isDirty &&
-      !getValues("email").trim()
-    ) {
-      setValue("email", user.email, { shouldValidate: true });
-    }
-
-    const phone = getNationalPhoneNumber(user.phone);
-    if (
-      phone &&
-      !getFieldState("phone").isDirty &&
-      !getValues("phone").trim()
-    ) {
-      setValue("phone", phone, { shouldValidate: true });
-    }
-  }, [getFieldState, getValues, isAuthLoading, setValue, user]);
-
-  const { fields } = useFieldArray({
-    control: form.control,
-    name: "companions",
-  });
-  const createPublicBooking = useCreatePublicBooking();
-  const {
-    startPayment,
-    isPending: isPaymentPending,
-    isCheckoutOpen,
-  } = useRazorpayPayment();
-  const [checkoutToken] = useState(() => globalThis.crypto.randomUUID());
-  const [reservation, setReservation] =
-    useState<CreatePublicBookingResult | null>(null);
-  const [paymentStatus, setPaymentStatus] =
-    useState<PublicPaymentStatus | null>(null);
-  const [paymentNotice, setPaymentNotice] = useState("");
-  const [bookingError, setBookingError] = useState("");
-  const [checkoutExpired, setCheckoutExpired] = useState(false);
-  const isLocked = Boolean(reservation) || createPublicBooking.isPending;
-  const isExpired = checkoutExpired;
-  const nights = differenceInCalendarDays(stay.checkOut, stay.checkIn);
-
-  const onCreateReservation = async (data: CheckoutFormData) => {
-    setBookingError("");
-    const guests: CreatePublicBookingInput["guests"] = [
-      {
-        fullName: data.fullName,
-      },
-      ...data.companions.map((guest) => ({
-        fullName: guest.fullName,
-      })),
-    ];
-    const request: CreatePublicBookingInput = {
-      checkoutToken,
-      guestName: data.fullName,
-      guestEmail: data.email,
-      guestPhone: `+91${data.phone}`,
-      roomId: inventoryRoomId,
-      checkInDate: stay.checkInDate,
-      checkOutDate: stay.checkOutDate,
-      adults,
-      children,
-      guests,
-      paymentMethod: "ONLINE",
-    };
-
-    try {
-      setReservation(await createPublicBooking.mutateAsync(request));
-      onReservationCreated();
-    } catch (error) {
-      setBookingError(getErrorMessage(error));
-    }
-  };
-
-  const onPaymentStatus = (status: PaymentItem | PublicPaymentStatus) => {
-    if ("bookingStatus" in status) {
-      setPaymentStatus(status);
-      if (
-        status.paymentStatus === "COMPLETED" &&
-        status.bookingStatus === "CONFIRMED"
-      ) {
-        onPaymentConfirmed();
-      }
-    }
-  };
-
-  const onPay = () => {
-    if (!reservation) return;
-    setPaymentNotice("");
-    if (
-      reservation.checkoutExpiresAt &&
-      Date.parse(reservation.checkoutExpiresAt) <= Date.now()
-    ) {
-      setCheckoutExpired(true);
-      return;
-    }
-    void startPayment(reservation.id, reservation.bookingReference, {
-      checkoutToken: reservation.checkoutToken,
-      onStatus: onPaymentStatus,
-      onCancelled: () =>
-        setPaymentNotice("Payment Cancelled. No booking has been confirmed."),
-      onFailed: () =>
-        setPaymentNotice(
-          "Payment Failed. Your payment could not be completed. Please try again."
-        ),
-      onVerificationFailed: () =>
-        setPaymentNotice(
-          "Payment Verification Failed. We couldn't verify your payment. Please contact support if money was deducted."
-        ),
-    });
-  };
-
-  const confirmed =
-    paymentStatus?.paymentStatus === "COMPLETED" &&
-    paymentStatus.bookingStatus === "CONFIRMED";
-  const formValues = form.getValues();
-
-  if (confirmed && reservation && paymentStatus) {
-    return (
-      <ReservationConfirmation
-        adults={adults}
-        children={children}
-        guestEmail={formValues.email}
-        guestName={formValues.fullName}
-        guestPhone={`+91${formValues.phone}`}
-        payment={paymentStatus}
-        reservation={reservation}
-        room={room}
-        stay={stay}
-      />
-    );
-  }
-
-  const isFormValid = form.formState.isValid;
-  const isPaymentComplete = paymentStatus?.paymentStatus === "COMPLETED";
-  const hasPaymentProblem =
-    isExpired ||
-    Boolean(paymentNotice) ||
-    paymentStatus?.paymentStatus === "FAILED";
-  const paymentMessage = isExpired
-    ? "This 15-minute reservation hold has expired. Return to availability to choose this room again."
-    : paymentNotice ||
-      (paymentStatus?.paymentStatus === "FAILED"
-        ? "Payment Failed. Your payment could not be completed. Please try again."
-        : isPaymentComplete
-          ? "Payment has been received. Reservation confirmation is still pending."
-          : paymentStatus?.paymentStatus === "PENDING"
-            ? "Payment is not confirmed yet. You can retry or wait for the status to update."
-            : "Online payment is processed through Razorpay.");
+function CheckoutSection() {
+  const [paymentMethod, setPaymentMethod] = React.useState("card");
 
   return (
-    <form
-      className="mt-7 grid items-start gap-6 lg:grid-cols-[minmax(0,1.3fr)_minmax(18rem,0.8fr)] lg:gap-7"
-      id={CHECKOUT_FORM_ID}
-      onSubmit={form.handleSubmit(onCreateReservation)}
-    >
-      <div className="order-2 min-w-0 space-y-7 lg:order-1">
-        <section aria-labelledby="guest-information-title">
-          <div className="mb-5">
-            <p className="text-sm text-muted-foreground">Reservation contact</p>
-            <h2
-              className="mt-1 font-heading text-2xl font-medium text-foreground"
-              id="guest-information-title"
-            >
+    <div className="min-h-screen bg-background py-8 font-sans text-foreground md:py-12">
+      <div className="container mx-auto max-w-300 px-4 md:px-8">
+        {/* Progress Bar */}
+        <div className="mx-auto mb-10 flex max-w-2xl items-start justify-center gap-2 md:gap-4">
+          {/* Step 1 */}
+          <div className="flex flex-1 flex-col items-center gap-2">
+            <div className="flex h-8 w-8 items-center justify-center rounded-full bg-primary text-sm font-bold text-primary-foreground shadow-sm">
+              1
+            </div>
+            <span className="text-xs font-semibold text-primary">
               Guest Details
-            </h2>
-            <p className="mt-2 text-sm leading-6 text-muted-foreground">
-              Enter the details of the person making this reservation.
-            </p>
+            </span>
           </div>
 
-          <div className="grid gap-4 sm:grid-cols-2">
-            <InputField
-              autoComplete="name"
-              className="h-12 rounded-md"
-              disabled={isLocked}
-              error={form.formState.errors.fullName?.message}
-              label="Full name"
-              placeholder="As shown on your ID"
-              required
-              {...form.register("fullName")}
-            />
-            <InputField
-              autoComplete="email"
-              className="h-12 rounded-md"
-              disabled={isLocked}
-              error={form.formState.errors.email?.message}
-              label="Email address"
-              placeholder="name@example.com"
-              required
-              type="email"
-              {...form.register("email")}
-            />
-            <div className="space-y-2 sm:col-span-2">
-              <Label htmlFor="guest-phone">Mobile number</Label>
-              <div className="flex h-12 items-center border border-input bg-background focus-within:border-ring focus-within:ring-3 focus-within:ring-ring/50 has-disabled:bg-muted">
-                <span
-                  aria-hidden="true"
-                  className="border-r border-border px-3 text-sm font-medium text-muted-foreground"
-                >
-                  +91
+          <div className="mt-4 h-px flex-1 bg-border" />
+
+          {/* Step 2 */}
+          <div className="flex flex-1 flex-col items-center gap-2">
+            <div className="flex h-8 w-8 items-center justify-center rounded-full border border-border/80 bg-card text-sm font-bold text-foreground/40">
+              2
+            </div>
+            <span className="text-xs font-medium text-foreground/40">
+              Payment
+            </span>
+          </div>
+
+          <div className="mt-4 h-[1px] flex-1 bg-border" />
+
+          {/* Step 3 */}
+          <div className="flex flex-1 flex-col items-center gap-2">
+            <div className="flex h-8 w-8 items-center justify-center rounded-full border border-border/80 bg-card text-sm font-bold text-foreground/40">
+              3
+            </div>
+            <span className="text-xs font-medium text-foreground/40">
+              Confirmation
+            </span>
+          </div>
+        </div>
+
+        {/* Main Grid */}
+        <div className="grid grid-cols-1 gap-8 lg:grid-cols-[1fr_420px] lg:gap-10">
+          {/* Left Column: Form Sections */}
+          <div className="flex flex-col gap-6">
+            {/* 1. Guest Information */}
+            <Card className="rounded-2xl border-border/60 bg-card p-6 shadow-sm md:p-8">
+              <div className="mb-6 flex items-start justify-between">
+                <div className="flex gap-4">
+                  <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-primary text-primary-foreground">
+                    <User className="h-5 w-5" />
+                  </div>
+                  <div>
+                    <h2 className="font-serif text-xl font-bold text-foreground">
+                      Guest Information
+                    </h2>
+                    <p className="mt-0.5 text-sm text-foreground/60">
+                      Please provide your details for the booking.
+                    </p>
+                  </div>
+                </div>
+                <span className="mt-1 hidden text-[11px] text-foreground/50 sm:block">
+                  All fields are required *
                 </span>
-                <Input
-                  autoComplete="tel-national"
-                  className="h-full rounded-none border-0 bg-transparent px-3 text-sm focus-visible:ring-0"
-                  disabled={isLocked}
-                  id="guest-phone"
-                  inputMode="numeric"
-                  maxLength={10}
-                  placeholder="10-digit mobile number"
-                  type="tel"
-                  aria-invalid={Boolean(form.formState.errors.phone)}
-                  aria-describedby={
-                    form.formState.errors.phone
-                      ? "guest-phone-error"
-                      : undefined
-                  }
-                  {...form.register("phone")}
+              </div>
+
+              <div className="grid grid-cols-1 gap-5 md:grid-cols-2">
+                <div className="flex flex-col gap-1.5">
+                  <label className="text-xs font-semibold text-foreground/80">
+                    Full Name *
+                  </label>
+                  <div className="relative">
+                    <User className="absolute top-1/2 left-3.5 h-4 w-4 -translate-y-1/2 text-primary/70" />
+                    <Input
+                      placeholder="Enter your full name"
+                      className="h-11 rounded-xl border-input bg-background/50 pl-10 text-sm"
+                    />
+                  </div>
+                </div>
+                <div className="flex flex-col gap-1.5">
+                  <label className="text-xs font-semibold text-foreground/80">
+                    Email Address *
+                  </label>
+                  <div className="relative">
+                    <Mail className="absolute top-1/2 left-3.5 h-4 w-4 -translate-y-1/2 text-primary/70" />
+                    <Input
+                      type="email"
+                      placeholder="Enter your email address"
+                      className="h-11 rounded-xl border-input bg-background/50 pl-10 text-sm"
+                    />
+                  </div>
+                </div>
+                <div className="flex flex-col gap-1.5">
+                  <label className="text-xs font-semibold text-foreground/80">
+                    Phone Number *
+                  </label>
+                  <div className="flex gap-2">
+                    <div className="relative w-24 shrink-0">
+                      <select className="h-11 w-full appearance-none rounded-xl border border-input bg-background/50 pr-8 pl-3 text-sm outline-none focus:ring-1 focus:ring-primary">
+                        <option>+91</option>
+                        <option>+1</option>
+                        <option>+44</option>
+                      </select>
+                      <ChevronDown className="pointer-events-none absolute top-1/2 right-2.5 h-3.5 w-3.5 -translate-y-1/2 text-foreground/50" />
+                    </div>
+                    <div className="relative flex-1">
+                      <Phone className="absolute top-1/2 left-3.5 h-4 w-4 -translate-y-1/2 text-primary/70" />
+                      <Input
+                        type="tel"
+                        placeholder="Enter phone number"
+                        className="h-11 rounded-xl border-input bg-background/50 pl-10 text-sm"
+                      />
+                    </div>
+                  </div>
+                </div>
+                <div className="flex flex-col gap-1.5">
+                  <label className="text-xs font-semibold text-foreground/80">
+                    Country *
+                  </label>
+                  <div className="relative">
+                    <Globe className="absolute top-1/2 left-3.5 h-4 w-4 -translate-y-1/2 text-primary/70" />
+                    <select className="h-11 w-full appearance-none rounded-xl border border-input bg-background/50 pr-10 pl-10 text-sm text-foreground outline-none focus:ring-1 focus:ring-primary">
+                      <option>India</option>
+                      <option>United States</option>
+                      <option>United Kingdom</option>
+                    </select>
+                    <ChevronDown className="pointer-events-none absolute top-1/2 right-3.5 h-4 w-4 -translate-y-1/2 text-foreground/50" />
+                  </div>
+                </div>
+              </div>
+            </Card>
+
+            {/* 2. Stay Details */}
+            <Card className="rounded-2xl border-border/60 bg-card p-6 shadow-sm md:p-8">
+              <div className="mb-6 flex gap-4">
+                <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-primary text-primary-foreground">
+                  <Calendar className="h-5 w-5" />
+                </div>
+                <div>
+                  <h2 className="font-serif text-xl font-bold text-foreground">
+                    Stay Details
+                  </h2>
+                  <p className="mt-0.5 text-sm text-foreground/60">
+                    Review your booking details.
+                  </p>
+                </div>
+              </div>
+
+              <div className="mb-5 grid grid-cols-2 items-end gap-5 md:grid-cols-[1fr_1fr_auto]">
+                <div className="flex flex-col gap-1.5">
+                  <label className="text-xs font-semibold text-foreground/80">
+                    Check-in Date
+                  </label>
+                  <div className="flex h-11 items-center gap-2.5 rounded-xl border border-border/50 bg-background/40 px-3.5 text-sm text-foreground/80">
+                    <Calendar className="h-4 w-4 text-primary/70" />
+                    15 Nov 2024
+                  </div>
+                </div>
+                <div className="flex flex-col gap-1.5">
+                  <label className="text-xs font-semibold text-foreground/80">
+                    Check-out Date
+                  </label>
+                  <div className="flex h-11 items-center gap-2.5 rounded-xl border border-border/50 bg-background/40 px-3.5 text-sm text-foreground/80">
+                    <Calendar className="h-4 w-4 text-primary/70" />
+                    18 Nov 2024
+                  </div>
+                </div>
+                <div className="col-span-2 flex flex-col gap-1.5 md:col-span-1">
+                  <label className="text-xs font-semibold text-foreground/80 md:hidden">
+                    Duration
+                  </label>
+                  <div className="flex h-11 items-center justify-center gap-2 rounded-xl bg-secondary/60 px-4 text-sm font-medium text-foreground/90">
+                    <Moon className="h-4 w-4 text-primary" />3 Nights
+                  </div>
+                </div>
+              </div>
+
+              <div className="grid grid-cols-1 gap-5 sm:grid-cols-2">
+                <div className="flex flex-col gap-1.5">
+                  <label className="text-xs font-semibold text-foreground/80">
+                    Number of Adults
+                  </label>
+                  <div className="relative">
+                    <Users className="absolute top-1/2 left-3.5 h-4 w-4 -translate-y-1/2 text-primary/70" />
+                    <select className="h-11 w-full appearance-none rounded-xl border border-input bg-background/50 pr-10 pl-10 text-sm outline-none focus:ring-1 focus:ring-primary">
+                      <option>2 Adults</option>
+                      <option>1 Adult</option>
+                      <option>3 Adults</option>
+                    </select>
+                    <ChevronDown className="pointer-events-none absolute top-1/2 right-3.5 h-4 w-4 -translate-y-1/2 text-foreground/50" />
+                  </div>
+                </div>
+                <div className="flex flex-col gap-1.5">
+                  <label className="text-xs font-semibold text-foreground/80">
+                    Number of Children
+                  </label>
+                  <div className="relative">
+                    <Baby className="absolute top-1/2 left-3.5 h-4 w-4 -translate-y-1/2 text-primary/70" />
+                    <select className="h-11 w-full appearance-none rounded-xl border border-input bg-background/50 pr-10 pl-10 text-sm outline-none focus:ring-1 focus:ring-primary">
+                      <option>0 Children</option>
+                      <option>1 Child</option>
+                      <option>2 Children</option>
+                    </select>
+                    <ChevronDown className="pointer-events-none absolute top-1/2 right-3.5 h-4 w-4 -translate-y-1/2 text-foreground/50" />
+                  </div>
+                </div>
+              </div>
+            </Card>
+
+            {/* 3. Special Requests */}
+            <Card className="rounded-2xl border-border/60 bg-card p-6 shadow-sm md:p-8">
+              <div className="mb-6 flex gap-4">
+                <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-primary text-primary-foreground">
+                  <MessageSquare className="h-5 w-5" />
+                </div>
+                <div>
+                  <h2 className="font-serif text-xl font-bold text-foreground">
+                    Special Requests{" "}
+                    <span className="ml-1 font-sans text-sm font-normal text-foreground/50">
+                      (Optional)
+                    </span>
+                  </h2>
+                  <p className="mt-0.5 text-sm text-foreground/60">
+                    Let us know if you have any special requests. We'll do our
+                    best to accommodate you.
+                  </p>
+                </div>
+              </div>
+              <Textarea
+                placeholder="E.g. Early check-in, extra bed, room with sea view, etc."
+                className="min-h-[100px] resize-none rounded-xl border-input bg-background/50 text-sm"
+              />
+            </Card>
+
+            {/* 4. Payment Method */}
+            <Card className="rounded-2xl border-border/60 bg-card p-6 shadow-sm md:p-8">
+              <div className="mb-6 flex gap-4">
+                <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-primary text-primary-foreground">
+                  <CreditCard className="h-5 w-5" />
+                </div>
+                <div>
+                  <h2 className="font-serif text-xl font-bold text-foreground">
+                    Payment Method
+                  </h2>
+                  <p className="mt-0.5 text-sm text-foreground/60">
+                    Choose your preferred payment method.
+                  </p>
+                </div>
+              </div>
+
+              <div className="flex flex-col gap-3">
+                {/* Card Option */}
+                <div
+                  onClick={() => setPaymentMethod("card")}
+                  className={cn(
+                    "flex cursor-pointer items-center justify-between rounded-xl border-2 p-4 transition-all",
+                    paymentMethod === "card"
+                      ? "border-primary bg-primary/5"
+                      : "border-border/50 bg-background/30 hover:border-primary/40"
+                  )}
+                >
+                  <div className="flex items-center gap-3.5">
+                    <div className="text-primary">
+                      {paymentMethod === "card" ? (
+                        <CircleDot className="h-5 w-5 fill-primary text-primary" />
+                      ) : (
+                        <div className="h-5 w-5 rounded-full border-2 border-muted-foreground/40" />
+                      )}
+                    </div>
+                    <CreditCard className="h-5 w-5 text-foreground/70" />
+                    <div className="flex flex-col">
+                      <span className="text-sm font-bold text-foreground">
+                        Credit / Debit Card
+                      </span>
+                      <span className="text-[11px] text-foreground/50">
+                        Pay securely with your card.
+                      </span>
+                    </div>
+                  </div>
+                  <div className="flex gap-2">
+                    <FaCcVisa className="h-7 w-7 text-[#1A1F71]" />
+                    <FaCcMastercard className="h-7 w-7 text-[#EB001B]" />
+                    {/* RuPay mock text icon */}
+                    <div className="flex h-7 items-center justify-center rounded border bg-white px-1.5 text-[10px] font-bold text-[#F26522] italic">
+                      RuPay
+                    </div>
+                  </div>
+                </div>
+
+                {/* UPI Option */}
+                <div
+                  onClick={() => setPaymentMethod("upi")}
+                  className={cn(
+                    "flex cursor-pointer items-center justify-between rounded-xl border-2 p-4 transition-all",
+                    paymentMethod === "upi"
+                      ? "border-primary bg-primary/5"
+                      : "border-border/50 bg-background/30 hover:border-primary/40"
+                  )}
+                >
+                  <div className="flex items-center gap-3.5">
+                    <div className="text-primary">
+                      {paymentMethod === "upi" ? (
+                        <CircleDot className="h-5 w-5 fill-primary text-primary" />
+                      ) : (
+                        <div className="h-5 w-5 rounded-full border-2 border-muted-foreground/40" />
+                      )}
+                    </div>
+                    {/* Generic UPI icon stand-in */}
+                    <svg
+                      className="h-5 w-5 text-foreground/70"
+                      viewBox="0 0 24 24"
+                      fill="none"
+                      stroke="currentColor"
+                      strokeWidth="2"
+                    >
+                      <path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5" />
+                    </svg>
+                    <div className="flex flex-col">
+                      <span className="text-sm font-bold text-foreground">
+                        UPI Payment
+                      </span>
+                      <span className="text-[11px] text-foreground/50">
+                        Pay using UPI apps
+                      </span>
+                    </div>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <FaGooglePay className="h-8 w-8 text-foreground/80" />
+                    <SiPhonepe className="h-6 w-6 text-[#5f259f]" />
+                    <SiPaytm className="h-9 w-9 text-[#002970]" />
+                  </div>
+                </div>
+
+                {/* Net Banking Option */}
+                <div
+                  onClick={() => setPaymentMethod("netbanking")}
+                  className={cn(
+                    "flex cursor-pointer items-center justify-between rounded-xl border-2 p-4 transition-all",
+                    paymentMethod === "netbanking"
+                      ? "border-primary bg-primary/5"
+                      : "border-border/50 bg-background/30 hover:border-primary/40"
+                  )}
+                >
+                  <div className="flex items-center gap-3.5">
+                    <div className="text-primary">
+                      {paymentMethod === "netbanking" ? (
+                        <CircleDot className="h-5 w-5 fill-primary text-primary" />
+                      ) : (
+                        <div className="h-5 w-5 rounded-full border-2 border-muted-foreground/40" />
+                      )}
+                    </div>
+                    <Landmark className="h-5 w-5 text-foreground/70" />
+                    <div className="flex flex-col">
+                      <span className="text-sm font-bold text-foreground">
+                        Net Banking
+                      </span>
+                      <span className="text-[11px] text-foreground/50">
+                        Pay through your bank account
+                      </span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </Card>
+
+            {/* Terms and Checkbox */}
+            <div className="flex items-center space-x-3 px-2 pt-2">
+              <Checkbox
+                id="terms"
+                className="border-primary/50 data-[state=checked]:bg-primary"
+              />
+              <label
+                htmlFor="terms"
+                className="text-sm leading-none font-medium text-foreground/80 peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
+              >
+                I agree to the{" "}
+                <span className="cursor-pointer text-primary underline hover:text-primary/80">
+                  Terms & Conditions
+                </span>{" "}
+                and{" "}
+                <span className="cursor-pointer text-primary underline hover:text-primary/80">
+                  Cancellation Policy
+                </span>{" "}
+                *
+              </label>
+            </div>
+
+            {/* Back Button */}
+            <div className="pt-2">
+              <Button
+                variant="outline"
+                className="h-11 rounded-xl border-border px-5 text-foreground hover:bg-secondary/50"
+              >
+                <ArrowLeft className="mr-2 h-4 w-4" /> Back to Room Details
+              </Button>
+            </div>
+          </div>
+
+          {/* Right Column: Booking Summary & Policies */}
+          <div className="flex flex-col gap-6">
+            {/* Room Summary Card */}
+            <Card className="overflow-hidden rounded-2xl border-border/60 bg-card shadow-sm">
+              {/* Room Image */}
+              <div className="relative h-[220px] w-full">
+                <img
+                  src="https://images.unsplash.com/photo-1582719478250-c89cae4dc85b?q=80&w=800&auto=format&fit=crop"
+                  alt="Deluxe Room Ocean View"
+                  className="h-full w-full object-cover"
                 />
               </div>
-              {form.formState.errors.phone?.message ? (
-                <p className="text-xs text-destructive" id="guest-phone-error">
-                  {form.formState.errors.phone.message}
+
+              <div className="p-6 md:p-7">
+                {/* Title & Price */}
+                <div className="mb-2 flex items-start justify-between">
+                  <h3 className="font-serif text-2xl font-bold text-foreground">
+                    Deluxe Room
+                  </h3>
+                  <div className="text-right">
+                    <span className="text-[18px] font-bold text-foreground">
+                      ₹ 4,500
+                    </span>
+                    <span className="text-[13px] text-foreground/70">
+                      {" "}
+                      / night
+                    </span>
+                  </div>
+                </div>
+
+                <p className="mb-5 text-sm leading-relaxed text-foreground/60">
+                  A comfortable and elegant room with modern amenities and sea
+                  view.
                 </p>
-              ) : null}
-            </div>
-          </div>
 
-          {fields.length ? (
-            <div className="mt-6 border-t border-border pt-5">
-              <div className="mt-5 divide-y divide-border border-y border-border">
-                {fields.map((field, index) => {
-                  const isAdult = index < adults - 1;
-                  const guestNumber = index + 2;
-                  const guestErrors = form.formState.errors.companions?.[index];
+                {/* Badges */}
+                <div className="mb-6 flex items-center gap-4 border-b border-border/50 pb-6">
+                  <div className="flex items-center gap-1.5 text-[13px] font-medium text-foreground/80">
+                    <Bed className="h-4 w-4 text-primary" /> King Bed
+                  </div>
+                  <div className="flex items-center gap-1.5 text-[13px] font-medium text-foreground/80">
+                    <Scaling className="h-4 w-4 text-primary" /> 350 sq.ft.
+                  </div>
+                  <div className="flex items-center gap-1.5 text-[13px] font-medium text-foreground/80">
+                    <User className="h-4 w-4 text-primary" /> 2 Guests
+                  </div>
+                </div>
 
-                  return (
-                    <fieldset
-                      className="grid gap-4 py-5 sm:grid-cols-2"
-                      disabled={isLocked}
-                      key={field.id}
-                    >
-                      <legend className="mb-3 text-sm font-medium text-foreground">
-                        {isAdult ? "Adult" : "Child"} guest {guestNumber}
-                      </legend>
-                      <InputField
-                        autoComplete="off"
-                        className="h-12 rounded-md"
-                        error={guestErrors?.fullName?.message}
-                        label="Full name"
-                        placeholder="Guest name"
-                        required
-                        {...form.register(
-                          `companions.${index}.fullName` as const
-                        )}
-                      />
-                    </fieldset>
-                  );
-                })}
+                {/* Dates */}
+                <div className="mb-6 flex justify-between border-b border-border/50 pb-6">
+                  <div className="flex flex-col">
+                    <span className="mb-2 text-xs font-semibold tracking-wider text-foreground/60 uppercase">
+                      Check-in
+                    </span>
+                    <div className="mb-1 flex items-center gap-2">
+                      <Calendar className="h-4 w-4 text-primary" />
+                      <span className="text-sm font-bold text-foreground">
+                        15 Nov 2024
+                      </span>
+                    </div>
+                    <span className="ml-6 text-[11px] text-foreground/50">
+                      From 2:00 PM
+                    </span>
+                  </div>
+                  <div className="flex flex-col items-end text-right">
+                    <span className="mb-2 text-xs font-semibold tracking-wider text-foreground/60 uppercase">
+                      Check-out
+                    </span>
+                    <div className="mb-1 flex items-center gap-2">
+                      <Calendar className="h-4 w-4 text-primary" />
+                      <span className="text-sm font-bold text-foreground">
+                        18 Nov 2024
+                      </span>
+                    </div>
+                    <span className="mr-6 text-[11px] text-foreground/50">
+                      Until 11:00 AM
+                    </span>
+                  </div>
+                </div>
+
+                {/* Price Breakdown */}
+                <div className="mb-6 space-y-3">
+                  <div className="flex justify-between text-sm">
+                    <span className="text-foreground/70">
+                      ₹ 4,500 × 3 nights
+                    </span>
+                    <span className="font-semibold text-foreground">
+                      ₹ 13,500
+                    </span>
+                  </div>
+                  <div className="flex justify-between text-sm">
+                    <span className="text-foreground/70">
+                      Taxes & Fees (10%)
+                    </span>
+                    <span className="font-semibold text-foreground">
+                      ₹ 1,350
+                    </span>
+                  </div>
+                </div>
+
+                <div className="mb-6 flex items-center justify-between border-t border-border/50 pt-5">
+                  <span className="text-lg font-bold text-foreground">
+                    Total Amount
+                  </span>
+                  <span className="font-serif text-2xl font-bold tracking-tight text-foreground">
+                    ₹ 14,850
+                  </span>
+                </div>
+
+                {/* Best Price Tag */}
+                <div className="flex items-start gap-3 rounded-xl border border-[#C5E1D4] bg-[#EAF3EE] p-3">
+                  <Tag className="mt-0.5 h-5 w-5 shrink-0 text-[#2E7D56]" />
+                  <div className="flex flex-col">
+                    <span className="text-[13px] font-bold text-[#2E7D56]">
+                      Best Price Guaranteed
+                    </span>
+                    <span className="mt-0.5 text-[11px] text-[#2E7D56]/80">
+                      No hidden charges. You're getting the best rate!
+                    </span>
+                  </div>
+                </div>
               </div>
-            </div>
-          ) : null}
+            </Card>
 
-          {bookingError ? (
-            <p
-              className="mt-5 border-l-2 border-destructive bg-destructive/5 px-4 py-3 text-sm text-destructive"
-              role="alert"
-            >
-              {bookingError}
-            </p>
-          ) : null}
-        </section>
-
-        <section
-          aria-labelledby="your-stay-title"
-          className="border-t border-border pt-6"
-        >
-          <div className="flex items-start justify-between gap-4">
-            <div>
-              <p className="text-sm text-muted-foreground">Dates and guests</p>
-              <h2
-                className="mt-1 font-heading text-2xl font-medium text-foreground"
-                id="your-stay-title"
+            {/* Cancellation Policy */}
+            <Card className="rounded-2xl border-border/60 bg-card p-6 shadow-sm">
+              <div className="mb-4 flex gap-3">
+                <div className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-primary text-primary-foreground">
+                  <ShieldCheck className="h-3.5 w-3.5" />
+                </div>
+                <h3 className="font-serif text-base font-bold text-foreground">
+                  Cancellation Policy
+                </h3>
+              </div>
+              <ul className="mb-4 space-y-2 text-[13px] font-medium text-foreground/70">
+                <li className="flex items-start gap-2">
+                  <span className="mt-1.5 h-1 w-1 shrink-0 rounded-full bg-primary/60" />
+                  Free cancellation up to 24 hours before check-in.
+                </li>
+                <li className="flex items-start gap-2">
+                  <span className="mt-1.5 h-1 w-1 shrink-0 rounded-full bg-primary/60" />
+                  Cancellations within 24 hours will be charged for 1 night.
+                </li>
+                <li className="flex items-start gap-2">
+                  <span className="mt-1.5 h-1 w-1 shrink-0 rounded-full bg-primary/60" />
+                  No show will be charged the full booking amount.
+                </li>
+              </ul>
+              <a
+                href="#policy"
+                className="flex items-center gap-1 text-[13px] font-bold text-primary hover:underline"
               >
-                Your Stay
-              </h2>
-            </div>
-            {!reservation ? (
-              <Link
-                className="inline-flex min-h-10 shrink-0 items-center text-sm font-medium text-foreground underline decoration-primary underline-offset-4 hover:text-primary focus-visible:rounded-sm focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring"
-                to={editHref}
-              >
-                Edit
-              </Link>
-            ) : null}
-          </div>
-          <dl className="mt-4 grid gap-x-6 border-y border-border sm:grid-cols-2">
-            <div className="flex items-center gap-3 border-b border-border py-4">
-              <CalendarDays
-                aria-hidden="true"
-                className="size-4 shrink-0 text-primary"
-              />
-              <div>
-                <dt className="text-xs text-muted-foreground">Check-in</dt>
-                <dd className="mt-1 text-sm font-medium text-foreground">
-                  {format(stay.checkIn, "EEE, dd MMM yyyy")}
-                </dd>
+                View Full Policy <ArrowRight className="h-3.5 w-3.5" />
+              </a>
+            </Card>
+
+            {/* Important Info */}
+            <Card className="rounded-2xl border-border/60 bg-card p-6 shadow-sm">
+              <div className="mb-4 flex gap-3">
+                <div className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-primary text-primary-foreground">
+                  <Info className="h-3.5 w-3.5" />
+                </div>
+                <h3 className="font-serif text-base font-bold text-foreground">
+                  Important Information
+                </h3>
+              </div>
+              <ul className="space-y-2 text-[13px] font-medium text-foreground/70">
+                <li className="flex items-start gap-2">
+                  <span className="mt-1.5 h-1 w-1 shrink-0 rounded-full bg-primary/60" />
+                  Check-in time: 2:00 PM
+                </li>
+                <li className="flex items-start gap-2">
+                  <span className="mt-1.5 h-1 w-1 shrink-0 rounded-full bg-primary/60" />
+                  Check-out time: 11:00 AM
+                </li>
+                <li className="flex items-start gap-2">
+                  <span className="mt-1.5 h-1 w-1 shrink-0 rounded-full bg-primary/60" />
+                  Valid ID proof is required at check-in.
+                </li>
+                <li className="flex items-start gap-2">
+                  <span className="mt-1.5 h-1 w-1 shrink-0 rounded-full bg-primary/60" />
+                  Breakfast is included in your stay.
+                </li>
+                <li className="flex items-start gap-2">
+                  <span className="mt-1.5 h-1 w-1 shrink-0 rounded-full bg-primary/60" />
+                  Extra bed available on request (charges may apply).
+                </li>
+              </ul>
+            </Card>
+
+            {/* Sticky Action (Desktop bottom, mobile can be sticky bottom) */}
+            <div className="mt-2 flex flex-col gap-3">
+              <Button className="group h-14 w-full rounded-xl bg-primary text-[15px] font-bold text-primary-foreground shadow-md transition-all hover:bg-primary/90">
+                <Lock className="mr-2 h-4 w-4" />
+                Pay ₹ 14,850 and Confirm Booking
+                <ArrowRight className="ml-2 h-4 w-4 transition-transform group-hover:translate-x-1" />
+              </Button>
+              <div className="flex items-center justify-center gap-1.5 text-xs font-medium text-foreground/50">
+                <ShieldCheck className="h-3.5 w-3.5" />
+                Your payment information is secure and encrypted.
               </div>
             </div>
-            <div className="flex items-center gap-3 border-b border-border py-4">
-              <CalendarDays
-                aria-hidden="true"
-                className="size-4 shrink-0 text-primary"
-              />
-              <div>
-                <dt className="text-xs text-muted-foreground">Check-out</dt>
-                <dd className="mt-1 text-sm font-medium text-foreground">
-                  {format(stay.checkOut, "EEE, dd MMM yyyy")}
-                </dd>
-              </div>
-            </div>
-            <div className="flex items-center gap-3 py-4">
-              <Users
-                aria-hidden="true"
-                className="size-4 shrink-0 text-primary"
-              />
-              <div>
-                <dt className="text-xs text-muted-foreground">Party</dt>
-                <dd className="mt-1 text-sm font-medium text-foreground">
-                  {adults} adult{adults === 1 ? "" : "s"}
-                  {children
-                    ? `, ${children} ${children === 1 ? "child" : "children"}`
-                    : ""}
-                </dd>
-              </div>
-            </div>
-            <div className="flex items-center gap-3 py-4">
-              <CalendarDays
-                aria-hidden="true"
-                className="size-4 shrink-0 text-primary"
-              />
-              <div>
-                <dt className="text-xs text-muted-foreground">
-                  Length of stay
-                </dt>
-                <dd className="mt-1 text-sm font-medium text-foreground">
-                  {nights} night{nights === 1 ? "" : "s"}
-                </dd>
-              </div>
-            </div>
-          </dl>
-        </section>
-
-        <section
-          aria-labelledby="payment-title"
-          className="border-t border-border pt-6"
-        >
-          <p className="text-sm text-muted-foreground">
-            Complete your reservation
-          </p>
-          <h2
-            className="mt-1 font-heading text-2xl font-medium text-foreground"
-            id="payment-title"
-          >
-            Choose Payment Method
-          </h2>
-          <p className="mt-2 text-sm leading-6 text-muted-foreground">
-            Choose how you would like to complete your reservation.
-          </p>
-
-          <div className="mt-4 flex items-start gap-3 border-y border-border py-4">
-            <span className="grid size-10 shrink-0 place-items-center bg-secondary text-secondary-foreground">
-              <CreditCard aria-hidden="true" className="size-5" />
-            </span>
-            <div>
-              <p className="text-sm font-semibold text-foreground">
-                Online payment
-              </p>
-              <p className="mt-1 text-xs leading-5 text-muted-foreground">
-                Continue through Razorpay. Cash and pay-at-hotel options are not
-                available in this checkout.
-              </p>
-            </div>
           </div>
-
-          {reservation ? (
-            <div
-              aria-live="polite"
-              className={`mt-4 border-l-2 px-4 py-3 text-sm ${
-                hasPaymentProblem
-                  ? "border-destructive bg-destructive/5 text-destructive"
-                  : paymentStatus?.paymentStatus === "COMPLETED"
-                    ? "border-success bg-success/5 text-success"
-                    : "border-primary bg-secondary/50 text-foreground"
-              }`}
-              role={hasPaymentProblem ? "alert" : "status"}
-            >
-              {paymentMessage}
-            </div>
-          ) : null}
-
-          <div className="mt-5 hidden lg:block">
-            <p className="text-xs leading-5 text-muted-foreground">
-              Review your reservation details before proceeding with payment.
-            </p>
-          </div>
-
-          <div className="mt-6 border-t border-border pt-5 lg:hidden">
-            <p className="text-xs text-muted-foreground">Total payable</p>
-            <p
-              className={`mt-1 text-foreground ${
-                reservation
-                  ? "font-heading text-2xl font-semibold"
-                  : "text-sm font-medium"
-              }`}
-            >
-              {reservation
-                ? formatPrice(reservation.totalAmount)
-                : "Shown before payment"}
-            </p>
-            <p className="mt-2 text-xs leading-5 text-muted-foreground">
-              Review your reservation details before proceeding with payment.
-            </p>
-            <div className="mt-4">
-              <CheckoutAction
-                isCheckoutOpen={isCheckoutOpen}
-                isCreating={createPublicBooking.isPending}
-                isExpired={isExpired}
-                isFormValid={isFormValid}
-                isPaying={isPaymentPending}
-                onPay={onPay}
-                paymentStatus={paymentStatus}
-                reservation={reservation}
-              />
-            </div>
-          </div>
-        </section>
-      </div>
-
-      <div className="order-1 min-w-0 lg:sticky lg:top-24 lg:order-2">
-        <BookingSummary
-          adults={adults}
-          children={children}
-          reservation={reservation}
-          room={room}
-          stay={stay}
-        />
-        <div className="mt-4 hidden lg:block">
-          <CheckoutAction
-            isCheckoutOpen={isCheckoutOpen}
-            isCreating={createPublicBooking.isPending}
-            isExpired={isExpired}
-            isFormValid={isFormValid}
-            isPaying={isPaymentPending}
-            onPay={onPay}
-            paymentStatus={paymentStatus}
-            reservation={reservation}
-          />
-          <p className="mt-3 text-center text-xs leading-5 text-muted-foreground">
-            {reservation
-              ? "Your total is provided by the booking service."
-              : "Review your reservation details before proceeding with payment."}
-          </p>
         </div>
       </div>
-    </form>
-  );
-}
-
-function CheckoutSkeleton() {
-  return (
-    <div
-      aria-busy="true"
-      aria-label="Loading checkout"
-      className="mt-8 grid gap-7 lg:grid-cols-[1.3fr_0.8fr]"
-    >
-      <div className="space-y-6">
-        <Skeleton className="h-9 w-1/2" />
-        <Skeleton className="h-12 w-full" />
-        <Skeleton className="h-12 w-full" />
-        <Skeleton className="h-40 w-full" />
-      </div>
-      <Skeleton className="h-96 w-full" />
     </div>
   );
 }
 
-export default function BookingCheckoutPage() {
-  const { slug } = useParams();
-  const [searchParams] = useSearchParams();
-  const reduceMotion = useReducedMotion() ?? false;
-  const [currentStep, setCurrentStep] = useState(2);
-  const [checkoutComplete, setCheckoutComplete] = useState(false);
-  const stay = getValidStay(searchParams);
-  const adults = parseCount(searchParams.get("adults"), 1, 10);
-  const children = parseCount(searchParams.get("children"), 0, 10);
-  const availabilityParams =
-    stay && adults !== null && children !== null
-      ? {
-          checkInDate: stay.checkInDate,
-          checkOutDate: stay.checkOutDate,
-          adults,
-          children,
-        }
-      : undefined;
-  const {
-    room,
-    isLoading: isLoadingRoom,
-    isError: isRoomError,
-    refetch: refetchRoom,
-  } = useAvailableRoom(slug ?? null, stay?.checkInDate, stay?.checkOutDate);
-  const {
-    rooms: availableRooms,
-    isLoading: isLoadingAvailability,
-    isError: isAvailabilityError,
-    refetch: refetchAvailability,
-  } = useAvailableBookingRooms(availabilityParams);
-  const editHref =
-    stay && adults !== null && children !== null
-      ? getEditSearchHref(stay, adults, children)
-      : "/rooms#availability";
-
+export default function BookingCheckout() {
   return (
-    <div className="min-w-0 bg-background text-foreground">
-      <div className="container mx-auto w-full max-w-295 px-4 py-5 sm:px-6 sm:py-7 lg:px-8">
-        <div className="flex flex-wrap items-center gap-x-2 gap-y-1 text-sm text-muted-foreground">
-          <Link className="transition-colors hover:text-foreground" to="/rooms">
-            Rooms
-          </Link>
-          <ChevronRight aria-hidden="true" className="size-3.5" />
-          <span aria-current="page" className="text-foreground">
-            Checkout
-          </span>
-        </div>
-
-        <motion.header
-          animate={{ opacity: 1, y: 0 }}
-          className="mt-5"
-          initial={reduceMotion ? false : { opacity: 0, y: 8 }}
-          transition={{ duration: reduceMotion ? 0 : 0.28, ease: "easeOut" }}
-        >
-          <h1 className="font-heading text-3xl font-medium text-foreground sm:text-4xl">
-            Complete Your Booking
-          </h1>
-          <p className="mt-2 text-sm leading-6 text-muted-foreground sm:text-base">
-            Just a few details before your stay with us.
-          </p>
-          <div className="mt-5">
-            <CheckoutProgress
-              complete={checkoutComplete}
-              currentStep={currentStep}
-            />
-          </div>
-          <p className="mt-4 inline-flex items-center gap-2 text-xs text-muted-foreground">
-            <LockKeyhole aria-hidden="true" className="size-4 text-primary" />
-            Secure booking · Online payment through Razorpay
-          </p>
-        </motion.header>
-
-        {!slug ? (
-          <CheckoutNotice title="Choose a room to continue">
-            Select a room and stay dates before starting checkout.
-          </CheckoutNotice>
-        ) : !stay || adults === null || children === null ? (
-          <CheckoutNotice title="Your stay details are incomplete">
-            Return to availability search and choose valid dates and guest
-            counts before checkout.
-          </CheckoutNotice>
-        ) : isLoadingRoom || isLoadingAvailability ? (
-          <CheckoutSkeleton />
-        ) : isRoomError || !room ? (
-          <CheckoutNotice title="Room details are unavailable">
-            This room could not be loaded. Return to the room list and choose an
-            available room again.
-          </CheckoutNotice>
-        ) : adults + children > room.maxGuests ? (
-          <CheckoutNotice title="This room cannot fit your party" to={editHref}>
-            This room accommodates up to {room.maxGuests} guests. Update your
-            search to choose a suitable room.
-          </CheckoutNotice>
-        ) : isAvailabilityError ? (
-          <div className="mt-8 border-y border-border py-10" role="alert">
-            <h2 className="font-heading text-2xl font-medium text-foreground">
-              Availability could not be checked
-            </h2>
-            <p className="mt-2 text-sm text-muted-foreground">
-              Check the dates again before reserving this room.
-            </p>
-            <Button
-              className="mt-5 h-11"
-              onClick={() => {
-                void refetchAvailability();
-                void refetchRoom();
-              }}
-              variant="outline"
-            >
-              Try again
-            </Button>
-          </div>
-        ) : (
-          (() => {
-            const availableRoom = availableRooms.find(
-              (candidate) => candidate.roomType.id === room.id
-            );
-            return availableRoom ? (
-              <CheckoutFlow
-                adults={adults}
-                inventoryRoomId={availableRoom.id}
-                children={children}
-                editHref={editHref}
-                key={`${room.id}:${stay.checkInDate}:${stay.checkOutDate}:${adults}:${children}`}
-                onPaymentConfirmed={() => setCheckoutComplete(true)}
-                onReservationCreated={() => setCurrentStep(3)}
-                room={room}
-                stay={stay}
-              />
-            ) : (
-              <CheckoutNotice
-                title="This room is no longer available"
-                to={editHref}
-              >
-                The room is not bookable for the selected dates and guest count.
-                Return to availability to choose another option.
-              </CheckoutNotice>
-            );
-          })()
-        )}
-        <footer className="mt-12 flex flex-col gap-2 border-t border-border py-5 text-xs text-muted-foreground sm:flex-row sm:items-center sm:justify-between">
-          <p>© {new Date().getFullYear()} Nivara Hotels</p>
-          <p>Reservation support: contact Nivara Hotels for assistance.</p>
-        </footer>
-      </div>
-    </div>
+    <>
+      <HeroSection />
+      <CheckoutSection />
+    </>
   );
 }

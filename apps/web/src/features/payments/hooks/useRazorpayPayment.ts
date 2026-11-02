@@ -172,7 +172,7 @@ export function useRazorpayPayment() {
             } else {
               toast.message("Verifying your payment. Please wait...");
             }
-          } catch (error) {
+          } catch {
             context?.onVerificationFailed?.();
             toast.error(
               "Payment Verification Failed. We couldn't verify your payment. Please contact support if money was deducted."

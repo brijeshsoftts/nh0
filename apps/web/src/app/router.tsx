@@ -20,7 +20,7 @@ import StaffPage from "@/pages/protect/Staff";
 import TasksPage from "@/pages/protect/Tasks";
 import UsersPage from "@/pages/protect/Users";
 import AboutPage from "@/pages/public/About";
-import BookingCheckout from "@/pages/public/BookingCheckout";
+import BookingCheckout from "@/pages/public/BookingCheckoutFlow";
 import ContactPage from "@/pages/public/Contact";
 import LandingPage from "@/pages/public/Landing";
 import RoomDetails from "@/pages/public/RoomDetails";
