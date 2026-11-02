@@ -2,10 +2,7 @@ import { apiClient } from "@/lib/apiClient";
 import type { ApiListResponse } from "@/types/api.types";
 
 import type { RoomCard } from "./components/RoomCard";
-import type {
-  AvailableRoomDetails,
-  AvailableRoomsParams,
-} from "./public.types";
+import type { AvailableRoomsParams, RoomDetails } from "./public.types";
 
 export const publicService = {
   findAvailableRooms: (
@@ -17,7 +14,7 @@ export const publicService = {
   findAvailableRoom: (
     slug: string,
     params?: { checkInDate?: string; checkOutDate?: string }
-  ): Promise<{ data: AvailableRoomDetails }> =>
+  ): Promise<{ data: RoomDetails }> =>
     apiClient
       .get(`/public/rooms/${slug}`, { params })
       .then((response) => response.data),

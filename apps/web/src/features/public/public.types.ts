@@ -60,7 +60,7 @@ export type AvailableRoomsParams = {
   limit?: number;
 };
 
-export type AvailableRoomDetails = {
+export type RoomDetails = {
   id: string;
   name: string;
   slug: string;
