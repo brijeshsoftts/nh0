@@ -12,4 +12,5 @@ export const publicKeys = {
       checkInDate ?? "",
       checkOutDate ?? "",
     ] as const,
+  contactMessage: ["public", "contact-message"] as const,
 } as const;

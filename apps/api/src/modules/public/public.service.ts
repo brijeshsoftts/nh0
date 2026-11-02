@@ -3,10 +3,12 @@ import { Injectable, NotFoundException } from '@nestjs/common';
 import { PrismaService } from '../../prisma/prisma.service';
 import { ListResponse } from '../../types/api.types';
 import { BookingStatus, Prisma } from '../../types/prisma.types';
+import { EmailsService } from '../emails/emails.service';
 
 import { AmenitiesQueryDto } from './dto/amenities-query.dto';
 import { AvailableRoomQueryDto } from './dto/available-room-query.dot';
 import { AvailableRoomsQueryDto } from './dto/available-rooms-query.dto';
+import { PublicContactMessageDto } from './dto/contact-message.dto';
 import { PUBLIC_ERROR_MSG } from './public.constants';
 import {
   AmenityListItemResponse,
@@ -16,7 +18,14 @@ import {
 
 @Injectable()
 export class PublicService {
-  constructor(private readonly prismaService: PrismaService) {}
+  constructor(
+    private readonly prismaService: PrismaService,
+    private readonly emailsService: EmailsService,
+  ) {}
+
+  async sendContactMessage(data: PublicContactMessageDto): Promise<void> {
+    await this.emailsService.sendContactMessage(data);
+  }
 
   async findAmenities(
     query: AmenitiesQueryDto,

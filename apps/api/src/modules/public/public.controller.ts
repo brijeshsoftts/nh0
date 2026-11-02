@@ -1,9 +1,11 @@
 import {
+  Body,
   Controller,
   Get,
   HttpCode,
   HttpStatus,
   Param,
+  Post,
   Query,
 } from '@nestjs/common';
 
@@ -22,11 +24,27 @@ import {
   AvailableRoomsQueryDto,
   AvailableRoomsQuerySchema,
 } from './dto/available-rooms-query.dto';
+import {
+  PublicContactMessageDto,
+  PublicContactMessageSchema,
+} from './dto/contact-message.dto';
 import { PublicService } from './public.service';
 
 @Controller('public')
 export class PublicController {
   constructor(private readonly publicService: PublicService) {}
+
+  @Post('contact')
+  @HttpCode(HttpStatus.OK)
+  async sendContactMessage(
+    @Body(new ValidationPipe(PublicContactMessageSchema))
+    body: PublicContactMessageDto,
+  ) {
+    await this.publicService.sendContactMessage(body);
+    return apiResponse({
+      data: { message: 'Your message has been sent successfully.' },
+    });
+  }
 
   @Get('amenities')
   @HttpCode(HttpStatus.OK)
