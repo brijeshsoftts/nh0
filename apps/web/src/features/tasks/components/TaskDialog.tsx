@@ -151,7 +151,9 @@ export function TaskDialog({
         </DialogHeader>
 
         <form
-          onSubmit={activeForm.form.handleSubmit(activeForm.submit)}
+          onSubmit={activeForm.form.handleSubmit((data) =>
+            activeForm.submit(data as never)
+          )}
           className="space-y-4 px-6 pb-6"
         >
           <HousekeeperSelect

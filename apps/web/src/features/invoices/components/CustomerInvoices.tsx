@@ -103,7 +103,7 @@ function InvoicesTable() {
 
   const { setSearch, setPage, params, setFilter } = useListParams();
   const { items, pagination, isLoading, isError, refetch } =
-    useInvoices(params);
+    useInvoices<CustomerInvoice>(params);
 
   return (
     <DataTable

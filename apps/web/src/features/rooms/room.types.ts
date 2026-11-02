@@ -1,6 +1,5 @@
 import type {
   BedType,
-  BookingStatus,
   HousekeepingStatus,
   OccupancyStatus,
 } from "@/types/enum.types";

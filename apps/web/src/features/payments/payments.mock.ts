@@ -6,6 +6,7 @@ export const customerPayments: CustomerPayment[] = [
   {
     id: "PAY-2041",
     bookingId: "bkg-001",
+    paymentReference: "PAY-REF-2041",
     bookingReference: "BK-2041",
     customerName: DEMO_CUSTOMERS.saimKhan.fullName,
     date: "2026-10-16",
@@ -21,6 +22,7 @@ export const customerPayments: CustomerPayment[] = [
   {
     id: "PAY-2042",
     bookingId: "bkg-002",
+    paymentReference: "PAY-REF-2042",
     bookingReference: "BK-2042",
     customerName: DEMO_CUSTOMERS.priyaSrivastava.fullName,
     date: "2026-10-16",
@@ -36,6 +38,7 @@ export const customerPayments: CustomerPayment[] = [
   {
     id: "PAY-2043",
     bookingId: "bkg-003",
+    paymentReference: "PAY-REF-2043",
     bookingReference: "BK-2043",
     customerName: DEMO_CUSTOMERS.ankitMishra.fullName,
     date: "2026-11-14",
@@ -51,6 +54,7 @@ export const customerPayments: CustomerPayment[] = [
   {
     id: "PAY-2044",
     bookingId: "bkg-004",
+    paymentReference: "PAY-REF-2044",
     bookingReference: "BK-2044",
     customerName: DEMO_CUSTOMERS.nehaGupta.fullName,
     date: "2026-10-15",
@@ -66,6 +70,7 @@ export const customerPayments: CustomerPayment[] = [
   {
     id: "PAY-2045",
     bookingId: "bkg-005",
+    paymentReference: "PAY-REF-2045",
     bookingReference: "BK-2045",
     customerName: DEMO_CUSTOMERS.arjunPandey.fullName,
     date: "2026-11-20",
@@ -81,6 +86,7 @@ export const customerPayments: CustomerPayment[] = [
   {
     id: "PAY-2046",
     bookingId: "bkg-006",
+    paymentReference: "PAY-REF-2046",
     bookingReference: "BK-2046",
     customerName: DEMO_CUSTOMERS.poojaShukla.fullName,
     date: "2026-10-14",
@@ -96,6 +102,7 @@ export const customerPayments: CustomerPayment[] = [
   {
     id: "PAY-2047",
     bookingId: "bkg-007",
+    paymentReference: "PAY-REF-2047",
     bookingReference: "BK-2047",
     customerName: DEMO_CUSTOMERS.rohitYadav.fullName,
     date: "2026-10-13",
@@ -111,6 +118,7 @@ export const customerPayments: CustomerPayment[] = [
   {
     id: "PAY-2048",
     bookingId: "bkg-008",
+    paymentReference: "PAY-REF-2048",
     bookingReference: "BK-2048",
     customerName: DEMO_CUSTOMERS.kavitaVerma.fullName,
     date: "2026-10-12",
@@ -126,6 +134,7 @@ export const customerPayments: CustomerPayment[] = [
   {
     id: "PAY-2049",
     bookingId: "bkg-009",
+    paymentReference: "PAY-REF-2049",
     bookingReference: "BK-2049",
     customerName: DEMO_CUSTOMERS.amanTripathi.fullName,
     date: "2026-11-21",
@@ -141,6 +150,7 @@ export const customerPayments: CustomerPayment[] = [
   {
     id: "PAY-2050",
     bookingId: "bkg-010",
+    paymentReference: "PAY-REF-2050",
     bookingReference: "BK-2050",
     customerName: DEMO_CUSTOMERS.shreyaSrivastava.fullName,
     date: "2026-11-22",

@@ -18,7 +18,7 @@ import {
 } from "@/components/ui/select";
 
 import { useUpdateRoomMutation } from "../rooms/hooks/useUpdateRoom";
-import type { Room } from "../rooms/rooms/rooms.types";
+import type { Room } from "../rooms/rooms.types";
 
 type UpdateRoomHousekeepingDialogProps = {
   open: boolean;

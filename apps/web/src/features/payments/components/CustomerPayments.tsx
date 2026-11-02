@@ -92,7 +92,7 @@ function PaymentsTable() {
 
   const { setSearch, setPage, params, setFilter } = useListParams();
   const { items, pagination, isLoading, isError, refetch } =
-    usePayments(params);
+    usePayments<CustomerPayment>(params);
 
   return (
     <DataTable

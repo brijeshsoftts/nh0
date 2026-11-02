@@ -9,9 +9,9 @@ import { notifyError } from "@/lib/notification";
 
 import { paymentsKeys } from "./payments.keys";
 import { paymentsService } from "./payments.service";
-import type { CustomerPayment, PaymentItem } from "./payments.types";
+import type { PaymentItem } from "./payments.types";
 
-type Payment = CustomerPayment | PaymentItem;
+type Payment = PaymentItem;
 
 export const paymentsCrud = createCrud<Payment, undefined>()({
   resource: "payments",

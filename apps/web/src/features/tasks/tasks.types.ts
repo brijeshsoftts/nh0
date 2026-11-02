@@ -17,6 +17,43 @@ export type TaskItem = {
   };
 };
 
+export type TaskDetails = TaskItem & {
+  createdAt: string;
+  updatedAt: string;
+  room: {
+    id: string;
+    roomNumber: string;
+    name: string;
+    floor: number;
+    description: string;
+    occupancyStatus: string;
+    housekeepingStatus: string;
+    roomType: {
+      id: string;
+      name: string;
+    };
+  };
+  assignee: {
+    id: string;
+    fullName: string;
+    email: string;
+    phone: string;
+  };
+  assignment: {
+    id: string;
+    isActive: boolean;
+    createdAt: string;
+    housekeeper: {
+      id: string;
+      fullName: string;
+    };
+    assignedBy: {
+      id: string;
+      fullName: string;
+    };
+  };
+};
+
 export type HousekeeperLookupItem = {
   id: string;
   fullName: string;

@@ -91,15 +91,17 @@ export function useListParams(initial: Partial<ListParams> = {}) {
         }
       }
 
-      Object.entries(filters).forEach(([key, value]) => {
-        if (RESERVED_KEYS.has(key)) return;
+      Object.entries(filters as Record<string, unknown>).forEach(
+        ([key, value]) => {
+          if (RESERVED_KEYS.has(key)) return;
 
-        if (value == null || value === "") {
-          next.delete(key);
-        } else if (typeof value !== "object") {
-          next.set(key, String(value));
+          if (value == null || value === "") {
+            next.delete(key);
+          } else if (typeof value !== "object") {
+            next.set(key, String(value));
+          }
         }
-      });
+      );
 
       next.delete("filters");
 
@@ -133,26 +135,28 @@ export function useListParams(initial: Partial<ListParams> = {}) {
       } = patch;
 
       setFilters((prev) => {
-        const next = { ...prev };
+        const next: Record<string, unknown> = { ...prev };
 
-        Object.entries(filterPatch).forEach(([key, value]) => {
-          const isEmpty =
-            value === "" ||
-            value === null ||
-            value === undefined ||
-            (typeof value === "object" &&
-              !Array.isArray(value) &&
-              Object.keys(value).length === 0) ||
-            (Array.isArray(value) && value.length === 0);
+        Object.entries(filterPatch as Record<string, unknown>).forEach(
+          ([key, value]) => {
+            const isEmpty =
+              value === "" ||
+              value === null ||
+              value === undefined ||
+              (typeof value === "object" &&
+                !Array.isArray(value) &&
+                Object.keys(value as Record<string, unknown>).length === 0) ||
+              (Array.isArray(value) && value.length === 0);
 
-          if (isEmpty) {
-            delete next[key];
-          } else {
-            next[key] = value;
+            if (isEmpty) {
+              delete next[key];
+            } else {
+              next[key] = value;
+            }
           }
-        });
+        );
 
-        return next;
+        return next as Partial<ListParams>;
       });
       setPage(1);
     },

@@ -8,7 +8,7 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 
-import type { BookingStatus } from "../bookings.types";
+import type { BookingStatus } from "@/types/enum.types";
 
 type BookingCancelConfirmationProps = {
   open: boolean;

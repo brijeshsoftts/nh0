@@ -2,7 +2,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { type DefaultValues, useForm } from "react-hook-form";
 import { toast } from "sonner";
-import type { z } from "zod";
+import { z } from "zod";
 
 import { notifyError } from "@/lib/notification";
 import type {
@@ -16,8 +16,8 @@ import { createKeys } from "./createKeys";
 
 type CrudConfig<
   TResource extends string,
-  TCreateSchema extends z.ZodType,
-  TUpdateSchema extends z.ZodType,
+  TCreateSchema extends z.ZodTypeAny = z.ZodTypeAny,
+  TUpdateSchema extends z.ZodTypeAny = z.ZodTypeAny,
 > = {
   /** Query key root, e.g. "tasks" */
   resource: TResource;
@@ -41,12 +41,12 @@ type FormOptions<TInput extends Record<string, unknown>> = {
 export function createCrud<TItem, LookupOutput>() {
   return function build<
     TResource extends string,
-    TCreateSchema extends z.ZodType,
-    TUpdateSchema extends z.ZodType,
+    TCreateSchema extends z.ZodTypeAny = z.ZodTypeAny,
+    TUpdateSchema extends z.ZodTypeAny = z.ZodTypeAny,
   >(config: CrudConfig<TResource, TCreateSchema, TUpdateSchema>) {
-    type CreateInput = z.input<TCreateSchema>;
+    type CreateInput = z.input<TCreateSchema> & Record<string, unknown>;
     type CreateOutput = z.output<TCreateSchema>;
-    type UpdateInput = z.input<TUpdateSchema>;
+    type UpdateInput = z.input<TUpdateSchema> & Record<string, unknown>;
     type UpdateOutput = z.output<TUpdateSchema>;
 
     const { resource, endpoint, label, createSchema, updateSchema } = config;
@@ -59,15 +59,15 @@ export function createCrud<TItem, LookupOutput>() {
       LookupOutput
     >(endpoint);
 
-    function useList<TItem>(params?: ListParams) {
+    function useList<TListItem = TItem>(params?: ListParams) {
       const { data, isLoading, isError, refetch } = useQuery({
         queryKey: keys.list(params),
-        queryFn: () => service.findAll<TItem>(params),
+        queryFn: () => service.findAll<TListItem>(params),
         placeholderData: (previousData) => previousData,
       });
 
       return {
-        items: data?.data ?? [],
+        items: (data?.data ?? []) as TListItem[],
         pagination: data?.meta,
         isLoading,
         isError,
@@ -122,14 +122,14 @@ export function createCrud<TItem, LookupOutput>() {
         onError: notifyError,
       });
 
-      const form = useForm({
-        resolver: zodResolver(createSchema || z.object({})),
+      const form = useForm<CreateInput>({
+        resolver: zodResolver((createSchema ?? z.object({})) as any),
         defaultValues: options?.defaultValues as DefaultValues<CreateInput>,
       });
 
       return {
         form,
-        submit: (data: CreateOutput) => mutation.mutate(data),
+        submit: (data: CreateInput) => mutation.mutate(data as CreateOutput),
         mutation,
       };
     }
@@ -151,14 +151,14 @@ export function createCrud<TItem, LookupOutput>() {
         onError: notifyError,
       });
 
-      const form = useForm({
-        resolver: zodResolver(updateSchema || z.object({})),
+      const form = useForm<UpdateInput>({
+        resolver: zodResolver((updateSchema ?? z.object({})) as any),
         defaultValues: options?.defaultValues as DefaultValues<UpdateInput>,
       });
 
       return {
         form,
-        submit: (data: UpdateOutput) => mutation.mutate(data),
+        submit: (data: UpdateInput) => mutation.mutate(data as UpdateOutput),
         mutation,
       };
     }

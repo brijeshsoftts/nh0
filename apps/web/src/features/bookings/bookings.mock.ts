@@ -99,7 +99,7 @@ export const BOOKING_DETAILS: BookingDetails = {
         amount: 0,
         paymentMethod: "ONLINE",
         paymentStatus: "PENDING",
-        paidAt: null,
+        paidAt: undefined,
         createdAt: "2026-11-02T09:20:00+05:30",
       },
     ],

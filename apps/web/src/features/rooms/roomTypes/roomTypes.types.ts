@@ -1,7 +1,7 @@
 import type { BedType } from "@/types/enum.types";
 
 type Amenity = {
-  id: string;
+  id?: string;
   name: string;
   icon: string | null;
 };

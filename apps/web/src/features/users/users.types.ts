@@ -29,3 +29,5 @@ export type UserDetails = {
     altText: string | null;
   } | null;
 };
+
+export type UserProfile = UserDetails;

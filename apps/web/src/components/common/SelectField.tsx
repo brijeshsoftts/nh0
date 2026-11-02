@@ -30,7 +30,7 @@ type SelectFieldProps<
   control: Control<T, unknown, TTransformedValues>;
   label: string;
   placeholder?: string;
-  options: SelectOption[];
+  options: readonly SelectOption[];
   error?: string;
   disabled?: boolean;
   className?: string;

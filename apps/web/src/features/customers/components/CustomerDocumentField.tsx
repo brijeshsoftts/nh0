@@ -32,9 +32,13 @@ export function CustomerDocumentField<T extends FieldValues>({
       name={name}
       control={control}
       render={({ field }) => {
+        const fileCandidate = field.value as unknown;
         const selectedFile =
-          typeof File !== "undefined" && field.value instanceof File
-            ? (field.value as File)
+          typeof File !== "undefined" &&
+          fileCandidate !== null &&
+          typeof fileCandidate === "object" &&
+          fileCandidate instanceof File
+            ? (fileCandidate as File)
             : undefined;
 
         return (

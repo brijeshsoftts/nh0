@@ -1,10 +1,10 @@
 import { createCrud } from "@/lib/crud/createCrud";
 
-import type { CustomerInvoice, InvoiceItem } from "./invoices.types";
+import type { InvoiceItem } from "./invoices.types";
 
-type Payment = CustomerInvoice | InvoiceItem;
+type Invoice = InvoiceItem;
 
-export const invoicesCrud = createCrud<Payment, undefined>()({
+export const invoicesCrud = createCrud<Invoice, undefined>()({
   resource: "invoices",
   endpoint: "/invoices",
   label: "Invoice",

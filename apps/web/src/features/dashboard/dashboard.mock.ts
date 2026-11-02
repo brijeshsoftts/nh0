@@ -4,6 +4,7 @@ import { toDashboardStats } from "../shared/stat-response";
 import type { DonutChartData } from "./components/DonutChart";
 import type { StatusBarChart } from "./components/StatusBarChart";
 import type { TrendChart } from "./components/TrendChart";
+import type { TodaysArrival, TodaysDeparture } from "./dashboard.types";
 
 // MANAGEMENT MOCK DATA
 export const MANAGEMENT_STAT = toDashboardStats([
@@ -45,7 +46,7 @@ export const MANAGEMENT_STAT = toDashboardStats([
   },
 ]);
 
-export const TODAYS_ARRIVALS = [
+export const TODAYS_ARRIVALS: TodaysArrival[] = [
   {
     booking: {
       id: "booking-2026-1101",
@@ -113,7 +114,7 @@ export const TODAYS_ARRIVALS = [
   },
 ];
 
-export const TODAYS_DEPARTURES = [
+export const TODAYS_DEPARTURES: TodaysDeparture[] = [
   {
     booking: {
       id: "booking-2026-1001",

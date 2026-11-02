@@ -15,7 +15,7 @@ export function useDeleteUser(id: string) {
     onSuccess: (res) => {
       toast.success(res?.message || "User deleted successfully");
       queryClient.invalidateQueries({
-        queryKey: usersKeys.lists(),
+        queryKey: usersKeys.list(),
       });
     },
     onError: notifyError,

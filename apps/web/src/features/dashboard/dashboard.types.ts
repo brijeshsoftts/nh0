@@ -8,6 +8,34 @@ export type CustomerNextBooking = {
   roomTypeName: string | null;
 };
 
+export type TodaysArrival = {
+  booking: {
+    id: string;
+    bookingReference: string;
+  };
+  customer: {
+    id: string;
+    fullName: string;
+  };
+  roomNumber: string;
+  checkInDate: string;
+  status: BookingStatus;
+};
+
+export type TodaysDeparture = {
+  booking: {
+    id: string;
+    bookingReference: string;
+  };
+  customer: {
+    id: string;
+    fullName: string;
+  };
+  roomNumber: string;
+  checkOutDate: string;
+  status: BookingStatus;
+};
+
 export type ArrivalItem = {
   bookingId: string;
   bookingReference: string;

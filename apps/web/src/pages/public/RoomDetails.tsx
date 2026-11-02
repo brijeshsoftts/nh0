@@ -152,7 +152,11 @@ function RoomFact({
   );
 }
 
-function SimilarRoomCard({ room }: { room: AvailableRoomListItem }) {
+function SimilarRoomCard({
+  room,
+}: {
+  room: Pick<AvailableRoomListItem, "slug" | "name" | "basePrice" | "image">;
+}) {
   return (
     <Link
       className="group min-w-0 overflow-hidden rounded-lg border border-border bg-card transition-colors hover:border-primary/50 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring"
@@ -274,6 +278,7 @@ export default function RoomDetailsPage() {
   };
 
   const handleBook = () => {
+    if (!room) return;
     setBookingError("");
     if (!checkInDate || !checkOutDate) {
       setBookingError("Choose your check-in and check-out dates.");

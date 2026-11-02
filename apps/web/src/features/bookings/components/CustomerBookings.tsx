@@ -35,40 +35,38 @@ import { formatPrice } from "@/lib/format";
 
 import { bookingFilters } from "../booking-filters";
 import { useBookingDetails, useBookings } from "../bookings.crud";
-import type { CustomerBooking } from "../bookings.types";
+import type { BookingDetails, BookingListItem } from "../bookings.types";
 
 import { BookingsStats } from "./BookingsStats";
 
-export const columns: ColumnDef<CustomerBooking>[] = [
+export const columns: ColumnDef<BookingListItem>[] = [
   {
-    key: "bookingNumber",
+    key: "bookingReference",
     header: "Booking #",
     className: "min-w-36",
     cell: (booking) => (
-      <span className="font-medium">{booking.bookingNumber}</span>
+      <span className="font-medium">{booking.bookingReference}</span>
     ),
   },
   {
     key: "roomType",
     header: "Room Type",
-    cell: (booking) => booking.roomType,
+    cell: (booking) => booking.bookingRoom?.roomType?.name ?? "Unassigned",
   },
   {
     key: "roomNumber",
     header: "Room Number",
-    cell: (booking) => booking.roomNumber || "—",
+    cell: (booking) => booking.bookingRoom?.assignedRoom?.roomNumber ?? "—",
   },
   {
-    key: "checkIn",
+    key: "checkInDate",
     header: "Check-in",
-    cell: (booking) =>
-      booking.checkIn ? formatDate(booking.checkIn, "dd MMM, yyyy") : "—",
+    cell: (booking) => formatDate(booking.checkInDate, "dd MMM, yyyy"),
   },
   {
-    key: "checkOut",
+    key: "checkOutDate",
     header: "Check-out",
-    cell: (booking) =>
-      booking.checkOut ? formatDate(booking.checkOut, "dd MMM, yyyy") : "—",
+    cell: (booking) => formatDate(booking.checkOutDate, "dd MMM, yyyy"),
   },
   {
     key: "totalAmount",
@@ -99,7 +97,7 @@ export const columns: ColumnDef<CustomerBooking>[] = [
 function BookingsTable() {
   const { setSearch, setPage, params, setFilter } = useListParams();
   const { items, pagination, isLoading, isError, refetch } =
-    useBookings<CustomerBooking>(params);
+    useBookings<BookingListItem>(params);
 
   return (
     <DataTable
@@ -124,7 +122,7 @@ function BookingsTable() {
   );
 }
 
-function ActionDropdownMenu({ booking }: { booking: CustomerBooking }) {
+function ActionDropdownMenu({ booking }: { booking: BookingListItem }) {
   const [detailsOpen, setDetailsOpen] = useState(false);
   const [invoiceOpen, setInvoiceOpen] = useState(false);
   const canViewInvoice =
@@ -199,14 +197,14 @@ function BookingDetailsDialog({
   const { data, isLoading, isError, refetch } = useBookingDetails(
     open ? bookingId : undefined
   );
-  const booking = data && "duration" in data ? data : undefined;
+  const booking = (data as BookingDetails | undefined) ?? undefined;
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="max-w-120 gap-0 rounded-none">
         <DialogHeader className="text-left">
           <DialogTitle className="text-lg break-all">
-            {booking?.bookingNumber ?? "Booking details"}
+            {booking?.bookingReference ?? "Booking details"}
           </DialogTitle>
           <DialogDescription>
             Your stay information and booking summary.
@@ -252,8 +250,14 @@ function BookingDetailsDialog({
                 Stay details
               </h3>
               <dl className="grid grid-cols-2 gap-x-4">
-                <Detail label="Room type" value={booking.roomType} />
-                <Detail label="Room number" value={booking.roomNumber ?? "—"} />
+                <Detail
+                  label="Room type"
+                  value={booking.bookingRoom?.roomType?.name ?? "Unassigned"}
+                />
+                <Detail
+                  label="Room number"
+                  value={booking.bookingRoom?.assignedRoom?.roomNumber ?? "—"}
+                />
               </dl>
             </section>
 
@@ -268,11 +272,11 @@ function BookingDetailsDialog({
               <dl className="grid grid-cols-2 gap-x-4">
                 <Detail
                   label="Check-in"
-                  value={formatDate(booking.checkIn, "dd MMM, yyyy")}
+                  value={formatDate(booking.checkInDate, "dd MMM, yyyy")}
                 />
                 <Detail
                   label="Check-out"
-                  value={formatDate(booking.checkOut, "dd MMM, yyyy")}
+                  value={formatDate(booking.checkOutDate, "dd MMM, yyyy")}
                 />
               </dl>
             </section>
@@ -286,11 +290,14 @@ function BookingDetailsDialog({
                 Guests
               </h3>
               <dl className="grid grid-cols-3 gap-x-3">
-                <Detail label="Adults" value={String(booking.adults)} />
-                <Detail label="Children" value={String(booking.children)} />
+                <Detail label="Guests" value={String(booking.totalGuests)} />
                 <Detail
-                  label="Duration"
-                  value={`${booking.duration} ${booking.duration === 1 ? "night" : "nights"}`}
+                  label="Booked at"
+                  value={formatDate(booking.bookedAt, "dd MMM, yyyy")}
+                />
+                <Detail
+                  label="Payment method"
+                  value={booking.paymentMethod ?? "—"}
                 />
               </dl>
             </section>
@@ -301,7 +308,7 @@ function BookingDetailsDialog({
                 Booked on
               </div>
               <p className="text-right text-sm font-medium">
-                {formatDate(booking.bookedOn, "dd MMM, yyyy")}
+                {formatDate(booking.bookedAt, "dd MMM, yyyy")}
               </p>
             </div>
           </div>
@@ -312,7 +319,7 @@ function BookingDetailsDialog({
             ["PENDING", "CONFIRMED", "CHECKED_IN"].includes(booking.status) && (
               <PaymentPopup
                 bookingId={booking.id}
-                bookingReference={booking.bookingNumber}
+                bookingReference={booking.bookingReference}
               />
             )}
           <Button

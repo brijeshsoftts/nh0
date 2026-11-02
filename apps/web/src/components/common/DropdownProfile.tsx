@@ -17,7 +17,7 @@ import { getInitials } from "@/lib/format";
 export const DropdownProfile = ({
   children,
 }: {
-  children?: React.ReactNode;
+  children?: React.ReactElement | null;
 }) => {
   const { user } = useAuth();
   const { isLoading, handleLogout } = useLogout();

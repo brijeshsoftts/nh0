@@ -38,12 +38,12 @@ export function BookingBar() {
   const today = startOfToday();
   const initialCheckInDate = parseQueryDate(searchParams.get("checkInDate"));
   const initialCheckOutDate = parseQueryDate(searchParams.get("checkOutDate"));
-  const [checkInDate, setCheckInDate] = React.useState<Date>(
+  const [checkInDate, setCheckInDate] = React.useState<Date | undefined>(
     initialCheckInDate && initialCheckInDate >= today
       ? initialCheckInDate
       : undefined
   );
-  const [checkOutDate, setCheckOutDate] = React.useState<Date>(
+  const [checkOutDate, setCheckOutDate] = React.useState<Date | undefined>(
     initialCheckOutDate &&
       initialCheckOutDate >= today &&
       (!initialCheckInDate || initialCheckOutDate > initialCheckInDate)

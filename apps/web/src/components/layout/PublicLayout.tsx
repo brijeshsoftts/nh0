@@ -1,4 +1,4 @@
-import { Outlet, ScrollRestoration, useLocation } from "react-router-dom";
+import { ScrollRestoration, useLocation } from "react-router-dom";
 
 import { PublicFooter } from "@/components/layout/PublicFooter";
 import { PublicNavbar } from "@/components/layout/PublicNavbar";
