@@ -53,6 +53,10 @@ export type SearchCustomer = {
   phone: string;
 };
 
+export type CustomerPaymentItem = PaymentItem & {
+  currency: string;
+};
+
 export type CustomerBookingItem = {
   id: string;
   bookingReference: string;
@@ -67,9 +71,6 @@ export type CustomerBookingItem = {
     roomTypeName: string;
   } | null;
 
-  export type CustomerPaymentItem = PaymentItem & {
-    currency: string;
-  };
   invoice: {
     invoiceNumber: string;
     status: InvoiceStatus;
