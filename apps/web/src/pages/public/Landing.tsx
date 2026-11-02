@@ -1,5 +1,4 @@
 import { cn } from "cn";
-import { format, startOfToday } from "date-fns";
 import {
   animate,
   AnimatePresence,
@@ -14,24 +13,20 @@ import {
   ArrowRight,
   Bed,
   BrushCleaning,
-  Calendar as CalendarIcon,
   Dumbbell,
   Flower2,
   Leaf,
   MapPin,
-  Minus,
   Plane,
-  Plus,
   ShieldCheck,
   Star,
-  User,
   UserRound,
   Utensils,
   Waves,
   Wifi,
 } from "lucide-react";
 import * as React from "react";
-import { Link, useNavigate } from "react-router-dom";
+import { Link } from "react-router-dom";
 
 import CTAImage from "@/assets/cta_image.png";
 import HeorImage from "@/assets/landing_hero.png";
@@ -43,25 +38,20 @@ import {
 } from "@/components/ui/accordion";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
-import { Calendar } from "@/components/ui/calendar";
 import { Card } from "@/components/ui/card";
-import {
-  Popover,
-  PopoverContent,
-  PopoverTrigger,
-} from "@/components/ui/popover";
 import { Separator } from "@/components/ui/separator";
+import { BookingBar } from "@/features/public/components/BookingBar";
 import { HoverText } from "@/features/public/components/hoverText";
 import { ImageMotion } from "@/features/public/components/ImageMotion";
-import { RoomCard } from "@/features/public/components/RoomCard";
-import { rooms, testimonials } from "@/features/public/public.mock";
+import { RoomCard, RoomsSkeleton } from "@/features/public/components/RoomCard";
+import {
+  sectionEyebrowClassName,
+  sectionHeadingClassName,
+} from "@/features/public/components/sectionStyles";
+import { testimonials } from "@/features/public/public.mock";
+import { useAvailableRooms } from "@/features/public/useAvailableRooms";
 
-const sectionPaddingClassName = "py-16 md:py-24 lg:py-28";
-export const sectionEyebrowClassName =
-  "mb-4 block text-[10px] font-bold tracking-[0.2em] text-primary uppercase md:text-xs";
-export const sectionHeadingClassName =
-  "mb-6 font-heading text-3xl leading-[1.1] tracking-tight text-foreground md:text-4xl";
-
+export const sectionPaddingClassName = "py-16 md:py-24 lg:py-28";
 const heroImages = [
   HeorImage,
   "https://images.unsplash.com/photo-1611892440504-42a792e24d32?auto=format&fit=crop&w=2400&q=85",
@@ -107,16 +97,9 @@ function AnimatedHeroStat({ value }: { value: string }) {
 }
 
 function HeroSection() {
-  const navigate = useNavigate();
   const shouldReduceMotion = useReducedMotion();
   const [activeHeroImage, setActiveHeroImage] = React.useState(0);
   const [isHeroHovered, setIsHeroHovered] = React.useState(false);
-  const today = startOfToday();
-  const [checkInDate, setCheckInDate] = React.useState<Date>();
-  const [checkOutDate, setCheckOutDate] = React.useState<Date>();
-  const [adults, setAdults] = React.useState(2);
-  const [children, setChildren] = React.useState(0);
-  const [bookingError, setBookingError] = React.useState("");
 
   React.useEffect(() => {
     heroImages.forEach((src) => {
@@ -137,27 +120,6 @@ function HeroSection() {
 
     return () => window.clearTimeout(timerId);
   }, [activeHeroImage, isHeroHovered, shouldReduceMotion]);
-
-  const handleSearchRooms = () => {
-    if (!checkInDate || !checkOutDate) {
-      setBookingError("Select both check-in and check-out dates.");
-      return;
-    }
-
-    if (checkInDate < today || checkOutDate <= checkInDate) {
-      setBookingError("Check-out must be after check-in.");
-      return;
-    }
-
-    const params = new URLSearchParams({
-      checkInDate: format(checkInDate, "yyyy-MM-dd"),
-      checkOutDate: format(checkOutDate, "yyyy-MM-dd"),
-      adults: String(adults),
-      children: String(children),
-      page: "1",
-    });
-    navigate(`/rooms?${params.toString()}#availability`);
-  };
 
   return (
     <section
@@ -255,200 +217,7 @@ function HeroSection() {
         </div>
       </div>
 
-      {/* Booking Bar */}
-      <div className="relative z-30 container mx-auto flex flex-col items-center px-4 pb-8 md:absolute md:-bottom-8 md:px-8">
-        <div className="grid w-full max-w-200 grid-cols-1 items-center gap-2 rounded-3xl border border-border bg-card p-2 text-card-foreground shadow-[0_8px_30px_rgb(0,0,0,0.06)] sm:grid-cols-2 lg:flex lg:justify-between lg:gap-0 lg:rounded-[2.5rem] lg:p-3">
-          {/* Check In */}
-          <Popover>
-            <PopoverTrigger
-              render={
-                <button
-                  type="button"
-                  className="flex w-full flex-1 items-center gap-4 rounded-2xl px-4 py-3 text-left transition-colors hover:bg-muted/50 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring lg:w-auto lg:px-6 lg:py-2"
-                />
-              }
-            >
-              <CalendarIcon className="h-5 w-5 shrink-0 text-primary" />
-              <div className="flex flex-col">
-                <span className="text-[10px] font-semibold tracking-wider text-foreground/60 uppercase">
-                  Check In
-                </span>
-                <span className="text-sm font-medium whitespace-nowrap text-foreground">
-                  {checkInDate
-                    ? format(checkInDate, "MMM dd, yyyy")
-                    : "Select Date"}
-                </span>
-              </div>
-            </PopoverTrigger>
-            <PopoverContent
-              className="w-auto rounded-2xl border-border p-0"
-              align="start"
-            >
-              <Calendar
-                mode="single"
-                selected={checkInDate}
-                disabled={(date) => date < today}
-                onSelect={(date) => {
-                  setCheckInDate(date);
-                  if (date && checkOutDate && checkOutDate <= date) {
-                    setCheckOutDate(undefined);
-                  }
-                  setBookingError("");
-                }}
-              />
-            </PopoverContent>
-          </Popover>
-
-          <Separator
-            orientation="vertical"
-            className="hidden h-14 bg-border lg:block"
-          />
-
-          {/* Check Out */}
-          <Popover>
-            <PopoverTrigger
-              render={
-                <button
-                  type="button"
-                  className="flex w-full flex-1 items-center gap-4 rounded-2xl px-4 py-3 text-left transition-colors hover:bg-muted/50 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring lg:w-auto lg:px-6 lg:py-2"
-                />
-              }
-            >
-              <CalendarIcon className="h-5 w-5 shrink-0 text-primary" />
-              <div className="flex flex-col">
-                <span className="text-[10px] font-semibold tracking-wider text-foreground/60 uppercase">
-                  Check Out
-                </span>
-                <span className="text-sm font-medium whitespace-nowrap text-foreground">
-                  {checkOutDate
-                    ? format(checkOutDate, "MMM dd, yyyy")
-                    : "Select Date"}
-                </span>
-              </div>
-            </PopoverTrigger>
-            <PopoverContent
-              className="w-auto rounded-2xl border-border p-0"
-              align="start"
-            >
-              <Calendar
-                mode="single"
-                selected={checkOutDate}
-                disabled={(date) => date <= (checkInDate ?? today)}
-                onSelect={(date) => {
-                  setCheckOutDate(date);
-                  setBookingError("");
-                }}
-              />
-            </PopoverContent>
-          </Popover>
-
-          <Separator
-            orientation="vertical"
-            className="hidden h-14 bg-border lg:block"
-          />
-
-          {/* Guests */}
-          <Popover>
-            <PopoverTrigger
-              render={
-                <button
-                  type="button"
-                  className="flex w-full flex-1 items-center gap-4 rounded-2xl px-4 py-3 text-left transition-colors hover:bg-muted/50 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring lg:w-auto lg:px-6 lg:py-2"
-                />
-              }
-            >
-              <User className="h-5 w-5 shrink-0 text-primary" />
-              <div className="flex flex-col">
-                <span className="text-[10px] font-semibold tracking-wider text-foreground/60 uppercase">
-                  Guests
-                </span>
-                <span className="text-sm font-medium whitespace-nowrap text-foreground">
-                  {adults} {adults === 1 ? "Adult" : "Adults"}, {children}{" "}
-                  {children === 1 ? "Child" : "Children"}
-                </span>
-              </div>
-            </PopoverTrigger>
-            <PopoverContent
-              className="w-72 rounded-2xl border-border p-4"
-              align="start"
-            >
-              <div className="space-y-4">
-                {[
-                  {
-                    label: "Adults",
-                    count: adults,
-                    setCount: setAdults,
-                    min: 1,
-                  },
-                  {
-                    label: "Children",
-                    count: children,
-                    setCount: setChildren,
-                    min: 0,
-                  },
-                ].map(({ label, count, setCount, min }) => (
-                  <div
-                    key={label}
-                    className="flex items-center justify-between"
-                  >
-                    <span className="text-sm font-medium text-foreground">
-                      {label}
-                    </span>
-                    <div className="flex items-center gap-3">
-                      <Button
-                        type="button"
-                        variant="outline"
-                        size="icon"
-                        className="h-8 w-8"
-                        aria-label={`Decrease ${label.toLowerCase()}`}
-                        disabled={count <= min}
-                        onClick={() => setCount((current) => current - 1)}
-                      >
-                        <Minus className="h-4 w-4" />
-                      </Button>
-                      <span className="w-5 text-center text-sm tabular-nums">
-                        {count}
-                      </span>
-                      <Button
-                        type="button"
-                        variant="outline"
-                        size="icon"
-                        className="h-8 w-8"
-                        aria-label={`Increase ${label.toLowerCase()}`}
-                        disabled={count >= 10}
-                        onClick={() => setCount((current) => current + 1)}
-                      >
-                        <Plus className="h-4 w-4" />
-                      </Button>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            </PopoverContent>
-          </Popover>
-
-          <Separator
-            orientation="vertical"
-            className="hidden h-14 bg-border lg:block"
-          />
-
-          {/* Search Button */}
-          <div className="w-full shrink-0 px-2 pb-2 sm:col-span-2 lg:w-auto lg:pb-0">
-            <Button
-              type="button"
-              onClick={handleSearchRooms}
-              className="h-12 w-full rounded-full bg-primary px-8 text-sm font-medium text-primary-foreground transition-all hover:bg-primary/90 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring lg:h-14 lg:w-auto"
-            >
-              Search Rooms <ArrowRight className="ml-2 h-4 w-4" />
-            </Button>
-          </div>
-        </div>
-        {bookingError && (
-          <p role="alert" className="mt-3 text-sm text-destructive">
-            {bookingError}
-          </p>
-        )}
-      </div>
+      <BookingBar />
     </section>
   );
 }
@@ -556,6 +325,9 @@ function AboutSection() {
 }
 
 function FeaturedRoomsSection() {
+  const { rooms, isLoading, isError, refetch } = useAvailableRooms({
+    limit: 6,
+  });
   return (
     <section
       className={cn("w-full bg-muted font-sans", sectionPaddingClassName)}
@@ -584,9 +356,34 @@ function FeaturedRoomsSection() {
         </div>
 
         <div className="mt-8 grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
-          {rooms.map((room) => (
-            <RoomCard key={room.id} room={room} />
-          ))}
+          {isLoading ? (
+            <RoomsSkeleton />
+          ) : isError && rooms.length === 0 ? (
+            <div
+              className="col-span-full border-y border-border py-12 text-center sm:py-16"
+              role="alert"
+            >
+              <h3 className="font-heading text-2xl font-medium text-foreground">
+                Featured rooms could not be loaded
+              </h3>
+              <p className="mx-auto mt-3 max-w-lg text-sm leading-6 text-muted-foreground">
+                Please check your connection and try loading the rooms again.
+              </p>
+              <Button
+                className="mt-5"
+                onClick={() => void refetch()}
+                variant="outline"
+              >
+                Try again
+              </Button>
+            </div>
+          ) : rooms.length === 0 ? (
+            <p className="col-span-full py-12 text-center text-sm text-muted-foreground">
+              No featured rooms are available right now.
+            </p>
+          ) : (
+            rooms.map((room) => <RoomCard key={room.id} room={room} />)
+          )}
         </div>
       </div>
     </section>

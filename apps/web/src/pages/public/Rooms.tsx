@@ -1,497 +1,198 @@
-import { addDays, format, isValid, parseISO, startOfToday } from "date-fns";
-import { motion, useReducedMotion } from "framer-motion";
+import { cn } from "cn";
 import {
-  BedDouble,
-  CalendarDays,
-  ChevronDown,
-  ChevronLeft,
-  ChevronRight,
+  AirVent,
+  Briefcase,
+  ConciergeBell,
+  Droplet,
+  Refrigerator,
+  Tv,
+  Wifi,
 } from "lucide-react";
-import { Link, useNavigate, useSearchParams } from "react-router-dom";
 
-import { AvailabilitySearch } from "@/components/common/AvailabilitySearch";
+import HeroImage from "@/assets/landing_hero.png";
 import { Button } from "@/components/ui/button";
-import { Skeleton } from "@/components/ui/skeleton";
-import { RoomCard } from "@/features/public/components/RoomCard";
+import { BookingBar } from "@/features/public/components/BookingBar";
+import { HoverText } from "@/features/public/components/hoverText";
+import { RoomCard, RoomsSkeleton } from "@/features/public/components/RoomCard";
+import {
+  sectionEyebrowClassName,
+  sectionHeadingClassName,
+} from "@/features/public/components/sectionStyles";
+// import { rooms } from "@/features/public/public.mock";
 import { useAvailableRooms } from "@/features/public/useAvailableRooms";
+import { useListParams } from "@/hooks/useListParams";
 
-const PAGE_SIZE = 6;
-const roomHeroImage =
-  "https://images.unsplash.com/photo-1611892440504-42a792e24d32?auto=format&fit=crop&w=1500&q=88";
+import { sectionPaddingClassName } from "./Landing";
 
-function parseCount(
-  value: string | null,
-  fallback: number,
-  min: number,
-  max: number
-) {
-  if (value === null || value.trim() === "") return fallback;
-  const parsed = Number(value);
-  return Number.isInteger(parsed)
-    ? Math.min(max, Math.max(min, parsed))
-    : fallback;
-}
-
-function getValidDateRange(searchParams: URLSearchParams) {
-  const checkInDate = searchParams.get("checkInDate");
-  const checkOutDate = searchParams.get("checkOutDate");
-  if (!checkInDate || !checkOutDate) return undefined;
-
-  const checkIn = parseISO(checkInDate);
-  const checkOut = parseISO(checkOutDate);
-  if (
-    !isValid(checkIn) ||
-    !isValid(checkOut) ||
-    checkIn < startOfToday() ||
-    checkOut <= checkIn
-  ) {
-    return undefined;
-  }
-
-  return { checkInDate, checkOutDate };
-}
-
-function buildPageHref(searchParams: URLSearchParams, page: number) {
-  const nextParams = new URLSearchParams();
-  for (const key of [
-    "checkInDate",
-    "checkOutDate",
-    "adults",
-    "children",
-    "roomType",
-    "sortBy",
-  ]) {
-    const value = searchParams.get(key);
-    if (value !== null) nextParams.set(key, value);
-  }
-  nextParams.set("page", String(page));
-  return `/rooms?${nextParams.toString()}`;
-}
-
-function getPageItems(currentPage: number, totalPages: number) {
-  const pages = Array.from(
-    new Set(
-      [1, currentPage - 1, currentPage, currentPage + 1, totalPages].filter(
-        (page) => page >= 1 && page <= totalPages
-      )
-    )
-  ).sort((first, second) => first - second);
-
-  return pages.flatMap((page, index) => {
-    const previousPage = pages[index - 1];
-    return [
-      ...(previousPage && page - previousPage > 1 ? ["ellipsis"] : []),
-      page,
-    ];
-  });
-}
-
-function RoomCardSkeleton() {
+function HeroSection() {
   return (
-    <div
-      aria-hidden="true"
-      className="overflow-hidden rounded-xl border border-border bg-card"
-    >
-      <Skeleton
-        className="aspect-[16/10] w-full rounded-none"
-        style={{ aspectRatio: "16 / 10" }}
-      />
-      <div className="space-y-4 p-5 sm:p-6">
-        <Skeleton className="h-7 w-3/5" />
-        <Skeleton className="h-12 w-full" />
-        <Skeleton className="h-4 w-2/3" />
-        <Skeleton className="h-7 w-1/2" />
-        <div className="grid grid-cols-2 gap-3">
-          <Skeleton className="h-11" />
-          <Skeleton className="h-11" />
+    <section className="relative w-full bg-background pt-16 font-sans">
+      <div className="absolute top-0 right-0 z-0 h-50 w-full overflow-hidden md:h-100 lg:h-[min(60vh,900px)]">
+        <img
+          aria-hidden="true"
+          className="absolute inset-0 h-full w-full object-cover object-center"
+          fetchPriority="high"
+          src={HeroImage}
+        />
+        <div className="absolute inset-0 bg-linear-to-r from-black/60 via-black/30 to-black/10" />
+      </div>
+
+      <div className="relative z-10 container mx-auto flex flex-col justify-center px-6 pb-10 md:px-12">
+        <div className="max-w-145">
+          <span className={cn(sectionEyebrowClassName, "text-white/70")}>
+            Our Rooms
+          </span>
+
+          <h1
+            className={cn(
+              sectionHeadingClassName,
+              "mb-6 text-4xl leading-[1.05] text-white sm:text-5xl md:text-6xl lg:text-[72px]"
+            )}
+          >
+            <HoverText
+              text="Find Your Perfect"
+              staggerDelay={30}
+              duration={400}
+            />{" "}
+            <HoverText
+              text="Stay Experience"
+              staggerDelay={30}
+              duration={400}
+            />
+          </h1>
+
+          <p className="mb-6 max-w-150 text-base leading-relaxed font-light text-white/80 md:text-lg">
+            From cozy rooms to luxurious rooms, each space is designed with
+            comfort, elegance and breathtaking views.
+          </p>
         </div>
       </div>
-    </div>
+
+      <div className="relative -bottom-12">
+        <BookingBar />
+      </div>
+    </section>
   );
 }
 
-function Pagination({
-  page,
-  totalPages,
-  searchParams,
-}: {
-  page: number;
-  totalPages: number;
-  searchParams: URLSearchParams;
-}) {
-  if (totalPages <= 1) return null;
-  const pageItems = getPageItems(page, totalPages);
+function RoomsSection() {
+  const { params } = useListParams();
+  const { rooms, isLoading, isError, refetch } = useAvailableRooms(params);
 
   return (
-    <nav
-      aria-label="Room results pages"
-      className="mt-7 flex flex-wrap items-center justify-between gap-3 border-t border-border pt-5"
+    <section
+      className={cn("w-full bg-muted font-sans", sectionPaddingClassName)}
     >
-      {page > 1 ? (
-        <Button
-          className="h-11 px-3 sm:px-4"
-          nativeButton={false}
-          render={
-            <Link
-              aria-label="Go to previous page"
-              to={buildPageHref(searchParams, page - 1)}
-            />
-          }
-          variant="outline"
-        >
-          <ChevronLeft aria-hidden="true" className="size-4" />
-          <span className="hidden sm:inline">Previous</span>
-        </Button>
-      ) : (
-        <Button
-          aria-label="Previous page"
-          className="h-11 px-3 sm:px-4"
-          disabled
-          variant="outline"
-        >
-          <ChevronLeft aria-hidden="true" className="size-4" />
-          <span className="hidden sm:inline">Previous</span>
-        </Button>
-      )}
+      <div className="container mx-auto px-4 md:px-8 lg:px-12">
+        <div className="flex flex-col items-start justify-between md:flex-row md:items-center">
+          <div>
+            <span className={sectionEyebrowClassName}>Our Rooms</span>
 
-      <div className="hidden items-center gap-1 sm:flex">
-        {pageItems.map((item, index) =>
-          typeof item === "number" ? (
-            <Button
-              aria-current={item === page ? "page" : undefined}
-              aria-label={`Page ${item}`}
-              className="size-11 p-0"
-              key={item}
-              nativeButton={false}
-              render={<Link to={buildPageHref(searchParams, item)} />}
-              variant={item === page ? "default" : "ghost"}
+            {/* Heading */}
+            <h2 className={sectionHeadingClassName}>
+              <HoverText staggerDelay={30} duration={400}>
+                Handpicked Rooms for a{" "}
+                <span className="pr-2 text-primary italic">Memorable Stay</span>
+              </HoverText>
+            </h2>
+          </div>
+        </div>
+
+        <div className="mt-8 grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
+          {isLoading ? (
+            <RoomsSkeleton />
+          ) : isError && rooms.length === 0 ? (
+            <div
+              className="col-span-full border-y border-border py-12 text-center sm:py-16"
+              role="alert"
             >
-              {item}
-            </Button>
+              <h3 className="font-heading text-2xl font-medium text-foreground">
+                Rooms could not be loaded
+              </h3>
+              <p className="mx-auto mt-3 max-w-lg text-sm leading-6 text-muted-foreground">
+                Please check your connection and try loading the rooms again.
+              </p>
+              <Button
+                className="mt-5"
+                onClick={() => void refetch()}
+                variant="outline"
+              >
+                Try again
+              </Button>
+            </div>
+          ) : rooms.length === 0 ? (
+            <p className="col-span-full py-12 text-center text-sm text-muted-foreground">
+              No rooms match these filters.
+            </p>
           ) : (
-            <span
-              aria-hidden="true"
-              className="grid size-11 place-items-center text-muted-foreground"
-              key={`${item}-${index}`}
-            >
-              …
-            </span>
-          )
-        )}
+            rooms.map((room) => <RoomCard key={room.id} room={room} />)
+          )}
+        </div>
       </div>
-      <p className="text-xs font-medium text-muted-foreground tabular-nums sm:hidden">
-        Page {page} of {totalPages}
-      </p>
+    </section>
+  );
+}
 
-      {page < totalPages ? (
-        <Button
-          className="h-11 px-3 sm:px-4"
-          nativeButton={false}
-          render={
-            <Link
-              aria-label="Go to next page"
-              to={buildPageHref(searchParams, page + 1)}
-            />
-          }
-          variant="outline"
-        >
-          <span className="hidden sm:inline">Next</span>
-          <ChevronRight aria-hidden="true" className="size-4" />
-        </Button>
-      ) : (
-        <Button
-          aria-label="Next page"
-          className="h-11 px-3 sm:px-4"
-          disabled
-          variant="outline"
-        >
-          <span className="hidden sm:inline">Next</span>
-          <ChevronRight aria-hidden="true" className="size-4" />
-        </Button>
-      )}
-    </nav>
+function IncludedAmenitiesBar() {
+  const includedAmenities = [
+    { label: "Air Conditioning", icon: AirVent },
+    { label: "Free Wi-Fi", icon: Wifi },
+    { label: "Minibar", icon: Refrigerator },
+    { label: "24/7 Room Service", icon: ConciergeBell },
+    { label: "LED TV", icon: Tv },
+    { label: "Premium Toiletries", icon: Droplet },
+    { label: "Daily Housekeeping", icon: Briefcase }, // Briefcase used as visual proxy for the cleaning caddy
+  ];
+  return (
+    <section className="flex w-full justify-center bg-background px-4 py-8 font-sans md:px-8 md:py-12">
+      {/* Main Container Card */}
+      <div className="flex w-full max-w-300 flex-col items-center gap-8 rounded-2xl border border-border/60 bg-secondary/40 p-8 shadow-sm md:rounded-[20px] md:p-10 lg:flex-row lg:gap-12">
+        {/* Left: Heading */}
+        <div className="shrink-0 text-center lg:text-left">
+          <h3 className="font-heading text-2xl leading-tight tracking-tight text-foreground md:text-[28px]">
+            <HoverText staggerDelay={30} duration={400}>
+              All Rooms Include <br className="hidden lg:block" />
+              These Amenities
+            </HoverText>
+          </h3>
+        </div>
+
+        {/* Separator (Horizontal on mobile, Vertical on desktop) */}
+        <div className="h-px w-full shrink-0 bg-primary/20 lg:h-16 lg:w-px" />
+
+        {/* Right: Icons Grid/Flex */}
+        <div className="flex w-full flex-wrap items-start justify-center gap-6 md:gap-4 lg:flex-nowrap lg:justify-between">
+          {includedAmenities.map((item, index) => {
+            const Icon = item.icon;
+            return (
+              <div
+                key={index}
+                className="group flex w-25 flex-col items-center gap-3 lg:w-auto"
+              >
+                {/* Icon */}
+                <div className="text-primary transition-transform duration-300 group-hover:-translate-y-1">
+                  <Icon className="h-7 w-7 stroke-[1.25] md:h-7.5 md:w-7.5" />
+                </div>
+
+                {/* Label */}
+                <span className="text-center text-2xs leading-tight font-medium text-foreground/90 md:text-xs">
+                  {item.label}
+                </span>
+              </div>
+            );
+          })}
+        </div>
+      </div>
+    </section>
   );
 }
 
 export default function RoomsPage() {
-  const [searchParams] = useSearchParams();
-  const navigate = useNavigate();
-  const reduceMotion = useReducedMotion() ?? false;
-  const dateRange =
-    getValidDateRange(searchParams) ??
-    (() => {
-      const checkIn = startOfToday();
-      return {
-        checkInDate: format(checkIn, "yyyy-MM-dd"),
-        checkOutDate: format(addDays(checkIn, 1), "yyyy-MM-dd"),
-      };
-    })();
-  const adults = parseCount(searchParams.get("adults"), 2, 1, 10);
-  const children = parseCount(searchParams.get("children"), 0, 0, 10);
-  const roomType = searchParams.get("roomType") ?? undefined;
-  const requestedSort = searchParams.get("sortBy");
-  const sortBy =
-    requestedSort === "price-asc" || requestedSort === "price-desc"
-      ? requestedSort
-      : "recommended";
-  const requestedPage = parseCount(searchParams.get("page"), 1, 1, 100000);
-  const { rooms, pagination, isLoading, isError, refetch } = useAvailableRooms({
-    ...dateRange,
-    adults,
-    children,
-    roomType,
-    sortBy,
-    page: requestedPage,
-    limit: PAGE_SIZE,
-  });
-  const { rooms: roomTypeRooms } = useAvailableRooms({
-    ...dateRange,
-    adults,
-    children,
-    page: 1,
-    limit: 100,
-  });
-  const roomTypeOptions = Array.from(
-    new Map(
-      roomTypeRooms.map((room) => [room.slug, room.name] as const)
-    ).entries()
-  ).map(([value, label]) => ({ value, label }));
-  const total = pagination?.total ?? 0;
-  const totalPages = Math.ceil(total / PAGE_SIZE);
-  const currentPage = pagination?.page ?? requestedPage;
-  const firstResult = total ? (currentPage - 1) * PAGE_SIZE + 1 : 0;
-  const lastResult = Math.min(currentPage * PAGE_SIZE, total);
-  const bookingParams = new URLSearchParams({
-    checkInDate: dateRange.checkInDate,
-    checkOutDate: dateRange.checkOutDate,
-    adults: String(adults),
-    children: String(children),
-  });
-  const bookingSearch = `?${bookingParams.toString()}`;
-  const guestSummary = `${adults} adult${adults === 1 ? "" : "s"}, ${children} ${children === 1 ? "child" : "children"}`;
-  const staySummary = `${format(parseISO(dateRange.checkInDate), "d MMM yyyy")} – ${format(parseISO(dateRange.checkOutDate), "d MMM yyyy")}`;
-
-  const changeSort = (value: string) => {
-    const nextParams = new URLSearchParams(searchParams);
-    nextParams.set("sortBy", value);
-    nextParams.set("page", "1");
-    navigate(`/rooms?${nextParams.toString()}`);
-  };
-
   return (
-    <div className="min-w-0 bg-background text-foreground">
-      <section className="bg-secondary/45">
-        <div className="container mx-auto grid w-full max-w-7xl items-center gap-8 px-4 py-10 sm:px-6 sm:py-14 md:grid-cols-[0.9fr_1.1fr] md:gap-10 lg:px-8 lg:py-16">
-          <motion.div
-            initial={reduceMotion ? false : { opacity: 0, y: 10 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: reduceMotion ? 0 : 0.35, ease: "easeOut" }}
-          >
-            <p className="text-xs font-semibold tracking-[0.15em] text-accent-foreground uppercase">
-              Discover your stay
-            </p>
-            <h1 className="mt-3 max-w-xl font-heading text-4xl leading-[1.08] font-medium tracking-[-0.025em] text-foreground sm:text-5xl lg:text-6xl">
-              Rooms designed for the way you stay.
-            </h1>
-            <p className="mt-5 max-w-xl text-base leading-7 text-muted-foreground sm:text-lg sm:leading-8">
-              From comfortable spaces for a short getaway to thoughtfully
-              designed suites for longer stays, find the right room for your
-              time at Nivara.
-            </p>
-          </motion.div>
-          <div className="relative md:ml-3 lg:ml-8">
-            <img
-              alt="Quietly detailed boutique hotel room with natural light"
-              className="aspect-[1.65] w-full object-cover sm:aspect-[1.8] md:aspect-[1.28]"
-              fetchPriority="high"
-              src={roomHeroImage}
-            />
-            <div className="absolute right-3 -bottom-3 flex items-center gap-2 bg-card px-4 py-3 shadow-sm sm:right-6">
-              <BedDouble aria-hidden="true" className="size-4 text-primary" />
-              <span className="font-heading text-base text-foreground">
-                Find your place to pause
-              </span>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      <section
-        className="container mx-auto w-full max-w-7xl scroll-mt-24 px-4 pt-10 sm:px-6 sm:pt-14 lg:px-8"
-        id="availability"
-      >
-        <div className="mb-3 flex items-center gap-3 px-1">
-          <span className="h-px w-8 bg-primary" />
-          <p className="text-xs font-semibold tracking-[0.14em] text-accent-foreground uppercase">
-            Plan your stay
-          </p>
-        </div>
-        <AvailabilitySearch
-          key={searchParams.toString()}
-          roomTypeOptions={roomTypeOptions}
-          submitLabel="Find rooms"
-        />
-      </section>
-
-      <motion.section
-        aria-labelledby="results-title"
-        className="container mx-auto w-full max-w-7xl scroll-mt-24 px-4 pt-16 pb-12 sm:px-6 sm:pt-20 sm:pb-16 lg:px-8 lg:pt-24"
-        id="room-results"
-        initial={reduceMotion ? false : { opacity: 0, y: 6 }}
-        whileInView={{ opacity: 1, y: 0 }}
-        viewport={{ once: true, amount: 0.05 }}
-        transition={{ duration: reduceMotion ? 0 : 0.28, ease: "easeOut" }}
-      >
-        <div className="mb-7 flex flex-col gap-5 border-b border-border pb-5 sm:mb-8 sm:flex-row sm:items-end sm:justify-between">
-          <div>
-            <h2
-              className="font-heading text-3xl font-medium text-foreground sm:text-4xl"
-              id="results-title"
-            >
-              Find your perfect room.
-            </h2>
-            <p className="mt-2 text-sm leading-relaxed text-muted-foreground sm:text-base">
-              Explore our thoughtfully designed spaces and choose the stay that
-              suits you.
-            </p>
-            <p
-              aria-live="polite"
-              className="mt-3 flex flex-wrap items-center gap-x-2 gap-y-1 text-xs text-muted-foreground sm:text-sm"
-            >
-              <span>
-                {isLoading
-                  ? "Loading room types…"
-                  : isError
-                    ? "Room results unavailable"
-                    : `Showing ${firstResult}–${lastResult} of ${total} room types`}
-              </span>
-              <span aria-hidden="true">·</span>
-              <CalendarDays
-                aria-hidden="true"
-                className="size-3.5 text-primary"
-              />
-              <span>{staySummary}</span>
-              <span aria-hidden="true">·</span>
-              <span>{guestSummary}</span>
-            </p>
-          </div>
-          <label
-            className="flex shrink-0 flex-col gap-2 text-xs font-medium text-muted-foreground"
-            htmlFor="room-sort"
-          >
-            Sort by
-            <span className="relative">
-              <select
-                className="h-11 min-w-52 appearance-none rounded-md border border-input bg-background py-2 pr-9 pl-3 text-sm text-foreground outline-none focus-visible:border-ring focus-visible:ring-2 focus-visible:ring-ring"
-                id="room-sort"
-                onChange={(event) => changeSort(event.target.value)}
-                value={sortBy}
-              >
-                <option value="recommended">Recommended</option>
-                <option value="price-asc">Price: low to high</option>
-                <option value="price-desc">Price: high to low</option>
-              </select>
-              <ChevronDown
-                aria-hidden="true"
-                className="pointer-events-none absolute top-1/2 right-3 size-4 -translate-y-1/2 text-muted-foreground"
-              />
-            </span>
-          </label>
-        </div>
-
-        {isLoading ? (
-          <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3 lg:gap-6">
-            {Array.from({ length: PAGE_SIZE }, (_, index) => (
-              <RoomCardSkeleton key={index} />
-            ))}
-          </div>
-        ) : isError ? (
-          <div className="border-y border-border py-8" role="alert">
-            <p className="font-medium text-foreground">
-              We couldn’t load the room results.
-            </p>
-            <p className="mt-1 text-sm text-muted-foreground">
-              Please try again in a moment.
-            </p>
-            <Button
-              className="mt-4 h-11"
-              onClick={() => void refetch()}
-              variant="outline"
-            >
-              Try again
-            </Button>
-          </div>
-        ) : rooms.length ? (
-          <>
-            <div className="grid items-stretch gap-4 sm:grid-cols-2 lg:grid-cols-3 lg:gap-6">
-              {rooms.map((room) => (
-                <RoomCard
-                  bookingSearch={bookingSearch}
-                  key={room.id}
-                  room={room}
-                  showAvailability
-                  showTaxNote
-                />
-              ))}
-            </div>
-            <Pagination
-              page={currentPage}
-              searchParams={searchParams}
-              totalPages={totalPages}
-            />
-          </>
-        ) : (
-          <div className="border-y border-border py-10 text-center">
-            <h3 className="font-heading text-2xl font-medium text-foreground">
-              No Rooms Found
-            </h3>
-            <p className="mx-auto mt-2 max-w-xl text-sm leading-relaxed text-muted-foreground">
-              We couldn’t find rooms matching your selected dates and guest
-              requirements. Try adjusting your search dates or guest count.
-            </p>
-            <Button
-              className="mt-5 h-11"
-              nativeButton={false}
-              render={<a href="#availability" />}
-              variant="outline"
-            >
-              Update availability search
-            </Button>
-          </div>
-        )}
-      </motion.section>
-
-      <section className="bg-secondary/45">
-        <div className="container mx-auto flex max-w-7xl flex-col gap-6 px-4 py-12 sm:px-6 sm:py-14 md:flex-row md:items-center md:justify-between lg:px-8 lg:py-16">
-          <div className="max-w-2xl">
-            <h2 className="font-heading text-3xl font-medium text-foreground sm:text-4xl">
-              Need help choosing your stay?
-            </h2>
-            <p className="mt-3 text-sm leading-relaxed text-muted-foreground sm:text-base">
-              Explore the available room options or get in touch with our team
-              for assistance.
-            </p>
-          </div>
-          <div className="flex w-full flex-col gap-3 sm:w-auto sm:flex-row">
-            <Button
-              className="h-11 w-full px-5 font-semibold sm:w-auto"
-              nativeButton={false}
-              render={<a href="#room-results" />}
-              variant="default"
-            >
-              Explore rooms
-            </Button>
-            <Button
-              className="h-11 w-full px-5 sm:w-auto"
-              nativeButton={false}
-              render={<Link to="/contact" />}
-              variant="outline"
-            >
-              Contact us
-            </Button>
-          </div>
-        </div>
-      </section>
-    </div>
+    <>
+      <HeroSection />
+      <RoomsSection />
+      <IncludedAmenitiesBar />
+    </>
   );
 }

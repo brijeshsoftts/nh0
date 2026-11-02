@@ -3,12 +3,14 @@ import { Link } from "react-router-dom";
 
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
+import { Skeleton } from "@/components/ui/skeleton";
 import { cn } from "@/lib/utils";
 
-export interface RoomData {
+export interface RoomCard {
   id: string;
-  title: string;
-  price: number;
+  slug: string;
+  name: string;
+  basePrice: number;
   description: string;
   maxGuests: number;
   bedCount: number;
@@ -23,25 +25,25 @@ export interface RoomData {
 }
 
 interface RoomCardProps {
-  room: RoomData;
+  room: RoomCard;
   className?: string;
 }
 
 export function RoomCard({ room, className }: RoomCardProps) {
-  const formattedPrice = new Intl.NumberFormat("en-IN").format(room.price);
+  const formattedPrice = new Intl.NumberFormat("en-IN").format(room.basePrice);
 
   return (
     <Card
       className={cn(
-        "group flex w-full max-w-105 flex-col overflow-hidden rounded-2xl border border-border bg-card py-0 font-sans shadow-[0_4px_20px_rgb(0,0,0,0.03)]",
+        "group flex w-full flex-col overflow-hidden rounded-2xl border border-border bg-card py-0 font-sans shadow-[0_4px_20px_rgb(0,0,0,0.03)]",
         className
       )}
     >
       {/* Room Image */}
-      <div className="relative aspect-[4/3] w-full overflow-hidden">
+      <div className="relative aspect-4/3 w-full overflow-hidden">
         <img
           src={room.image?.url || "/images/placeholder-room.jpg"}
-          alt={room.title}
+          alt={room.name}
           className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-105 motion-reduce:transition-none motion-reduce:group-hover:scale-100"
         />
       </div>
@@ -50,8 +52,8 @@ export function RoomCard({ room, className }: RoomCardProps) {
       <div className="flex grow flex-col p-4">
         {/* Header: Title & Price */}
         <div className="mb-2 grid grid-cols-[minmax(0,1fr)_auto] items-start gap-3">
-          <h3 className="min-w-0 font-serif text-xl font-semibold tracking-tight break-words text-foreground sm:text-2xl">
-            {room.title}
+          <h3 className="min-w-0 font-serif text-xl font-semibold tracking-tight wrap-break-word text-foreground sm:text-2xl">
+            {room.name}
           </h3>
           <div className="mt-1 shrink-0 text-right">
             <span className="text-base font-bold text-foreground">
@@ -95,7 +97,7 @@ export function RoomCard({ room, className }: RoomCardProps) {
         <div className="mt-auto grid grid-cols-2 gap-x-4">
           <Button
             nativeButton={false}
-            render={<Link to={`/rooms/${room.id}`} />}
+            render={<Link to={`/rooms/${room.slug}`} />}
             className="group/button h-11 w-full rounded-full text-sm font-medium shadow-sm transition-all"
             variant="outline"
           >
@@ -104,7 +106,7 @@ export function RoomCard({ room, className }: RoomCardProps) {
           </Button>
           <Button
             nativeButton={false}
-            render={<Link to={`/rooms/${room.id}/book`} />}
+            render={<Link to={`/rooms/${room.slug}/book`} />}
             className="group/button h-11 w-full rounded-full text-sm font-medium shadow-sm transition-all"
           >
             Book Now
@@ -113,5 +115,34 @@ export function RoomCard({ room, className }: RoomCardProps) {
         </div>
       </div>
     </Card>
+  );
+}
+
+export function RoomsSkeleton() {
+  return (
+    <>
+      {Array.from({ length: 6 }).map((_, index) => (
+        <div
+          key={index}
+          aria-hidden="true"
+          className="overflow-hidden rounded-xl border border-border bg-card"
+        >
+          <Skeleton
+            className="aspect-16/10 w-full rounded-none"
+            style={{ aspectRatio: "16 / 10" }}
+          />
+          <div className="space-y-4 p-5 sm:p-6">
+            <Skeleton className="h-7 w-3/5" />
+            <Skeleton className="h-12 w-full" />
+            <Skeleton className="h-4 w-2/3" />
+            <Skeleton className="h-7 w-1/2" />
+            <div className="grid grid-cols-2 gap-3">
+              <Skeleton className="h-11" />
+              <Skeleton className="h-11" />
+            </div>
+          </div>
+        </div>
+      ))}
+    </>
   );
 }

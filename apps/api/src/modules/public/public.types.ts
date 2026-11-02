@@ -8,7 +8,7 @@ export type AmenityListItemResponse = {
   category: AmenityCategory;
 };
 
-export type AvailableRoomListItemResponse = {
+export interface Room {
   id: string;
   name: string;
   slug: string;
@@ -29,7 +29,7 @@ export type AvailableRoomListItemResponse = {
     name: string;
     icon: string | null;
   }[];
-};
+}
 
 export type AvailableRoomResponse = {
   id: string;

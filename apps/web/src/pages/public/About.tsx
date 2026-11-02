@@ -27,8 +27,10 @@ import HeroImage from "@/assets/cta_image.png";
 import { Button } from "@/components/ui/button";
 import { HoverText } from "@/features/public/components/hoverText";
 import { ImageMotion } from "@/features/public/components/ImageMotion";
-
-import { sectionEyebrowClassName, sectionHeadingClassName } from "./Landing";
+import {
+  sectionEyebrowClassName,
+  sectionHeadingClassName,
+} from "@/features/public/components/sectionStyles";
 // import {
 //   Breadcrumb,
 //   BreadcrumbItem,

@@ -20,7 +20,7 @@ export function App() {
       <AuthProvider>
         <RouterProvider router={router} />
       </AuthProvider>
-      <Toaster />
+      <Toaster position="top-right" />
     </QueryClientProvider>
   );
 }

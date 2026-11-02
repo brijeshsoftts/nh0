@@ -10,8 +10,8 @@ import { AvailableRoomsQueryDto } from './dto/available-rooms-query.dto';
 import { PUBLIC_ERROR_MSG } from './public.constants';
 import {
   AmenityListItemResponse,
-  AvailableRoomListItemResponse,
   AvailableRoomResponse,
+  Room,
 } from './public.types';
 
 @Injectable()
@@ -156,7 +156,7 @@ export class PublicService {
 
   async findAvailableRooms(
     query: AvailableRoomsQueryDto,
-  ): Promise<ListResponse<AvailableRoomListItemResponse>> {
+  ): Promise<ListResponse<Room>> {
     const {
       checkInDate,
       checkOutDate,
