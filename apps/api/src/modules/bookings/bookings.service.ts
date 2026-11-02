@@ -1451,12 +1451,20 @@ export class BookingsService {
           roomPricePerNight: room.roomType.basePrice,
           nights,
         });
+        const customer = await tx.user.findFirst({
+          where: {
+            email: { equals: dto.guestEmail, mode: 'insensitive' },
+            role: UserRole.CUSTOMER,
+            softDeletedAt: null,
+          },
+          select: { id: true },
+        });
         const bookingReference = `BK-${Date.now()}-${Math.random().toString(36).slice(2, 6).toUpperCase()}`;
         const checkoutExpiresAt = new Date(now.getTime() + 15 * 60_000);
         const createdBooking = await tx.booking.create({
           data: {
             bookingReference,
-            customerId: null,
+            customerId: customer?.id ?? null,
             guestName: dto.guestName,
             guestEmail: dto.guestEmail,
             guestPhone: dto.guestPhone,
@@ -1496,7 +1504,7 @@ export class BookingsService {
           data: {
             invoiceNumber: `INV-${Date.now()}-${Math.random().toString(36).slice(2, 6).toUpperCase()}`,
             bookingId: createdBooking.id,
-            customerId: null,
+            customerId: customer?.id ?? null,
             subtotal,
             taxAmount,
             discountAmount: 0,
@@ -1562,7 +1570,6 @@ export class BookingsService {
         .join('|');
 
     if (
-      booking.customerId !== null ||
       booking.paymentMethod !== PaymentMethod.ONLINE ||
       booking.guestName !== dto.guestName ||
       booking.guestEmail !== dto.guestEmail ||

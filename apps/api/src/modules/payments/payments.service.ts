@@ -496,7 +496,7 @@ export class PaymentsService {
         where: {
           id: bookingId,
           ...(publicTokenHash
-            ? { customerId: null, publicCheckoutTokenHash: publicTokenHash }
+            ? { publicCheckoutTokenHash: publicTokenHash }
             : role === UserRole.CUSTOMER
               ? { customerId: userId }
               : {}),
@@ -650,7 +650,7 @@ export class PaymentsService {
           paymentReference: this.createPaymentReference(),
           invoiceId: booking.invoice.id,
           bookingId: booking.id,
-          customerId: booking.customerId,
+          customerId: publicTokenHash ? null : booking.customerId,
           amount: outstandingAmount,
           amountPaise: outstandingAmount * 100,
           currency: 'INR',
