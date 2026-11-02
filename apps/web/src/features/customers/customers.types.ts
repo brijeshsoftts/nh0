@@ -1,9 +1,9 @@
+import type { PaymentItem } from "@/features/payments/payments.types";
 import type {
   BookingStatus,
   InvoiceStatus,
   PaymentStatus,
 } from "@/types/enum.types";
-import type { PaymentItem } from "@/features/payments/payments.types";
 
 export type Customer = {
   id: string;
@@ -67,16 +67,16 @@ export type CustomerBookingItem = {
   totalAmount: number;
   bookingRoom: {
     roomNumber: string | null;
-    roomName: string | null;
+    roomName?: string;
     roomTypeName: string;
   } | null;
 
-  invoice: {
+  invoice?: {
     invoiceNumber: string;
     status: InvoiceStatus;
     totalAmount: number;
     paidAmount: number;
     balanceDue: number;
-    latestPaymentStatus: PaymentStatus | null;
-  } | null;
+    latestPaymentStatus?: PaymentStatus;
+  };
 };
