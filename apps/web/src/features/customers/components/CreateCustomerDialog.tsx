@@ -91,7 +91,7 @@ export function CreateCustomerDialog({
 
             <TextareaField
               label="Address"
-              placeholder="e.g. 123 Main Street, Anytown, USA"
+              placeholder="e.g. Flat 7B, Vibhuti Khand, Lucknow, Uttar Pradesh, India - 226010"
               {...register("address")}
               disabled={isPending}
               error={errors.address?.message}

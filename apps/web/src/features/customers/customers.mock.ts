@@ -2,6 +2,8 @@ import { RefreshCw, UserCheck, UserPlus, Users } from "lucide-react";
 
 import type { KpiItem } from "@/types/shared.types";
 
+import { DEMO_CUSTOMERS } from "../shared/demo-hotel-data";
+
 import type { SearchCustomer } from "./customers.types";
 
 export const customerKpiData: KpiItem[] = [
@@ -35,65 +37,11 @@ export const customerKpiData: KpiItem[] = [
   },
 ];
 
-export const dummyCustomerList: SearchCustomer[] = [
-  {
-    id: "customer-001",
-    fullName: "John Doe",
-    email: "john.doe@example.com",
-    phone: "+91 98765 43210",
-  },
-  {
-    id: "customer-002",
-    fullName: "Sarah Wilson",
-    email: "sarah.wilson@example.com",
-    phone: "+91 98765 43211",
-  },
-  {
-    id: "customer-003",
-    fullName: "Michael Brown",
-    email: "michael.brown@example.com",
-    phone: "+91 98765 43212",
-  },
-  {
-    id: "customer-004",
-    fullName: "Emily Johnson",
-    email: "emily.johnson@example.com",
-    phone: "+91 98765 43213",
-  },
-  {
-    id: "customer-005",
-    fullName: "David Miller",
-    email: "david.miller@example.com",
-    phone: "+91 98765 43214",
-  },
-  {
-    id: "customer-006",
-    fullName: "Olivia Davis",
-    email: "olivia.davis@example.com",
-    phone: "+91 98765 43215",
-  },
-  {
-    id: "customer-007",
-    fullName: "James Anderson",
-    email: "james.anderson@example.com",
-    phone: "+91 98765 43216",
-  },
-  {
-    id: "customer-008",
-    fullName: "Sophia Martinez",
-    email: "sophia.martinez@example.com",
-    phone: "+91 98765 43217",
-  },
-  {
-    id: "customer-009",
-    fullName: "Daniel Taylor",
-    email: "daniel.taylor@example.com",
-    phone: "+91 98765 43218",
-  },
-  {
-    id: "customer-010",
-    fullName: "Emma Thomas",
-    email: "emma.thomas@example.com",
-    phone: "+91 98765 43219",
-  },
-];
+export const dummyCustomerList: SearchCustomer[] = Object.values(
+  DEMO_CUSTOMERS
+).map(({ id, fullName, email, phone }) => ({
+  id,
+  fullName,
+  email,
+  phone,
+}));

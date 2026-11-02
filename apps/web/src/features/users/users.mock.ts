@@ -1,15 +1,13 @@
+import { DEMO_STAFF } from "../shared/demo-hotel-data";
+
 import type { User } from "./users.types";
 
 export const MOCK_USER: User = {
-  id: "u1",
-  fullName: "John Doe",
-  email: "john@example.com",
-  phone: "123-456-7890",
+  id: DEMO_STAFF.admin.id,
+  fullName: DEMO_STAFF.admin.fullName,
+  email: DEMO_STAFF.admin.email,
+  phone: DEMO_STAFF.admin.phone,
   role: "ADMIN",
-  category: "HOUSEKEEPER",
-  avatar: {
-    id: "u1p",
-    url: "https://images.unsplash.com/photo-1600607687939-ce8a6c25118c?auto=format&fit=crop&w=1200&q=80",
-    altText: "John Doe",
-  },
+  isActive: true,
+  avatar: null,
 };

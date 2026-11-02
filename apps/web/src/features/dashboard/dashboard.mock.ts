@@ -1,3 +1,4 @@
+import { DEMO_CUSTOMERS } from "../shared/demo-hotel-data";
 import { toDashboardStats } from "../shared/stat-response";
 
 import type { DonutChartData } from "./components/DonutChart";
@@ -9,8 +10,8 @@ export const MANAGEMENT_STAT = toDashboardStats([
   {
     id: "occupancy",
     title: "Occupancy",
-    value: "72%",
-    description: "58 occupied / 80 active rooms",
+    value: "58%",
+    description: "56 occupied / 96 active rooms",
     icon: "BedDouble",
     link: "/rooms?status=occupied",
     tone: "emerald",
@@ -18,8 +19,8 @@ export const MANAGEMENT_STAT = toDashboardStats([
   {
     id: "todays-arrivals",
     title: "Arrivals",
-    value: "12",
-    description: "8 confirmed · 4 pending",
+    value: "5",
+    description: "2 confirmed · 3 pending",
     icon: "LogIn",
     link: "/bookings?checkIn=today",
     tone: "gold",
@@ -27,8 +28,8 @@ export const MANAGEMENT_STAT = toDashboardStats([
   {
     id: "todays-departures",
     title: "Departures",
-    value: "9",
-    description: "7 checked-in · 2 pending",
+    value: "5",
+    description: "4 checked-in · 1 pending",
     icon: "LogOut",
     link: "/bookings?checkOut=today",
     tone: "violet",
@@ -36,8 +37,8 @@ export const MANAGEMENT_STAT = toDashboardStats([
   {
     id: "pending-bookings",
     title: "Pending Bookings",
-    value: "7",
-    description: "Require confirmation",
+    value: "5",
+    description: "Awaiting payment or confirmation",
     icon: "Clock",
     link: "/bookings?status=pending",
     tone: "sky",
@@ -47,67 +48,67 @@ export const MANAGEMENT_STAT = toDashboardStats([
 export const TODAYS_ARRIVALS = [
   {
     booking: {
-      id: "booking-1001",
-      bookingReference: "BK-2026-1001",
+      id: "booking-2026-1101",
+      bookingReference: "BK-2026-1101",
     },
     customer: {
-      id: "customer-001",
-      fullName: "Aarav Sharma",
+      id: DEMO_CUSTOMERS.saimKhan.id,
+      fullName: DEMO_CUSTOMERS.saimKhan.fullName,
     },
     roomNumber: "101",
-    checkInDate: "2026-10-05",
-    status: "CONFIRMED",
-  },
-  {
-    booking: {
-      id: "booking-1002",
-      bookingReference: "BK-2026-1002",
-    },
-    customer: {
-      id: "customer-002",
-      fullName: "Priya Mehta",
-    },
-    roomNumber: "204",
-    checkInDate: "2026-10-05",
-    status: "CONFIRMED",
-  },
-  {
-    booking: {
-      id: "booking-1003",
-      bookingReference: "BK-2026-1003",
-    },
-    customer: {
-      id: "customer-003",
-      fullName: "Rahul Verma",
-    },
-    roomNumber: "305",
-    checkInDate: "2026-10-05",
+    checkInDate: "2026-11-02",
     status: "PENDING",
   },
   {
     booking: {
-      id: "booking-1004",
-      bookingReference: "BK-2026-1004",
+      id: "booking-2026-1102",
+      bookingReference: "BK-2026-1102",
     },
     customer: {
-      id: "customer-004",
-      fullName: "Neha Kapoor",
+      id: DEMO_CUSTOMERS.priyaSrivastava.id,
+      fullName: DEMO_CUSTOMERS.priyaSrivastava.fullName,
     },
-    roomNumber: "402",
-    checkInDate: "2026-10-05",
+    roomNumber: "204",
+    checkInDate: "2026-11-02",
     status: "CONFIRMED",
   },
   {
     booking: {
-      id: "booking-1005",
-      bookingReference: "BK-2026-1005",
+      id: "booking-2026-1103",
+      bookingReference: "BK-2026-1103",
     },
     customer: {
-      id: "customer-005",
-      fullName: "Vikram Singh",
+      id: DEMO_CUSTOMERS.ankitMishra.id,
+      fullName: DEMO_CUSTOMERS.ankitMishra.fullName,
     },
-    roomNumber: "506",
-    checkInDate: "2026-10-05",
+    roomNumber: "301",
+    checkInDate: "2026-11-02",
+    status: "PENDING",
+  },
+  {
+    booking: {
+      id: "booking-2026-1104",
+      bookingReference: "BK-2026-1104",
+    },
+    customer: {
+      id: DEMO_CUSTOMERS.nehaGupta.id,
+      fullName: DEMO_CUSTOMERS.nehaGupta.fullName,
+    },
+    roomNumber: "402",
+    checkInDate: "2026-11-02",
+    status: "CONFIRMED",
+  },
+  {
+    booking: {
+      id: "booking-2026-1105",
+      bookingReference: "BK-2026-1105",
+    },
+    customer: {
+      id: DEMO_CUSTOMERS.arjunPandey.id,
+      fullName: DEMO_CUSTOMERS.arjunPandey.fullName,
+    },
+    roomNumber: "403",
+    checkInDate: "2026-11-02",
     status: "PENDING",
   },
 ];
@@ -115,67 +116,67 @@ export const TODAYS_ARRIVALS = [
 export const TODAYS_DEPARTURES = [
   {
     booking: {
-      id: "booking-0901",
-      bookingReference: "BK-2026-0901",
+      id: "booking-2026-1001",
+      bookingReference: "BK-2026-1001",
     },
     customer: {
-      id: "customer-101",
-      fullName: "Rohan Malhotra",
+      id: DEMO_CUSTOMERS.poojaShukla.id,
+      fullName: DEMO_CUSTOMERS.poojaShukla.fullName,
+    },
+    roomNumber: "102",
+    checkOutDate: "2026-11-02",
+    status: "CHECKED_IN",
+  },
+  {
+    booking: {
+      id: "booking-2026-1002",
+      bookingReference: "BK-2026-1002",
+    },
+    customer: {
+      id: DEMO_CUSTOMERS.rohitYadav.id,
+      fullName: DEMO_CUSTOMERS.rohitYadav.fullName,
+    },
+    roomNumber: "202",
+    checkOutDate: "2026-11-02",
+    status: "CHECKED_IN",
+  },
+  {
+    booking: {
+      id: "booking-2026-1003",
+      bookingReference: "BK-2026-1003",
+    },
+    customer: {
+      id: DEMO_CUSTOMERS.kavitaVerma.id,
+      fullName: DEMO_CUSTOMERS.kavitaVerma.fullName,
+    },
+    roomNumber: "302",
+    checkOutDate: "2026-11-02",
+    status: "CHECKED_IN",
+  },
+  {
+    booking: {
+      id: "booking-2026-1004",
+      bookingReference: "BK-2026-1004",
+    },
+    customer: {
+      id: DEMO_CUSTOMERS.amanTripathi.id,
+      fullName: DEMO_CUSTOMERS.amanTripathi.fullName,
     },
     roomNumber: "103",
-    checkOutDate: "2026-10-02",
-    status: "CHECKED_IN",
-  },
-  {
-    booking: {
-      id: "booking-0902",
-      bookingReference: "BK-2026-0902",
-    },
-    customer: {
-      id: "customer-102",
-      fullName: "Ananya Gupta",
-    },
-    roomNumber: "208",
-    checkOutDate: "2026-10-03",
-    status: "CHECKED_IN",
-  },
-  {
-    booking: {
-      id: "booking-0903",
-      bookingReference: "BK-2026-0903",
-    },
-    customer: {
-      id: "customer-103",
-      fullName: "Karan Joshi",
-    },
-    roomNumber: "312",
-    checkOutDate: "2026-10-01",
-    status: "CHECKED_IN",
-  },
-  {
-    booking: {
-      id: "booking-0904",
-      bookingReference: "BK-2026-0904",
-    },
-    customer: {
-      id: "customer-104",
-      fullName: "Sneha Agarwal",
-    },
-    roomNumber: "415",
-    checkOutDate: "2026-10-03",
+    checkOutDate: "2026-11-02",
     status: "PENDING",
   },
   {
     booking: {
-      id: "booking-0905",
-      bookingReference: "BK-2026-0905",
+      id: "booking-2026-1005",
+      bookingReference: "BK-2026-1005",
     },
     customer: {
-      id: "customer-105",
-      fullName: "Aditya Bansal",
+      id: DEMO_CUSTOMERS.shreyaSrivastava.id,
+      fullName: DEMO_CUSTOMERS.shreyaSrivastava.fullName,
     },
-    roomNumber: "507",
-    checkOutDate: "2026-10-02",
+    roomNumber: "201",
+    checkOutDate: "2026-11-02",
     status: "CHECKED_IN",
   },
 ];
@@ -220,19 +221,19 @@ export const BOOKING_STATUS: StatusBarChart[] = [
 export const ROOM_STATUS = [
   {
     status: "VACANT",
-    count: 24,
+    count: 28,
   },
   {
     status: "RESERVED",
-    count: 12,
+    count: 6,
   },
   {
     status: "OCCUPIED",
-    count: 38,
+    count: 56,
   },
   {
     status: "OUT_OF_ORDER",
-    count: 3,
+    count: 6,
   },
 ];
 
@@ -241,8 +242,8 @@ export const STAFF_STAT = toDashboardStats([
   {
     id: "todays-arrivals",
     title: "Today's Arrivals",
-    value: "12",
-    description: "8 confirmed · 4 pending",
+    value: "5",
+    description: "2 confirmed · 3 pending",
     icon: "LogIn",
     link: "/bookings?checkIn=today",
     tone: "rose",
@@ -250,8 +251,8 @@ export const STAFF_STAT = toDashboardStats([
   {
     id: "todays-departures",
     title: "Today's Departures",
-    value: "9",
-    description: "7 checked-in · 2 pending",
+    value: "5",
+    description: "4 checked-in · 1 pending",
     icon: "LogOut",
     link: "/bookings?checkOut=today",
     tone: "teal",
@@ -259,7 +260,7 @@ export const STAFF_STAT = toDashboardStats([
   {
     id: "available-rooms",
     title: "Available Rooms",
-    value: "18",
+    value: "28",
     description: "Ready for new bookings",
     icon: "BedDouble",
     link: "/rooms?status=available",
@@ -268,8 +269,8 @@ export const STAFF_STAT = toDashboardStats([
   {
     id: "pending-bookings",
     title: "Pending Bookings",
-    value: "7",
-    description: "Require confirmation",
+    value: "5",
+    description: "Awaiting payment or confirmation",
     icon: "Clock",
     link: "/bookings?status=pending",
     tone: "violet",
@@ -349,7 +350,7 @@ export const TASK_TYPES_STATUS: DonutChartData[] = [
 export const HOUSEKEEPER_ROOMS = [
   {
     id: "room-101",
-    name: "Deluxe King Room",
+    name: "Deluxe Room",
     roomNumber: "101",
     floor: 1,
     occupancyStatus: "OCCUPIED",
@@ -361,7 +362,7 @@ export const HOUSEKEEPER_ROOMS = [
   },
   {
     id: "room-204",
-    name: "Superior Twin Room",
+    name: "Premium Room",
     roomNumber: "204",
     floor: 2,
     occupancyStatus: "VACANT",
@@ -373,7 +374,7 @@ export const HOUSEKEEPER_ROOMS = [
   },
   {
     id: "room-305",
-    name: "Deluxe Suite",
+    name: "Executive Room",
     roomNumber: "305",
     floor: 3,
     occupancyStatus: "OCCUPIED",
@@ -385,7 +386,7 @@ export const HOUSEKEEPER_ROOMS = [
   },
   {
     id: "room-412",
-    name: "Executive King Room",
+    name: "Family Suite",
     roomNumber: "412",
     floor: 4,
     occupancyStatus: "RESERVED",

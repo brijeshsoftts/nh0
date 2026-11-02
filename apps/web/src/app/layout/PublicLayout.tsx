@@ -18,6 +18,7 @@ import { Link, NavLink, Outlet } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Separator } from "@/components/ui/separator";
+import { HOTEL_DETAILS } from "@/constants/hotel";
 import { useAuth } from "@/hooks/useAuth";
 import { cn } from "@/lib/utils";
 
@@ -223,14 +224,15 @@ function Footer() {
 
   const handleNewsletterSubmit = (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
+    if (!HOTEL_DETAILS.email) return;
     const email = new FormData(event.currentTarget).get("email");
     if (typeof email !== "string") return;
 
     const params = new URLSearchParams({
-      subject: "Newsletter subscription request",
-      body: `Please add ${email} to the Sahara Sands newsletter.`,
+      subject: `${HOTEL_DETAILS.name} newsletter request`,
+      body: `Please add ${email} to the ${HOTEL_DETAILS.name} newsletter.`,
     });
-    window.location.href = `mailto:info@saharasands.com?${params.toString()}`;
+    window.location.href = `mailto:${HOTEL_DETAILS.email}?${params.toString()}`;
   };
 
   return (
@@ -244,8 +246,8 @@ function Footer() {
             <Logo />
 
             <p className="max-w-70 text-[14px] leading-relaxed text-foreground/70">
-              Your perfect getaway for relaxation, comfort and unforgettable
-              memories.
+              A comfortable hotel stay in Lucknow, with helpful service for
+              business and leisure guests.
             </p>
           </div>
 
@@ -282,33 +284,37 @@ function Footer() {
                   <MapPin className="h-3.5 w-3.5" />
                 </div>
                 <span className="text-[14px] leading-relaxed">
-                  123 Beach Road, Goa, India
+                  {HOTEL_DETAILS.address ?? HOTEL_DETAILS.location}
                 </span>
               </li>
 
-              <li className="flex items-center gap-3 text-foreground/70">
-                <div className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-primary text-primary-foreground">
-                  <Phone className="h-3.5 w-3.5" />
-                </div>
-                <a
-                  href="tel:+919876543210"
-                  className="text-[14px] transition-colors hover:text-primary"
-                >
-                  +91 98765 43210
-                </a>
-              </li>
+              {HOTEL_DETAILS.phone && (
+                <li className="flex items-center gap-3 text-foreground/70">
+                  <div className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-primary text-primary-foreground">
+                    <Phone className="h-3.5 w-3.5" />
+                  </div>
+                  <a
+                    href={`tel:${HOTEL_DETAILS.phone}`}
+                    className="text-[14px] transition-colors hover:text-primary"
+                  >
+                    {HOTEL_DETAILS.phone}
+                  </a>
+                </li>
+              )}
 
-              <li className="flex items-center gap-3 text-foreground/70">
-                <div className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-primary text-primary-foreground">
-                  <Mail className="h-3.5 w-3.5" />
-                </div>
-                <a
-                  href="mailto:info@saharasands.com"
-                  className="text-[14px] break-all transition-colors hover:text-primary"
-                >
-                  info@saharasands.com
-                </a>
-              </li>
+              {HOTEL_DETAILS.email && (
+                <li className="flex items-center gap-3 text-foreground/70">
+                  <div className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-primary text-primary-foreground">
+                    <Mail className="h-3.5 w-3.5" />
+                  </div>
+                  <a
+                    href={`mailto:${HOTEL_DETAILS.email}`}
+                    className="text-[14px] break-all transition-colors hover:text-primary"
+                  >
+                    {HOTEL_DETAILS.email}
+                  </a>
+                </li>
+              )}
             </ul>
           </div>
 
@@ -333,6 +339,7 @@ function Footer() {
                   name="email"
                   type="email"
                   required
+                  disabled={!HOTEL_DETAILS.email}
                   autoComplete="email"
                   placeholder="Your email address"
                   aria-describedby="newsletter-help"
@@ -340,6 +347,7 @@ function Footer() {
                 />
                 <Button
                   type="submit"
+                  disabled={!HOTEL_DETAILS.email}
                   size="icon"
                   aria-label="Send newsletter request"
                   className="absolute right-1 h-10 w-10 shrink-0 rounded-xl bg-primary text-primary-foreground shadow-sm hover:bg-primary/90"
@@ -348,7 +356,9 @@ function Footer() {
                 </Button>
               </div>
               <p id="newsletter-help" className="text-xs text-muted-foreground">
-                Submitting opens your email app to send the request.
+                {HOTEL_DETAILS.email
+                  ? "Submitting opens your email app to send the request."
+                  : "Newsletter contact details are not configured."}
               </p>
             </form>
           </div>
@@ -360,7 +370,7 @@ function Footer() {
         {/* Bottom Section: Rights, Legal, Accessibility */}
         <div className="flex flex-col items-center justify-between gap-4 pt-6 text-[12px] text-foreground/60 sm:flex-row md:text-[13px]">
           <span>
-            © {currentYear} Sahara Sands Hotel & Resort. All rights reserved.
+            © {currentYear} {HOTEL_DETAILS.name}. All rights reserved.
           </span>
         </div>
       </div>

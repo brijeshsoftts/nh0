@@ -1,3 +1,5 @@
+import { DEMO_STAFF } from "../shared/demo-hotel-data";
+
 import type { TaskDetails } from "./tasks.types";
 
 export const TASK_DETAILS: TaskDetails = {
@@ -6,17 +8,17 @@ export const TASK_DETAILS: TaskDetails = {
   taskType: "DEEP_CLEAN",
   status: "COMPLETED",
 
-  scheduledDate: "2026-10-05T07:30:00.000Z",
-  startedAt: "2026-10-05T07:42:00.000Z",
-  completedAt: "2026-10-05T08:35:00.000Z",
+  scheduledDate: "2026-11-02T07:30:00+05:30",
+  startedAt: "2026-11-02T07:42:00+05:30",
+  completedAt: "2026-11-02T08:35:00+05:30",
 
-  createdAt: "2026-10-04T18:20:00.000Z",
-  updatedAt: "2026-10-05T08:35:00.000Z",
+  createdAt: "2026-11-01T18:20:00+05:30",
+  updatedAt: "2026-11-02T08:35:00+05:30",
 
   room: {
     id: "cmroom305001",
     roomNumber: "305",
-    name: "Premium Suite",
+    name: "Premium Room",
     floor: 3,
     description: "Large suite with living area",
 
@@ -25,31 +27,31 @@ export const TASK_DETAILS: TaskDetails = {
 
     roomType: {
       id: "cmroomtype002",
-      name: "Premium Suite",
+      name: "Premium Room",
     },
   },
 
   assignee: {
-    id: "cmuser002",
-    fullName: "Priya Singh",
-    email: "priya.singh@example.com",
-    phone: "+91 99887 66554",
+    id: DEMO_STAFF.housekeeper.id,
+    fullName: DEMO_STAFF.housekeeper.fullName,
+    email: DEMO_STAFF.housekeeper.email,
+    phone: DEMO_STAFF.housekeeper.phone,
   },
 
   assignment: {
     id: "cmassignment002",
     isActive: true,
 
-    createdAt: "2026-10-04T18:22:00.000Z",
+    createdAt: "2026-11-01T18:22:00+05:30",
 
     housekeeper: {
-      id: "cmuser002",
-      fullName: "Priya Singh",
+      id: DEMO_STAFF.housekeeper.id,
+      fullName: DEMO_STAFF.housekeeper.fullName,
     },
 
     assignedBy: {
-      id: "cmuser010",
-      fullName: "Amit Sharma",
+      id: DEMO_STAFF.receptionist.id,
+      fullName: DEMO_STAFF.receptionist.fullName,
     },
   },
 };

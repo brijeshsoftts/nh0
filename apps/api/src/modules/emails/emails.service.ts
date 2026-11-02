@@ -21,7 +21,7 @@ export class EmailsService {
   async resetPassword(email: string, token: string, expiry: string) {
     try {
       const mailOptions = {
-        from: '"Nivara Hotels" <noreply@nivarahotels.com>',
+        from: `"Nivara Hotels" <${env.EMAIL_USER}>`,
         to: email,
         subject: 'Reset Your Password',
         html: resetPasswordTemplate(email, token, expiry),

@@ -36,7 +36,7 @@ export const ROOMS_STAT = toDashboardStats([
 export const rooms: Room[] = [
   {
     id: "room_001",
-    name: "Deluxe King Room",
+    name: "Deluxe Room",
     roomNumber: "101",
     floor: "1",
     occupancyStatus: "OCCUPIED",
@@ -44,7 +44,7 @@ export const rooms: Room[] = [
     isActive: true,
     roomType: {
       id: "rt_deluxe_king",
-      name: "Deluxe King Room",
+      name: "Deluxe Room",
     },
   },
   {
@@ -89,7 +89,7 @@ export const rooms: Room[] = [
 
   {
     id: "room_005",
-    name: "Premium Twin Room",
+    name: "Premium Room",
     roomNumber: "201",
     floor: "2",
     occupancyStatus: "VACANT",
@@ -97,7 +97,7 @@ export const rooms: Room[] = [
     isActive: true,
     roomType: {
       id: "rt_premium_twin",
-      name: "Premium Twin Room",
+      name: "Premium Room",
     },
   },
   {
@@ -142,7 +142,7 @@ export const rooms: Room[] = [
 
   {
     id: "room_009",
-    name: "Executive Suite",
+    name: "Executive Room",
     roomNumber: "301",
     floor: "3",
     occupancyStatus: "OCCUPIED",
@@ -150,7 +150,7 @@ export const rooms: Room[] = [
     isActive: true,
     roomType: {
       id: "rt_executive_suite",
-      name: "Executive Suite",
+      name: "Executive Room",
     },
   },
   {
@@ -182,7 +182,7 @@ export const rooms: Room[] = [
 
   {
     id: "room_012",
-    name: "Family Room",
+    name: "Family Suite",
     roomNumber: "401",
     floor: "4",
     occupancyStatus: "OCCUPIED",
@@ -190,7 +190,7 @@ export const rooms: Room[] = [
     isActive: true,
     roomType: {
       id: "rt_family",
-      name: "Family Room",
+      name: "Family Suite",
     },
   },
   {

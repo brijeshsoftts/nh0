@@ -16,7 +16,6 @@ import {
   Heart,
   Leaf,
   MapPin,
-  Star,
   Trophy,
   Users,
 } from "lucide-react";
@@ -25,6 +24,7 @@ import { Link } from "react-router-dom";
 
 import HeroImage from "@/assets/cta_image.png";
 import { Button } from "@/components/ui/button";
+import { HOTEL_DETAILS } from "@/constants/hotel";
 import { HoverText } from "@/features/public/components/hoverText";
 import { ImageMotion } from "@/features/public/components/ImageMotion";
 import {
@@ -47,13 +47,12 @@ function HeroSection() {
       {/* Referencing the exact image file provided */}
       <img
         src={HeroImage}
-        alt="Sahara Sands resort pool at sunset"
+        alt="Illustrative hotel scene"
         className="absolute inset-0 z-0 h-full w-full object-cover object-center"
       />
 
       {/* Gradient Overlay for Text Readability */}
       {/* Uses the semantic foreground token (Deep Warm Brown) to blend naturally with the brand palette */}
-      <div className="absolute inset-0 w-[90%] bg-linear-to-r from-background via-background/95 to-background/50 sm:w-[00%] sm:to-transparent" />
 
       {/* Content Container */}
       <div className="relative z-20 container mx-auto flex h-full flex-col items-start justify-center px-6 pt-12 md:px-12">
@@ -63,12 +62,15 @@ function HeroSection() {
           </span>
 
           <h1 className="mb-6 font-heading text-4xl leading-[1.05] tracking-tight text-white sm:text-5xl md:text-6xl lg:text-[72px]">
-            More Than <br /> Just a Stay
+            <HoverText staggerDelay={30} duration={400}>
+              More Than <br /> Just a Stay
+            </HoverText>
           </h1>
 
           <p className="mb-6 max-w-105 text-base leading-relaxed font-light text-white/80 md:text-lg">
-            At Sahara Sands, we believe travel is not just about reaching a
-            destination, but about creating memories that last a lifetime.
+            {HOTEL_DETAILS.name} is a hotel in Lucknow, Uttar Pradesh. We offer
+            comfortable rooms and practical service for business and leisure
+            stays in the city.
           </p>
 
           {/* Breadcrumb Navigation */}
@@ -121,10 +123,9 @@ function StorySection() {
 
             {/* Paragraph 1 */}
             <p className="mb-4 text-base leading-relaxed font-light text-foreground/70 md:text-[15px]">
-              Sahara Sands was born from a simple idea – to create a place where
-              luxury meets the beauty of nature. Nestled along pristine beaches,
-              our resort offers a perfect blend of modern comfort, traditional
-              warmth and world-class hospitality.
+              {HOTEL_DETAILS.name} welcomes guests to Lucknow, a city known for
+              its Awadhi heritage and hospitality. Our hotel provides a
+              comfortable base for work, family visits, and exploring the city.
             </p>
 
             {/* Paragraph 2 */}
@@ -150,7 +151,7 @@ function StorySection() {
             {/* Main Image */}
             <ImageMotion
               src={HeroImage}
-              alt="Sahara Sands resort exterior at dusk"
+              alt="Illustrative hotel interior"
               className="h-full w-full rounded-3xl object-cover shadow-sm"
               hoverScale={1.03}
             />
@@ -180,15 +181,16 @@ function AnimatedStatValue({ value }: { value: string }) {
   const shouldReduceMotion = useReducedMotion();
   const count = useMotionValue(0);
   const numericValue = Number.parseFloat(value);
+  const isNumericValue = Number.isFinite(numericValue);
   const suffix = value.replace(/[\d.]/g, "");
   const decimalPlaces = value.includes(".") ? value.split(".")[1].length : 0;
-  const displayValue = useTransform(
-    count,
-    (currentValue) => `${currentValue.toFixed(decimalPlaces)}${suffix}`
+  const displayValue = useTransform(count, (currentValue) =>
+    isNumericValue ? `${currentValue.toFixed(decimalPlaces)}${suffix}` : value
   );
 
   useEffect(() => {
     if (!isInView) return;
+    if (!isNumericValue) return;
 
     if (shouldReduceMotion) {
       count.set(numericValue);
@@ -201,7 +203,7 @@ function AnimatedStatValue({ value }: { value: string }) {
     });
 
     return () => controls.stop();
-  }, [count, isInView, numericValue, shouldReduceMotion]);
+  }, [count, isInView, isNumericValue, numericValue, shouldReduceMotion]);
 
   return (
     <motion.span ref={valueRef} aria-label={value}>
@@ -214,24 +216,23 @@ function StatsSection() {
   const stats = [
     {
       icon: BedDouble,
-      value: "100+",
-      label: "Luxury Rooms",
+      value: "1",
+      label: "Hotel in Lucknow",
     },
     {
       icon: Users,
-      value: "50K+",
-      label: "Happy Guests",
+      value: "24/7",
+      label: "Online Booking",
     },
     {
       icon: MapPin,
-      value: "10+",
-      label: "Popular Destinations",
+      value: "INR",
+      label: "Room rates in rupees",
     },
     {
       icon: Trophy,
-      value: "4.8",
-      label: "Guest Rating",
-      hasStar: true,
+      value: "Lucknow",
+      label: "Uttar Pradesh",
     },
   ];
 
@@ -259,9 +260,6 @@ function StatsSection() {
                     <span className="font-heading text-2xl leading-none font-bold tracking-tight text-foreground md:text-[28px]">
                       <AnimatedStatValue value={stat.value} />
                     </span>
-                    {stat.hasStar && (
-                      <Star className="mb-0.5 h-5 w-5 fill-primary text-primary" />
-                    )}
                   </div>
                   <span className="mt-1.5 text-[13px] font-medium text-foreground/70 md:text-sm">
                     {stat.label}
@@ -381,7 +379,7 @@ function ExperienceSection() {
             {/* Main Image */}
             <ImageMotion
               src={HeroImage}
-              alt="Sahara Sands luxury ocean view room"
+              alt="Illustrative guest room"
               className="h-full w-full rounded-3xl object-cover shadow-sm"
               hoverScale={1.03}
             />
@@ -406,16 +404,15 @@ function ExperienceSection() {
             <h2 className={sectionHeadingClassName}>
               <HoverText staggerDelay={30} duration={400}>
                 Creating Memorable <br />
-                Stays <span className="text-primary">Since 2015</span>
+                Stays in <span className="text-primary">Lucknow</span>
               </HoverText>
             </h2>
 
             {/* Description */}
             <p className="mb-10 text-base leading-relaxed font-light text-foreground/70 md:text-[15px]">
-              With years of experience in the hospitality industry, Sahara Sands
-              has welcomed thousands of guests from around the world. Our team
-              is dedicated to providing personalized service, world-class
-              facilities and unforgettable experiences.
+              Our team is here to make stays in Lucknow comfortable and
+              straightforward, with clear room information and helpful service
+              from arrival through departure.
             </p>
 
             {/* Action Button */}

@@ -13,12 +13,12 @@ import {
   MessageCircleHeart,
   MessageSquare,
   Phone,
-  Send,
   UserRound,
   Users,
 } from "lucide-react";
 import * as React from "react";
 import { Controller, useForm } from "react-hook-form";
+import { Link } from "react-router-dom";
 
 import LocationImage from "@/assets/cta_image.png";
 import HeroImage from "@/assets/landing_hero.png";
@@ -34,6 +34,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
+import { HOTEL_DETAILS } from "@/constants/hotel";
 import { HoverText } from "@/features/public/components/hoverText";
 import { useSendContactMessage } from "@/features/public/hooks/useSendContactMessage";
 import {
@@ -51,61 +52,70 @@ const contactDetails: {
     title: "Call us",
     icon: Phone,
     lines: [
-      { label: "+91 98765 43210", href: "tel:+919876543210" },
-      { label: "+91 87654 32109", href: "tel:+918765432109" },
+      {
+        label: HOTEL_DETAILS.phone ?? "Phone details to be confirmed",
+        ...(HOTEL_DETAILS.phone && { href: `tel:${HOTEL_DETAILS.phone}` }),
+      },
     ],
   },
   {
     title: "Email us",
     icon: Mail,
     lines: [
-      { label: "info@saharasands.com", href: "mailto:info@saharasands.com" },
       {
-        label: "bookings@saharasands.com",
-        href: "mailto:bookings@saharasands.com",
+        label: HOTEL_DETAILS.email ?? "Email details to be confirmed",
+        ...(HOTEL_DETAILS.email && {
+          href: `mailto:${HOTEL_DETAILS.email}`,
+        }),
       },
     ],
   },
   {
     title: "Visit us",
     icon: MapPin,
-    lines: [{ label: "123 Beach Road" }, { label: "Goa, India 403001" }],
+    lines: [{ label: HOTEL_DETAILS.address ?? HOTEL_DETAILS.location }],
   },
   {
     title: "Our hours",
     icon: Clock3,
-    lines: [{ label: "Monday to Sunday" }, { label: "24/7 reception" }],
+
+    lines: [{ label: HOTEL_DETAILS.hours ?? "Hours details to be confirmed" }],
   },
 ];
 
 const helpOptions: {
   title: string;
   description: string;
-  email: string;
+  href: string;
+  action: string;
   icon: LucideIcon;
 }[] = [
   {
     title: "Room reservations",
     description: "Room bookings, availability, and special requests.",
-    email: "bookings@saharasands.com",
+    href: "/rooms",
+    action: "Browse rooms",
     icon: BedDouble,
   },
   {
     title: "Customer support",
     description: "General questions and assistance with your stay.",
-    email: "info@saharasands.com",
+    href: "#contact-form",
+    action: "Send an enquiry",
     icon: Headset,
   },
   {
     title: "Group bookings",
     description: "Corporate stays, celebrations, and group reservations.",
-    email: "groups@saharasands.com",
+    href: "#contact-form",
+    action: "Ask about group stays",
     icon: Users,
   },
   {
     title: "Feedback",
     description: "Share a suggestion or tell us about your experience.",
-    email: "feedback@saharasands.com",
+    href: "#contact-form",
+    action: "Share feedback",
     icon: MessageCircleHeart,
   },
 ];
@@ -242,7 +252,11 @@ function ContactForm() {
   });
 
   return (
-    <section aria-labelledby="contact-form-heading" className="min-w-0">
+    <section
+      aria-labelledby="contact-form-heading"
+      className="min-w-0"
+      id="contact-form"
+    >
       <Reveal>
         <p className="text-xs font-semibold tracking-[0.16em] text-primary uppercase">
           Send us a message
@@ -416,10 +430,8 @@ function ContactForm() {
           disabled={sendMessage.isPending}
           type="submit"
         >
-          {sendMessage.isPending ? (
+          {sendMessage.isPending && (
             <LoaderCircle aria-hidden="true" className="size-4 animate-spin" />
-          ) : (
-            <Send aria-hidden="true" className="size-4" />
           )}
           {sendMessage.isPending ? "Sending message" : "Send message"}
           {!sendMessage.isPending && (
@@ -448,7 +460,7 @@ function LocationPanel() {
             Our location
           </h2>
           <p className="mt-1 text-sm leading-5 text-muted-foreground">
-            Find us on Beach Road in Goa, a short walk from the coast.
+            {HOTEL_DETAILS.address ?? HOTEL_DETAILS.location}
           </p>
           <div className="relative mt-3 h-40 overflow-hidden rounded-md border border-border bg-muted sm:h-48">
             <iframe
@@ -456,13 +468,13 @@ function LocationPanel() {
               className="absolute inset-0 h-full w-full border-0"
               loading="lazy"
               referrerPolicy="no-referrer-when-downgrade"
-              src="https://www.google.com/maps?q=Baga%2C%20Goa%2C%20India&output=embed"
-              title="Map showing Sahara Sands in Goa"
+              src={`https://www.google.com/maps?q=${encodeURIComponent(HOTEL_DETAILS.address ?? HOTEL_DETAILS.location)}&output=embed`}
+              title={`Map showing ${HOTEL_DETAILS.name} in ${HOTEL_DETAILS.location}`}
             />
           </div>
           <a
             className="mt-3 inline-flex min-h-10 items-center gap-2 rounded-md bg-primary px-4 text-sm font-medium text-primary-foreground transition-colors hover:bg-primary/90 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring"
-            href="https://www.google.com/maps/dir/?api=1&destination=123+Beach+Road%2C+Goa%2C+India"
+            href={`https://www.google.com/maps/dir/?api=1&destination=${encodeURIComponent(HOTEL_DETAILS.address ?? HOTEL_DETAILS.location)}`}
             rel="noreferrer"
             target="_blank"
           >
@@ -491,27 +503,29 @@ function QuickHelp() {
         </p>
       </div>
       <div className="mt-5 grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-4">
-        {helpOptions.map(({ title, description, email, icon: Icon }, index) => (
-          <Reveal delay={index * 0.06} key={title}>
-            <Card className="flex h-full flex-col items-center rounded-lg border-border bg-card px-4 py-5 text-center shadow-sm transition-colors hover:border-primary/40">
-              <span className="grid size-11 place-items-center rounded-full bg-secondary text-primary">
-                <Icon aria-hidden="true" className="size-5" />
-              </span>
-              <h3 className="mt-3 text-sm font-semibold text-foreground">
-                {title}
-              </h3>
-              <p className="mt-1.5 min-h-10 text-xs leading-5 text-muted-foreground">
-                {description}
-              </p>
-              <a
-                className="mt-3 rounded-sm text-xs font-semibold text-primary hover:underline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring"
-                href={`mailto:${email}`}
-              >
-                {email}
-              </a>
-            </Card>
-          </Reveal>
-        ))}
+        {helpOptions.map(
+          ({ title, description, href, action, icon: Icon }, index) => (
+            <Reveal delay={index * 0.06} key={title}>
+              <Card className="flex h-full flex-col items-center rounded-lg border-border bg-card px-4 py-5 text-center shadow-sm transition-colors hover:border-primary/40">
+                <span className="grid size-11 place-items-center rounded-full bg-secondary text-primary">
+                  <Icon aria-hidden="true" className="size-5" />
+                </span>
+                <h3 className="mt-3 text-sm font-semibold text-foreground">
+                  {title}
+                </h3>
+                <p className="mt-1.5 min-h-10 text-xs leading-5 text-muted-foreground">
+                  {description}
+                </p>
+                <Link
+                  className="mt-3 rounded-sm text-xs font-semibold text-primary hover:underline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring"
+                  to={href}
+                >
+                  {action}
+                </Link>
+              </Card>
+            </Reveal>
+          )
+        )}
       </div>
     </section>
   );
@@ -531,20 +545,20 @@ function SupportBanner() {
         <div className="absolute inset-0 -z-10 bg-black/30" />
         <div className="grid gap-6 p-5 sm:p-7 md:grid-cols-[minmax(0,1fr)_auto] md:items-center">
           <div>
-            <h2 className="font-heading text-2xl font-medium sm:text-3xl">
+            <h2 className="font-heading text-2xl font-medium text-white sm:text-3xl">
               Still have questions?
             </h2>
-            <p className="mt-2 max-w-xl text-sm leading-5 text-background/80">
-              Our friendly team is available around the clock to help plan a
-              memorable stay.
+            <p className="mt-2 max-w-xl text-sm leading-5 text-white/80">
+              Our team can help with room information, reservations, and guest
+              enquiries in Lucknow.
             </p>
           </div>
           <ul className="grid gap-2 text-sm text-background/90 sm:grid-cols-2 md:grid-cols-1">
             {[
-              { label: "24/7 assistance", icon: Clock3 },
-              { label: "Quick response", icon: MessageSquare },
-              { label: "Personalized support", icon: Headset },
-              { label: "Best price guidance", icon: BedDouble },
+              { label: "Room booking support", icon: BedDouble },
+              { label: "Guest enquiries", icon: MessageSquare },
+              { label: "Group stay enquiries", icon: Users },
+              { label: "Lucknow stay guidance", icon: MapPin },
             ].map(({ label, icon: Icon }) => (
               <li className="flex items-center gap-2" key={label}>
                 <Icon aria-hidden="true" className="size-4" />

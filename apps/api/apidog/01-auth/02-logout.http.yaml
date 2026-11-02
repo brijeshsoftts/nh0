@@ -1,9 +1,9 @@
 method: post
-url: "{{base_url}}/auth/logout"
+url: '{{base_url}}/auth/logout'
 requestBody:
   type: application/json
   data: |-
     {
-        "email": "admin@example.com",
-        "password": "secure@1234"
+        "email": "varun.sharma@example.com",
+        "password": "local-demo-password"
     }

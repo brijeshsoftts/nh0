@@ -40,6 +40,7 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
+import { HOTEL_DETAILS } from "@/constants/hotel";
 import { BookingBar } from "@/features/public/components/BookingBar";
 import { HoverText } from "@/features/public/components/hoverText";
 import { ImageMotion } from "@/features/public/components/ImageMotion";
@@ -66,15 +67,16 @@ function AnimatedHeroStat({ value }: { value: string }) {
   const shouldReduceMotion = useReducedMotion();
   const count = useMotionValue(0);
   const numericValue = Number.parseFloat(value);
+  const isNumericValue = Number.isFinite(numericValue);
   const suffix = value.replace(/[\d.]/g, "");
   const decimalPlaces = value.includes(".") ? value.split(".")[1].length : 0;
-  const displayValue = useTransform(
-    count,
-    (currentValue) => `${currentValue.toFixed(decimalPlaces)}${suffix}`
+  const displayValue = useTransform(count, (currentValue) =>
+    isNumericValue ? `${currentValue.toFixed(decimalPlaces)}${suffix}` : value
   );
 
   React.useEffect(() => {
     if (!isInView) return;
+    if (!isNumericValue) return;
 
     if (shouldReduceMotion) {
       count.set(numericValue);
@@ -87,7 +89,7 @@ function AnimatedHeroStat({ value }: { value: string }) {
     });
 
     return () => controls.stop();
-  }, [count, isInView, numericValue, shouldReduceMotion]);
+  }, [count, isInView, isNumericValue, numericValue, shouldReduceMotion]);
 
   return (
     <motion.span ref={valueRef} aria-label={value}>
@@ -165,17 +167,17 @@ function HeroSection() {
       <div className="relative z-10 container mx-auto flex min-h-150 flex-col justify-center px-6 pb-10 md:px-12 lg:min-h-[min(85vh,900px)]">
         <div className="max-w-135">
           <span className="mb-2 block text-xs font-bold tracking-[0.15em] text-white/70 uppercase">
-            A Luxury Stay Experience
+            A stay in Lucknow
           </span>
 
           <h1 className="mb-6 font-heading text-4xl leading-[1.05] tracking-tight text-white sm:text-5xl md:text-6xl lg:text-[72px]">
-            <HoverText text="Your Escape to" staggerDelay={30} duration={400} />{" "}
-            <HoverText text="Tranquility" staggerDelay={30} duration={400} />
+            <HoverText text="Stay in" staggerDelay={30} duration={400} />{" "}
+            <HoverText text="Lucknow" staggerDelay={30} duration={400} />
           </h1>
 
           <p className="mb-6 max-w-105 text-base leading-relaxed font-light text-white/80 md:text-lg">
-            Experience comfort, elegance and warm hospitality in the heart of
-            breathtaking destinations.
+            Discover comfortable rooms and helpful service at{" "}
+            {HOTEL_DETAILS.name}, your hotel in Lucknow, Uttar Pradesh.
           </p>
 
           <Button
@@ -190,28 +192,33 @@ function HeroSection() {
           <div className="mt-8 flex items-center gap-8 text-white">
             <div className="flex flex-col">
               <span className="font-serif text-2xl font-semibold">
-                <AnimatedHeroStat value="100+" />
+                <AnimatedHeroStat value="1" />
               </span>
-              <span className="mt-1 text-xs text-white/70">Luxury Rooms</span>
+              <span className="mt-1 text-xs text-white/70">
+                Hotel in Lucknow
+              </span>
             </div>
 
             <Separator orientation="vertical" className="h-10 bg-border" />
 
             <div className="flex flex-col">
               <span className="flex items-center font-serif text-2xl font-semibold">
-                <AnimatedHeroStat value="4.8" />{" "}
-                <Star className="mb-1 ml-1 h-4 w-4 fill-primary text-primary" />
+                24/7
               </span>
-              <span className="mt-1 text-xs text-white/70">Guest Rating</span>
+              <span className="mt-1 text-xs text-white/70">
+                Online reservations
+              </span>
             </div>
 
             <Separator orientation="vertical" className="h-10 bg-border" />
 
             <div className="flex flex-col">
               <span className="font-serif text-2xl font-semibold">
-                <AnimatedHeroStat value="10+" />
+                <AnimatedHeroStat value="INR" />
               </span>
-              <span className="mt-1 text-xs text-white/70">Destinations</span>
+              <span className="mt-1 text-xs text-white/70">
+                Room rates in rupees
+              </span>
             </div>
           </div>
         </div>
@@ -257,17 +264,17 @@ function AboutSection() {
             {/* Heading */}
             <h2 className={sectionHeadingClassName}>
               <HoverText staggerDelay={30} duration={400}>
-                Where Comfort <br />
-                Meets <span className="pr-2 text-primary italic">Elegance</span>
+                A comfortable base <br />
+                for your{" "}
+                <span className="pr-2 text-primary italic">Lucknow stay</span>
               </HoverText>
             </h2>
 
             {/* Paragraph */}
             <p className="mb-12 max-w-135 text-base leading-relaxed font-light text-foreground/70 md:text-lg">
-              Our resort is more than just a place to stay. It's a perfect blend
-              of modern luxury, natural beauty and heartfelt hospitality.
-              Whether you're here for a vacation, business or a special
-              celebration, we make every moment memorable.
+              {HOTEL_DETAILS.name} offers a practical, comfortable stay in
+              Lucknow for business trips, family visits, and time in the city.
+              Our team is here to make check-in and your stay straightforward.
             </p>
 
             {/* Features Row */}
@@ -662,22 +669,22 @@ function FAQSection() {
     {
       question: "What time is check-in and check-out?",
       answer:
-        "Check-in begins at 3:00 PM, and check-out is at 11:00 AM. Early check-in and late check-out can be requested and are subject to availability.",
+        "Your check-in and check-out times are shown with your reservation. Contact the hotel before arrival if you need to request a different time.",
     },
     {
       question: "Do you offer airport pickup?",
       answer:
-        "Yes, we provide luxury airport transfer services. Please contact our concierge desk at least 24 hours prior to your arrival to arrange your pickup.",
+        "Contact the hotel with your travel details to ask about available transfer options. Please confirm arrangements with the team before travel.",
     },
     {
       question: "Is breakfast included in the room rate?",
       answer:
-        "Breakfast inclusions depend on the room package selected during booking. Our Premium and Suite packages typically include a complimentary continental breakfast.",
+        "Meal inclusions, if any, are listed with the selected room or booking offer. Please review those details before completing your reservation.",
     },
     {
       question: "Are pets allowed?",
       answer:
-        "While we love animals, to ensure a tranquil and allergen-free environment for all our guests, pets are not permitted on the property.",
+        "Pet policies can vary by room. Check the room details or contact the hotel before booking if you plan to travel with a pet.",
     },
   ];
   return (
