@@ -330,12 +330,14 @@ function ValuesSection() {
 
             {/* Action Button */}
             <div>
-              <Button
-                className="h-11 rounded-full px-8 text-sm font-medium shadow-md transition-all"
-                variant={"secondary"}
-              >
-                Our Amenities <ArrowRight className="ml-2 h-4 w-4" />
-              </Button>
+              <Link to="/#amenities">
+                <Button
+                  className="h-11 rounded-full px-8 text-sm font-medium shadow-md transition-all"
+                  variant={"secondary"}
+                >
+                  Our Amenities <ArrowRight className="ml-2 h-4 w-4" />
+                </Button>
+              </Link>
             </div>
           </div>
 
@@ -417,14 +419,14 @@ function ExperienceSection() {
             </p>
 
             {/* Action Button */}
-            <div>
+            {/* <div>
               <Button
                 className="h-11 rounded-full px-8 text-sm font-medium shadow-md transition-all"
                 variant={"outline"}
               >
                 Meet Our Team <ArrowRight className="ml-2 h-4 w-4" />
               </Button>
-            </div>
+            </div> */}
           </div>
         </div>
       </div>
