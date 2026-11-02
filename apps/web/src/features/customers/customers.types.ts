@@ -70,7 +70,6 @@ export type CustomerBookingItem = {
     roomName?: string;
     roomTypeName: string;
   } | null;
-
   invoice?: {
     invoiceNumber: string;
     status: InvoiceStatus;
