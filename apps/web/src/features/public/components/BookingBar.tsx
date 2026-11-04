@@ -1,4 +1,4 @@
-import { format, isValid, parseISO, startOfToday } from "date-fns";
+import { addDays, format, isValid, parseISO, startOfToday } from "date-fns";
 import {
   ArrowRight,
   Calendar as CalendarIcon,
@@ -17,6 +17,10 @@ import {
   PopoverTrigger,
 } from "@/components/ui/popover";
 import { Separator } from "@/components/ui/separator";
+import {
+  getBookingPreferences,
+  saveBookingPreferences,
+} from "@/features/public/bookingPreferences";
 
 function parseQueryDate(value: string | null) {
   if (!value) return undefined;
@@ -24,20 +28,13 @@ function parseQueryDate(value: string | null) {
   return isValid(date) ? date : undefined;
 }
 
-function parseGuestCount(value: string | null, fallback: number, min: number) {
-  if (value === null || value.trim() === "") return fallback;
-  const count = Number(value);
-  return Number.isInteger(count)
-    ? Math.max(min, Math.min(10, count))
-    : fallback;
-}
-
 export function BookingBar() {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   const today = startOfToday();
-  const initialCheckInDate = parseQueryDate(searchParams.get("checkInDate"));
-  const initialCheckOutDate = parseQueryDate(searchParams.get("checkOutDate"));
+  const preferences = getBookingPreferences(searchParams);
+  const initialCheckInDate = parseQueryDate(preferences.checkInDate);
+  const initialCheckOutDate = parseQueryDate(preferences.checkOutDate);
   const [checkInDate, setCheckInDate] = React.useState<Date | undefined>(
     initialCheckInDate && initialCheckInDate >= today
       ? initialCheckInDate
@@ -50,13 +47,28 @@ export function BookingBar() {
       ? initialCheckOutDate
       : undefined
   );
-  const [adults, setAdults] = React.useState(() =>
-    parseGuestCount(searchParams.get("adults"), 2, 1)
-  );
-  const [children, setChildren] = React.useState(() =>
-    parseGuestCount(searchParams.get("children"), 0, 0)
-  );
+  const [adults, setAdults] = React.useState(preferences.adults);
+  const [children, setChildren] = React.useState(preferences.children);
   const [bookingError, setBookingError] = React.useState("");
+
+  const persistPreferences = (
+    nextCheckInDate = checkInDate,
+    nextCheckOutDate = checkOutDate,
+    nextAdults = adults,
+    nextChildren = children
+  ) => {
+    const nextCheckIn = nextCheckInDate ?? today;
+    const nextCheckOut =
+      nextCheckOutDate && nextCheckOutDate > nextCheckInDate
+        ? nextCheckOutDate
+        : addDays(nextCheckIn, 1);
+    saveBookingPreferences({
+      checkInDate: format(nextCheckIn, "yyyy-MM-dd"),
+      checkOutDate: format(nextCheckOut, "yyyy-MM-dd"),
+      adults: nextAdults,
+      children: nextChildren,
+    });
+  };
 
   const handleSearchRooms = () => {
     if (!checkInDate || !checkOutDate) {
@@ -118,9 +130,14 @@ export function BookingBar() {
               disabled={(date) => date < today}
               onSelect={(date) => {
                 setCheckInDate(date);
-                if (date && checkOutDate && checkOutDate <= date) {
+                const nextCheckOutDate =
+                  date && checkOutDate && checkOutDate > date
+                    ? checkOutDate
+                    : undefined;
+                if (date && !nextCheckOutDate) {
                   setCheckOutDate(undefined);
                 }
+                persistPreferences(date, nextCheckOutDate);
                 setBookingError("");
               }}
             />
@@ -163,6 +180,7 @@ export function BookingBar() {
               disabled={(date) => date <= (checkInDate ?? today)}
               onSelect={(date) => {
                 setCheckOutDate(date);
+                persistPreferences(checkInDate, date);
                 setBookingError("");
               }}
             />
@@ -217,7 +235,16 @@ export function BookingBar() {
                       aria-label={`Decrease ${label.toLowerCase()}`}
                       className="h-8 w-8"
                       disabled={count <= min}
-                      onClick={() => setCount((current) => current - 1)}
+                      onClick={() => {
+                        const nextCount = count - 1;
+                        setCount(nextCount);
+                        persistPreferences(
+                          checkInDate,
+                          checkOutDate,
+                          label === "Adults" ? nextCount : adults,
+                          label === "Children" ? nextCount : children
+                        );
+                      }}
                       size="icon"
                       type="button"
                       variant="outline"
@@ -231,7 +258,16 @@ export function BookingBar() {
                       aria-label={`Increase ${label.toLowerCase()}`}
                       className="h-8 w-8"
                       disabled={count >= 10}
-                      onClick={() => setCount((current) => current + 1)}
+                      onClick={() => {
+                        const nextCount = count + 1;
+                        setCount(nextCount);
+                        persistPreferences(
+                          checkInDate,
+                          checkOutDate,
+                          label === "Adults" ? nextCount : adults,
+                          label === "Children" ? nextCount : children
+                        );
+                      }}
                       size="icon"
                       type="button"
                       variant="outline"

@@ -1,4 +1,5 @@
 import {
+  addDays,
   differenceInCalendarDays,
   format,
   isValid,
@@ -48,6 +49,10 @@ import {
   PopoverTrigger,
 } from "@/components/ui/popover";
 import { Skeleton } from "@/components/ui/skeleton";
+import {
+  getBookingPreferences,
+  saveBookingPreferences,
+} from "@/features/public/bookingPreferences";
 import type { AvailableRoomListItem } from "@/features/public/public.types";
 import {
   useAvailableRoom,
@@ -65,11 +70,6 @@ const amenityIcons: Record<string, LucideIcon> = {
   wifi: Wifi,
   "wi-fi": Wifi,
 };
-
-function parseGuestCount(value: string | null, fallback: number, min: number) {
-  if (!value || !/^\d+$/.test(value)) return fallback;
-  return Math.max(min, Math.min(10, Number(value)));
-}
 
 function getPhotoAlt(altText: string | null, roomName: string) {
   if (
@@ -199,17 +199,16 @@ export default function RoomDetailsPage() {
   const { slug } = useParams();
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
-  const [checkInDate, setCheckInDate] = React.useState(
-    searchParams.get("checkInDate") ?? ""
-  );
+  const preferences = getBookingPreferences(searchParams);
+  const [checkInDate, setCheckInDate] = React.useState(preferences.checkInDate);
   const [checkOutDate, setCheckOutDate] = React.useState(
-    searchParams.get("checkOutDate") ?? ""
+    preferences.checkOutDate
   );
-  const [requestedAdults, setRequestedAdults] = React.useState(() =>
-    parseGuestCount(searchParams.get("adults"), 2, 1)
+  const [requestedAdults, setRequestedAdults] = React.useState(
+    preferences.adults
   );
-  const [requestedChildren, setRequestedChildren] = React.useState(() =>
-    parseGuestCount(searchParams.get("children"), 0, 0)
+  const [requestedChildren, setRequestedChildren] = React.useState(
+    preferences.children
   );
   const validCheckIn = isValid(parseISO(checkInDate));
   const validCheckOut = isValid(parseISO(checkOutDate));
@@ -655,6 +654,14 @@ export default function RoomDetailsPage() {
                             ? format(date, "yyyy-MM-dd")
                             : "";
                           setCheckInDate(nextCheckIn);
+                          const nextCheckOut =
+                            date &&
+                            validCheckOut &&
+                            parseISO(checkOutDate) > date
+                              ? checkOutDate
+                              : date
+                                ? format(addDays(date, 1), "yyyy-MM-dd")
+                                : checkOutDate;
                           if (
                             date &&
                             validCheckOut &&
@@ -662,6 +669,12 @@ export default function RoomDetailsPage() {
                           ) {
                             setCheckOutDate("");
                           }
+                          saveBookingPreferences({
+                            checkInDate: nextCheckIn || checkInDate,
+                            checkOutDate: nextCheckOut,
+                            adults,
+                            children,
+                          });
                           setBookingError("");
                         }}
                         selected={
@@ -708,9 +721,19 @@ export default function RoomDetailsPage() {
                         }
                         mode="single"
                         onSelect={(date) => {
-                          setCheckOutDate(
-                            date ? format(date, "yyyy-MM-dd") : ""
-                          );
+                          const nextCheckOut = date
+                            ? format(date, "yyyy-MM-dd")
+                            : format(
+                                addDays(parseISO(checkInDate), 1),
+                                "yyyy-MM-dd"
+                              );
+                          setCheckOutDate(date ? nextCheckOut : "");
+                          saveBookingPreferences({
+                            checkInDate,
+                            checkOutDate: nextCheckOut,
+                            adults,
+                            children,
+                          });
                           setBookingError("");
                         }}
                         selected={
@@ -754,8 +777,20 @@ export default function RoomDetailsPage() {
                         onClick={() => {
                           if (guest.key === "adults") {
                             setRequestedAdults(guest.count - 1);
+                            saveBookingPreferences({
+                              checkInDate,
+                              checkOutDate,
+                              adults: guest.count - 1,
+                              children,
+                            });
                           } else {
                             setRequestedChildren(guest.count - 1);
+                            saveBookingPreferences({
+                              checkInDate,
+                              checkOutDate,
+                              adults,
+                              children: guest.count - 1,
+                            });
                           }
                           setBookingError("");
                         }}
@@ -775,8 +810,20 @@ export default function RoomDetailsPage() {
                         onClick={() => {
                           if (guest.key === "adults") {
                             setRequestedAdults(guest.count + 1);
+                            saveBookingPreferences({
+                              checkInDate,
+                              checkOutDate,
+                              adults: guest.count + 1,
+                              children,
+                            });
                           } else {
                             setRequestedChildren(guest.count + 1);
+                            saveBookingPreferences({
+                              checkInDate,
+                              checkOutDate,
+                              adults,
+                              children: guest.count + 1,
+                            });
                           }
                           setBookingError("");
                         }}

@@ -43,6 +43,7 @@ import { createPublicCheckoutSchema } from "@/features/bookings/schemas/public-c
 import { useRazorpayPayment } from "@/features/payments/hooks/useRazorpayPayment";
 import type { PublicPaymentStatus } from "@/features/payments/payments.types";
 import { useAvailableRoom } from "@/features/public/useAvailableRooms";
+import { getBookingPreferences } from "@/features/public/bookingPreferences";
 import { formatPrice, formatString } from "@/lib/format";
 import { notifyError } from "@/lib/notification";
 
@@ -58,14 +59,6 @@ type StayDetails = {
 type CheckoutSchema = ReturnType<typeof createPublicCheckoutSchema>;
 type CheckoutFormInput = z.input<CheckoutSchema>;
 type CheckoutFormData = z.output<CheckoutSchema>;
-
-function parseGuestCount(value: string | null, fallback: number, min: number) {
-  if (!value || !/^\d+$/.test(value)) return fallback;
-  const parsed = Number(value);
-  return Number.isInteger(parsed) && parsed >= min && parsed <= 10
-    ? parsed
-    : fallback;
-}
 
 function getStayDetails(
   checkInDate: string | null,
@@ -357,10 +350,8 @@ function BookingConfirmation({
 export default function BookingCheckoutFlow() {
   const { slug } = useParams();
   const [searchParams] = useSearchParams();
-  const checkInDate = searchParams.get("checkInDate");
-  const checkOutDate = searchParams.get("checkOutDate");
-  const adults = parseGuestCount(searchParams.get("adults"), 2, 1);
-  const children = parseGuestCount(searchParams.get("children"), 0, 0);
+  const preferences = getBookingPreferences(searchParams);
+  const { checkInDate, checkOutDate, adults, children } = preferences;
   const stay = getStayDetails(checkInDate, checkOutDate);
   const roomBackHref = slug ? `/rooms/${slug}` : "/rooms";
   const roomBackSearch = new URLSearchParams();
