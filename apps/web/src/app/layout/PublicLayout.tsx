@@ -13,12 +13,22 @@ import {
   X,
 } from "lucide-react";
 import { type FormEvent, useEffect, useState } from "react";
-import { Link, NavLink, Outlet } from "react-router-dom";
+import {
+  Link,
+  NavLink,
+  Outlet,
+  useLocation,
+  useNavigate,
+} from "react-router-dom";
 
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Separator } from "@/components/ui/separator";
 import { HOTEL_DETAILS } from "@/constants/hotel";
+import {
+  getBookingPreferences,
+  saveBookingPreferences,
+} from "@/features/public/bookingPreferences";
 import { useAuth } from "@/hooks/useAuth";
 import { cn } from "@/lib/utils";
 
@@ -379,6 +389,31 @@ function Footer() {
 }
 
 export function PublicLayout() {
+  const location = useLocation();
+  const navigate = useNavigate();
+
+  useEffect(() => {
+    const searchParams = new URLSearchParams(location.search);
+    const preferences = getBookingPreferences(searchParams);
+    saveBookingPreferences(preferences);
+
+    Object.entries(preferences).forEach(([key, value]) => {
+      searchParams.set(key, String(value));
+    });
+
+    const search = searchParams.toString();
+    if (search !== location.search.slice(1)) {
+      navigate(
+        {
+          pathname: location.pathname,
+          search: search ? `?${search}` : "",
+          hash: location.hash,
+        },
+        { replace: true }
+      );
+    }
+  }, [location, navigate]);
+
   return (
     <>
       <Navbar />
