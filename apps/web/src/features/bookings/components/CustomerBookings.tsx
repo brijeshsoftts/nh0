@@ -35,38 +35,41 @@ import { formatPrice } from "@/lib/format";
 
 import { bookingFilters } from "../booking-filters";
 import { useBookingDetails, useBookings } from "../bookings.crud";
-import type { BookingDetails, BookingListItem } from "../bookings.types";
+import type {
+  CustomerBooking,
+  CustomerBookingDetails,
+} from "../bookings.types";
 
 import { BookingsStats } from "./BookingsStats";
 
-export const columns: ColumnDef<BookingListItem>[] = [
+export const columns: ColumnDef<CustomerBooking>[] = [
   {
     key: "bookingReference",
     header: "Booking #",
     className: "min-w-36",
     cell: (booking) => (
-      <span className="font-medium">{booking.bookingReference}</span>
+      <span className="font-medium">{booking.bookingNumber}</span>
     ),
   },
   {
     key: "roomType",
     header: "Room Type",
-    cell: (booking) => booking.bookingRoom?.roomType?.name ?? "Unassigned",
+    cell: (booking) => booking.roomType ?? "Unassigned",
   },
   {
     key: "roomNumber",
     header: "Room Number",
-    cell: (booking) => booking.bookingRoom?.assignedRoom?.roomNumber ?? "—",
+    cell: (booking) => booking.roomNumber ?? "—",
   },
   {
     key: "checkInDate",
     header: "Check-in",
-    cell: (booking) => formatDate(booking.checkInDate, "dd MMM, yyyy"),
+    cell: (booking) => formatDate(booking?.checkIn, "dd MMM, yyyy"),
   },
   {
     key: "checkOutDate",
     header: "Check-out",
-    cell: (booking) => formatDate(booking.checkOutDate, "dd MMM, yyyy"),
+    cell: (booking) => formatDate(booking?.checkOut, "dd MMM, yyyy"),
   },
   {
     key: "totalAmount",
@@ -74,7 +77,7 @@ export const columns: ColumnDef<BookingListItem>[] = [
     align: "right",
     cell: (booking) => (
       <span className="font-semibold tabular-nums">
-        {formatPrice(booking.totalAmount)}
+        {formatPrice(booking?.totalAmount)}
       </span>
     ),
   },
@@ -97,7 +100,7 @@ export const columns: ColumnDef<BookingListItem>[] = [
 function BookingsTable() {
   const { setSearch, setPage, params, setFilter } = useListParams();
   const { items, pagination, isLoading, isError, refetch } =
-    useBookings<BookingListItem>(params);
+    useBookings<CustomerBooking>(params);
 
   return (
     <DataTable
@@ -122,7 +125,7 @@ function BookingsTable() {
   );
 }
 
-function ActionDropdownMenu({ booking }: { booking: BookingListItem }) {
+function ActionDropdownMenu({ booking }: { booking: CustomerBooking }) {
   const [detailsOpen, setDetailsOpen] = useState(false);
   const [invoiceOpen, setInvoiceOpen] = useState(false);
   const canViewInvoice =
@@ -197,14 +200,14 @@ function BookingDetailsDialog({
   const { data, isLoading, isError, refetch } = useBookingDetails(
     open ? bookingId : undefined
   );
-  const booking = (data as BookingDetails | undefined) ?? undefined;
+  const booking = (data as CustomerBookingDetails | undefined) ?? undefined;
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="max-w-120 gap-0 rounded-none">
         <DialogHeader className="text-left">
           <DialogTitle className="text-lg break-all">
-            {booking?.bookingReference ?? "Booking details"}
+            {booking?.bookingNumber ?? "Booking details"}
           </DialogTitle>
           <DialogDescription>
             Your stay information and booking summary.
@@ -252,12 +255,9 @@ function BookingDetailsDialog({
               <dl className="grid grid-cols-2 gap-x-4">
                 <Detail
                   label="Room type"
-                  value={booking.bookingRoom?.roomType?.name ?? "Unassigned"}
+                  value={booking.roomType || "Unassigned"}
                 />
-                <Detail
-                  label="Room number"
-                  value={booking.bookingRoom?.assignedRoom?.roomNumber ?? "—"}
-                />
+                <Detail label="Room number" value={booking.roomNumber ?? "—"} />
               </dl>
             </section>
 
@@ -272,11 +272,11 @@ function BookingDetailsDialog({
               <dl className="grid grid-cols-2 gap-x-4">
                 <Detail
                   label="Check-in"
-                  value={formatDate(booking.checkInDate, "dd MMM, yyyy")}
+                  value={formatDate(booking.checkIn, "dd MMM, yyyy")}
                 />
                 <Detail
                   label="Check-out"
-                  value={formatDate(booking.checkOutDate, "dd MMM, yyyy")}
+                  value={formatDate(booking.checkOut, "dd MMM, yyyy")}
                 />
               </dl>
             </section>
@@ -290,15 +290,9 @@ function BookingDetailsDialog({
                 Guests
               </h3>
               <dl className="grid grid-cols-3 gap-x-3">
-                <Detail label="Guests" value={String(booking.totalGuests)} />
-                <Detail
-                  label="Booked at"
-                  value={formatDate(booking.bookedAt, "dd MMM, yyyy")}
-                />
-                <Detail
-                  label="Payment method"
-                  value={booking.paymentMethod ?? "—"}
-                />
+                <Detail label="Adults" value={String(booking.adults)} />
+                <Detail label="Children" value={String(booking.children)} />
+                <Detail label="Nights" value={String(booking.duration)} />
               </dl>
             </section>
 
@@ -308,7 +302,7 @@ function BookingDetailsDialog({
                 Booked on
               </div>
               <p className="text-right text-sm font-medium">
-                {formatDate(booking.bookedAt, "dd MMM, yyyy")}
+                {formatDate(booking.bookedOn, "dd MMM, yyyy")}
               </p>
             </div>
           </div>
@@ -319,7 +313,7 @@ function BookingDetailsDialog({
             ["PENDING", "CONFIRMED", "CHECKED_IN"].includes(booking.status) && (
               <PaymentPopup
                 bookingId={booking.id}
-                bookingReference={booking.bookingReference}
+                bookingReference={booking.bookingNumber}
               />
             )}
           <Button

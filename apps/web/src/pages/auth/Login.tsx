@@ -2,7 +2,6 @@ import { Eye, EyeOff } from "lucide-react";
 import { useState } from "react";
 import { Link } from "react-router-dom";
 
-import { PublicBrand } from "@/components/layout/PublicNavbar";
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
 import {
@@ -45,7 +44,6 @@ export default function LoginPage() {
         />
         <div className="absolute inset-0 -z-10 bg-foreground/55" />
         <div className="flex w-full items-end justify-between gap-4 lg:flex-col lg:items-start lg:justify-end lg:gap-8">
-          <PublicBrand className="text-background lg:hidden" inverted />
           <div className="max-w-xl">
             <p className="hidden text-xs font-semibold tracking-[0.16em] text-background/85 uppercase lg:block">
               Nivara Hotels
@@ -62,7 +60,6 @@ export default function LoginPage() {
 
       <section className="flex min-w-0 items-center justify-center px-5 py-10 sm:px-10 lg:px-12 lg:py-14">
         <div className="w-full max-w-md">
-          <PublicBrand className="mb-9 hidden lg:inline-flex" />
           <p className="text-xs font-semibold tracking-[0.14em] text-primary uppercase">
             Nivara Hotels
           </p>

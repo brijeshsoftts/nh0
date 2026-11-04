@@ -2,7 +2,7 @@ import { Navigate, Outlet } from "react-router-dom";
 
 import { useAuth } from "@/hooks/useAuth";
 
-import { FullScreenLoader } from "../common/Loader";
+import { FullScreenLoader } from "../../components/common/Loader";
 
 export const AuthLayout = () => {
   const { isLoading, isAuthenticated } = useAuth();

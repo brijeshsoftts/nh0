@@ -1,8 +1,8 @@
 import { createBrowserRouter } from "react-router-dom";
 
-import { AuthLayout } from "@/components/layout/AuthLayout";
-import { DashboardLayout } from "@/components/layout/DashboardLayout";
-// import { PublicLayout } from "@/components/layout/PublicLayout";
+import { AuthLayout } from "@/app/layout/AuthLayout";
+import { DashboardLayout } from "@/app/layout/DashboardLayout";
+import { PublicLayout } from "@/app/layout/PublicLayout";
 import LoginPage from "@/pages/auth/Login";
 import RegisterPage from "@/pages/auth/Register";
 import ResetPasswordPage from "@/pages/auth/ResetPassword";
@@ -10,6 +10,7 @@ import AuditLogsPage from "@/pages/protect/AuditLogs";
 import BookingsPage from "@/pages/protect/Bookings";
 import CustomersPage from "@/pages/protect/Customers";
 import DashboardPage from "@/pages/protect/Dashboard";
+import InquiryPage from "@/pages/protect/Inquiry";
 import InvoicesPage from "@/pages/protect/Invoices";
 import IssuesPage from "@/pages/protect/Issues";
 import NewBookingPage from "@/pages/protect/NewBooking";
@@ -25,8 +26,6 @@ import ContactPage from "@/pages/public/Contact";
 import LandingPage from "@/pages/public/Landing";
 import RoomDetails from "@/pages/public/RoomDetails";
 import RoomsPage from "@/pages/public/Rooms";
-
-import { PublicLayout } from "./layout/PublicLayout";
 
 export const router = createBrowserRouter([
   {
@@ -70,6 +69,7 @@ export const router = createBrowserRouter([
       { path: "tasks", element: <TasksPage /> },
       { path: "invoices", element: <InvoicesPage /> },
       { path: "payments", element: <PaymentsPage /> },
+      { path: "inquiries", element: <InquiryPage /> },
       { path: "audit-logs", element: <AuditLogsPage /> },
       { path: "profile", element: <ProfilePage /> },
     ],

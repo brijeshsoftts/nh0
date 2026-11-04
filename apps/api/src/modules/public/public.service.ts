@@ -9,10 +9,12 @@ import { AmenitiesQueryDto } from './dto/amenities-query.dto';
 import { AvailableRoomQueryDto } from './dto/available-room-query.dot';
 import { AvailableRoomsQueryDto } from './dto/available-rooms-query.dto';
 import { PublicContactMessageDto } from './dto/contact-message.dto';
+import { InquiriesQueryDto } from './dto/inquiries-query.dto';
 import { PUBLIC_ERROR_MSG } from './public.constants';
 import {
   AmenityListItemResponse,
   AvailableRoomResponse,
+  Inquiry,
   Room,
 } from './public.types';
 
@@ -23,8 +25,77 @@ export class PublicService {
     private readonly emailsService: EmailsService,
   ) {}
 
-  async sendContactMessage(data: PublicContactMessageDto): Promise<void> {
+  async createInquiry(data: PublicContactMessageDto): Promise<void> {
+    await this.prismaService.inquiry.create({
+      data: {
+        fullName: data.fullName,
+        email: data.email,
+        phone: data.phone,
+        subject: data.subject,
+        message: data.message,
+      },
+    });
     await this.emailsService.sendContactMessage(data);
+  }
+
+  async findInquiries(
+    query: InquiriesQueryDto,
+  ): Promise<ListResponse<Inquiry>> {
+    const { search, page, limit } = query;
+    const where: Prisma.InquiryWhereInput = {
+      ...(search && {
+        OR: [
+          { fullName: { contains: search, mode: 'insensitive' } },
+          { email: { contains: search, mode: 'insensitive' } },
+          { phone: { contains: search, mode: 'insensitive' } },
+          { subject: { contains: search, mode: 'insensitive' } },
+          { message: { contains: search, mode: 'insensitive' } },
+        ],
+      }),
+    };
+
+    const [data, total] = await this.prismaService.$transaction([
+      this.prismaService.inquiry.findMany({
+        where,
+        select: {
+          id: true,
+          fullName: true,
+          email: true,
+          phone: true,
+          subject: true,
+          message: true,
+          createdAt: true,
+        },
+        skip: (page - 1) * limit,
+        take: limit,
+        orderBy: [{ createdAt: 'desc' }, { id: 'desc' }],
+      }),
+      this.prismaService.inquiry.count({ where }),
+    ]);
+
+    return {
+      data,
+      meta: { page, limit, total },
+    };
+  }
+
+  async deleteInquiry(id: string): Promise<void> {
+    try {
+      await this.prismaService.inquiry.delete({
+        where: { id },
+        select: { id: true },
+      });
+    } catch (error) {
+      if (
+        typeof error === 'object' &&
+        error !== null &&
+        'code' in error &&
+        error.code === 'P2025'
+      ) {
+        throw new NotFoundException(PUBLIC_ERROR_MSG.INQUIRY_NOT_FOUND);
+      }
+      throw error;
+    }
   }
 
   async findAmenities(

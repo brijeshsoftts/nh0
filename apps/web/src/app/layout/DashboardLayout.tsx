@@ -5,12 +5,12 @@ import { Link, Navigate, Outlet, useLocation } from "react-router-dom";
 import { NotificationsPopover } from "@/features/notifications/components/NotificationsPopover";
 import { useAuth } from "@/hooks/useAuth";
 
-import { DropdownProfile } from "../common/DropdownProfile";
-import { FullScreenLoader } from "../common/Loader";
-import { AppSidebar } from "../sidebar/AppSidebar";
-import { useTheme } from "../theme-provider";
-import { Button } from "../ui/button";
-import { SidebarProvider, SidebarTrigger } from "../ui/sidebar";
+import { DropdownProfile } from "../../components/common/DropdownProfile";
+import { FullScreenLoader } from "../../components/common/Loader";
+import { AppSidebar } from "../../components/sidebar/AppSidebar";
+import { useTheme } from "../../components/theme-provider";
+import { Button } from "../../components/ui/button";
+import { SidebarProvider, SidebarTrigger } from "../../components/ui/sidebar";
 
 export function DashboardLayout() {
   const { isLoading, isAuthenticated } = useAuth();

@@ -60,6 +60,22 @@ export type AvailableRoomsParams = {
   limit?: number;
 };
 
+export type Inquiry = {
+  id: string;
+  fullName: string;
+  email: string;
+  phone: string;
+  subject: string;
+  message: string | null;
+  createdAt: string;
+};
+
+export type InquiriesParams = {
+  search?: string;
+  page: number;
+  limit: number;
+};
+
 export type RoomDetails = {
   id: string;
   name: string;

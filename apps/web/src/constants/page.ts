@@ -73,6 +73,11 @@ export const ADMIN_PAGES: NavItem[] = [
     href: "/dashboard/invoices",
   },
   {
+    title: "Inquiries",
+    icon: FileClock,
+    href: "/dashboard/inquiries",
+  },
+  {
     title: "Audit Logs",
     icon: FileClock,
     href: "/dashboard/audit-logs",
@@ -134,6 +139,11 @@ export const MANAGER_PAGES: NavItem[] = [
     title: "Invoices",
     icon: FileText,
     href: "/dashboard/invoices",
+  },
+  {
+    title: "Inquiries",
+    icon: FileClock,
+    href: "/dashboard/inquiries",
   },
   {
     title: "Profile",

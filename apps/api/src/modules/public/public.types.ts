@@ -61,3 +61,13 @@ export type AvailableRoomResponse = {
     isAvailable: boolean;
   };
 };
+
+export type Inquiry = {
+  id: string;
+  fullName: string;
+  email: string;
+  phone: string;
+  subject: string;
+  message: string | null;
+  createdAt: Date;
+};
