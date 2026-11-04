@@ -2,8 +2,24 @@ import { z } from 'zod';
 
 import 'dotenv/config';
 
+const normalizedNodeEnv = z
+  .string()
+  .trim()
+  .transform((value) => value.toLowerCase())
+  .pipe(z.enum(['development', 'production']));
+
+const corsOriginSchema = z
+  .string()
+  .transform((value) =>
+    value
+      .split(',')
+      .map((item) => item.trim())
+      .filter(Boolean),
+  )
+  .pipe(z.array(z.string().url()));
+
 const envSchema = z.object({
-  NODE_ENV: z.enum(['development', 'production']).default('development'),
+  NODE_ENV: normalizedNodeEnv.default('development'),
   PORT: z.coerce.number().default(3000),
   HOTEL_TIME_ZONE: z
     .string()
@@ -16,11 +32,11 @@ const envSchema = z.object({
       }
     }, 'HOTEL_TIME_ZONE must be a valid IANA timezone')
     .default('Asia/Kolkata'),
-  CORS_ORIGIN: z.url(),
-  HOST_NAME: z.string(),
+  CORS_ORIGIN: corsOriginSchema.default(['http://localhost:5173']),
+  HOST_NAME: z.string().default('0.0.0.0'),
   JWT_ACCESS_SECRET: z.string().min(32),
-  DATABASE_URL: z.url(),
-  APPWRITE_ENDPOINT: z.url(),
+  DATABASE_URL: z.string().url(),
+  APPWRITE_ENDPOINT: z.string().url(),
   APPWRITE_PROJECT_ID: z.string(),
   APPWRITE_API_KEY: z.string(),
   APPWRITE_BUCKET_ID: z.string(),
