@@ -52,6 +52,8 @@ import {
 import { testimonials } from "@/features/public/public.mock";
 import { useAvailableRooms } from "@/features/public/useAvailableRooms";
 
+import { ContactForm, LocationPanel } from "./Contact";
+
 export const sectionPaddingClassName = "py-16 md:py-24 lg:py-28";
 const heroImages = [
   HeorImage,
@@ -664,6 +666,26 @@ function TestimonialsSection() {
   );
 }
 
+function ContactSection() {
+  return (
+    <section
+      aria-label="Contact us and location"
+      className={cn(
+        "w-full border-t border-border/40 bg-muted font-sans",
+        sectionPaddingClassName
+      )}
+      id="contact"
+    >
+      <div className="container mx-auto max-w-7xl px-4 md:px-8 lg:px-12">
+        <div className="grid items-center gap-8 lg:grid-cols-[minmax(0,1.05fr)_minmax(20rem,0.95fr)] lg:gap-10">
+          <ContactForm />
+          <LocationPanel />
+        </div>
+      </div>
+    </section>
+  );
+}
+
 function FAQSection() {
   const faqData = [
     {
@@ -803,8 +825,9 @@ export default function Landing() {
       <FeaturedRoomsSection />
       <AmenitiesSection />
       <TestimonialsSection />
-      <FAQSection />
+      <ContactSection />
       <CTASection />
+      <FAQSection />
     </>
   );
 }

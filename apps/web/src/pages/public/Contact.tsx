@@ -227,7 +227,7 @@ function ContactDetailsStrip() {
   );
 }
 
-function ContactForm() {
+export function ContactForm() {
   const form = useForm<ContactMessageInput>({
     resolver: zodResolver(contactMessageSchema),
     defaultValues: {
@@ -443,18 +443,10 @@ function ContactForm() {
   );
 }
 
-function LocationPanel() {
+export function LocationPanel() {
   return (
     <Reveal className="min-w-0">
       <Card className="overflow-hidden rounded-lg border-border bg-card p-2 shadow-sm">
-        <div className="aspect-video overflow-hidden rounded-md bg-muted">
-          <img
-            alt="Sunset view at the resort"
-            className="h-full w-full object-cover"
-            loading="lazy"
-            src={LocationImage}
-          />
-        </div>
         <div className="p-3 sm:p-4">
           <h2 className="font-heading text-2xl font-medium text-foreground">
             Our location
@@ -578,7 +570,7 @@ export default function ContactPage() {
       <ContactHero />
       <ContactDetailsStrip />
       <div className="container mx-auto max-w-7xl px-4 pt-10 sm:px-6 sm:pt-12 lg:px-8">
-        <div className="grid items-start gap-8 lg:grid-cols-[minmax(0,1.05fr)_minmax(20rem,0.95fr)] lg:gap-10">
+        <div className="grid items-center gap-8 lg:grid-cols-[minmax(0,1.05fr)_minmax(20rem,0.95fr)] lg:gap-10">
           <ContactForm />
           <LocationPanel />
         </div>
