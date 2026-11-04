@@ -59,7 +59,7 @@ export function BookingBar() {
   ) => {
     const nextCheckIn = nextCheckInDate ?? today;
     const nextCheckOut =
-      nextCheckOutDate && nextCheckOutDate > nextCheckInDate
+      nextCheckOutDate && nextCheckOutDate > nextCheckIn
         ? nextCheckOutDate
         : addDays(nextCheckIn, 1);
     saveBookingPreferences({
