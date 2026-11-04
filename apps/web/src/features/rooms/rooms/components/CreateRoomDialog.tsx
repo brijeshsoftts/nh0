@@ -1,5 +1,6 @@
 import { Check, Sparkles } from "lucide-react";
 import type { ReactNode } from "react";
+import { useEffect } from "react";
 
 import { InputField } from "@/components/common/InputField";
 import { SelectField } from "@/components/common/SelectField";
@@ -21,13 +22,25 @@ import { useRoomTypes } from "../../roomTypes/hooks/useRoomTypes";
 import { useCreateRoomFacade } from "../hooks/useCreateRoom";
 
 export function CreateRoomDialog({ children }: { children: ReactNode }) {
-  const { handleSubmit, submit, register, errors, isPending, control } =
-    useCreateRoomFacade();
+  const {
+    handleSubmit,
+    submit,
+    register,
+    errors,
+    isPending,
+    isSuccess,
+    control,
+    reset,
+  } = useCreateRoomFacade();
   const { items } = useRoomTypes({ limit: 20 });
   const roomTypeOptions = items?.map((i) => ({
     id: i.id,
     name: i.name,
   }));
+
+  useEffect(() => {
+    if (isSuccess) reset();
+  }, [isSuccess, reset]);
 
   return (
     <Dialog>

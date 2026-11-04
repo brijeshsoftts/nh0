@@ -199,13 +199,17 @@ export function CreateRoomTypeDialog({ children }: CreateRoomTypeDialogProps) {
     event.target.value = "";
   };
 
-  const handleOpenChange = (nextOpen: boolean) => {
-    if (!nextOpen) {
-      imagePreviews.forEach((image) => URL.revokeObjectURL(image.preview));
-      setImagePreviews([]);
-      reset();
-    }
+  const resetCreateForm = () => {
+    imagePreviews.forEach((image) => URL.revokeObjectURL(image.preview));
+    setImagePreviews([]);
+    reset();
   };
+
+  const handleOpenChange = (nextOpen: boolean) => {
+    if (!nextOpen) resetCreateForm();
+  };
+
+  const handleCreate = handleSubmit((data) => submit(data, resetCreateForm));
 
   React.useEffect(() => {
     imagePreviewsRef.current = imagePreviews;
@@ -221,7 +225,7 @@ export function CreateRoomTypeDialog({ children }: CreateRoomTypeDialogProps) {
   );
 
   return (
-    <Dialog>
+    <Dialog onOpenChange={handleOpenChange}>
       <DialogTrigger>{children}</DialogTrigger>
       <DialogContent className="flex max-h-[92vh] max-w-4xl flex-col gap-0 overflow-hidden rounded-2xl border bg-background p-0 shadow-2xl sm:w-full md:min-w-150">
         {/* Header */}
@@ -249,7 +253,7 @@ export function CreateRoomTypeDialog({ children }: CreateRoomTypeDialogProps) {
           <div className="px-5 py-6 sm:px-7">
             <form
               id="create-room-type-form"
-              onSubmit={handleSubmit(submit)}
+              onSubmit={handleCreate}
               className="space-y-8"
             >
               <section className="space-y-6">

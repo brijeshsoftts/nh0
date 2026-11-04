@@ -81,7 +81,10 @@ export function RecordQrPaymentDialog({
 
   const submit = form.handleSubmit((values) => {
     recordPayment.mutate(values, {
-      onSuccess: () => onOpenChange(false),
+      onSuccess: () => {
+        form.reset();
+        onOpenChange(false);
+      },
     });
   });
 

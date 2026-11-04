@@ -32,6 +32,7 @@ export function useCreateUserFacade() {
     handleSubmit,
     register,
     control,
+    reset,
     formState: { errors },
   } = useForm<CreateUser>({
     resolver: zodResolver(CreateUserSchema),
@@ -43,6 +44,7 @@ export function useCreateUserFacade() {
     isSuccess,
     register,
     control,
+    reset,
     handleSubmit,
     errors,
   };

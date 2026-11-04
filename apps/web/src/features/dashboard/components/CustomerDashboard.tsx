@@ -22,6 +22,7 @@ import {
 } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useBookings } from "@/features/bookings/bookings.crud";
+import type { CustomerBooking } from "@/features/bookings/bookings.types";
 import { columns } from "@/features/bookings/components/CustomerBookings";
 import {} from "@/features/customers/components/CustomerTable";
 
@@ -119,7 +120,7 @@ function NextBookingCard() {
 }
 
 function RecentBookings() {
-  const { items, isLoading, isError, refetch } = useBookings({
+  const { items, isLoading, isError, refetch } = useBookings<CustomerBooking>({
     page: 1,
     limit: 5,
   });

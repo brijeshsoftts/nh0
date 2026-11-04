@@ -29,7 +29,7 @@ function useCreateCustomer() {
   return mutation;
 }
 
-export function useCreateCustomerFacade() {
+export function useCreateCustomerFacade(onSuccess?: () => void) {
   const { mutate, isPending, isSuccess } = useCreateCustomer();
 
   const {
@@ -38,12 +38,19 @@ export function useCreateCustomerFacade() {
     control,
     formState: { errors },
     getValues,
+    reset,
   } = useForm<CreateCustomer>({
     resolver: zodResolver(CreateCustomerSchema),
   });
 
   return {
-    submit: (data: CreateCustomer) => mutate(data),
+    submit: (data: CreateCustomer) =>
+      mutate(data, {
+        onSuccess: () => {
+          reset();
+          onSuccess?.();
+        },
+      }),
     isPending,
     isSuccess,
     register,
@@ -51,5 +58,6 @@ export function useCreateCustomerFacade() {
     handleSubmit,
     errors,
     getValues,
+    reset,
   };
 }

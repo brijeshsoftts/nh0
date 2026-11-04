@@ -1,4 +1,5 @@
 import { Check, Sparkles } from "lucide-react";
+import { useEffect } from "react";
 
 import { InputField } from "@/components/common/InputField";
 import { SelectField } from "@/components/common/SelectField";
@@ -20,8 +21,20 @@ import { categories, icons } from "../amenities.constants";
 import { useCreateAmenityFacade } from "../hooks/useCreateAmenity";
 
 export function NewAmenityModal({ children }: { children: React.ReactNode }) {
-  const { handleSubmit, submit, isPending, errors, register, control } =
-    useCreateAmenityFacade();
+  const {
+    handleSubmit,
+    submit,
+    isPending,
+    isSuccess,
+    errors,
+    register,
+    control,
+    reset,
+  } = useCreateAmenityFacade();
+
+  useEffect(() => {
+    if (isSuccess) reset();
+  }, [isSuccess, reset]);
 
   return (
     <Dialog>

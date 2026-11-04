@@ -20,7 +20,6 @@ import * as React from "react";
 import { Controller, useForm } from "react-hook-form";
 import { Link } from "react-router-dom";
 
-import LocationImage from "@/assets/cta_image.png";
 import HeroImage from "@/assets/landing_hero.png";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";

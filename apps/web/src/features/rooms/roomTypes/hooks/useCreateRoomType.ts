@@ -66,7 +66,8 @@ export function useCreateRoomTypeFacade() {
   });
 
   return {
-    submit: (data: CreateRoomType) => mutate(data),
+    submit: (data: CreateRoomType, onSuccess?: () => void) =>
+      mutate(data, { onSuccess }),
     isPending,
     isSuccess,
     register,

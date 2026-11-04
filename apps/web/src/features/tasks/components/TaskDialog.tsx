@@ -1,7 +1,7 @@
 import { useQueryClient } from "@tanstack/react-query";
 import { formatDate } from "date-fns";
 import { Check } from "lucide-react";
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 
 import { InputField } from "@/components/common/InputField";
 import { Badge } from "@/components/ui/badge";
@@ -114,6 +114,13 @@ export function TaskDialog({
   const updateTask = useUpdateTask(task?.id ?? "", {
     onSuccess: closeOnSuccess,
   });
+  const resetCreateForm = createTask.form.reset;
+
+  useEffect(() => {
+    if (mode === "create" && createTask.mutation.isSuccess) {
+      resetCreateForm();
+    }
+  }, [createTask.mutation.isSuccess, mode, resetCreateForm]);
 
   const activeForm = mode === "create" ? createTask : updateTask;
   const isPending = activeForm.mutation.isPending;

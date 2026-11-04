@@ -1,5 +1,6 @@
 import { Check } from "lucide-react";
 import type { ReactNode } from "react";
+import { useEffect } from "react";
 
 import { InputField } from "@/components/common/InputField";
 import { Button } from "@/components/ui/button";
@@ -18,8 +19,19 @@ import { Spinner } from "@/components/ui/spinner";
 import { useCreateUserFacade } from "../hooks/useCreateUser";
 
 export function CreateUserDialog({ children }: { children: ReactNode }) {
-  const { handleSubmit, submit, register, errors, isPending } =
-    useCreateUserFacade();
+  const {
+    handleSubmit,
+    submit,
+    register,
+    errors,
+    isPending,
+    isSuccess,
+    reset,
+  } = useCreateUserFacade();
+
+  useEffect(() => {
+    if (isSuccess) reset();
+  }, [isSuccess, reset]);
 
   return (
     <Dialog>
