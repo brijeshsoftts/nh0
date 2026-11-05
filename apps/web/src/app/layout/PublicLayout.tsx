@@ -39,9 +39,9 @@ const navLinks = [
   { name: "Contact", href: "/contact" },
 ];
 
-function Logo() {
+export function Logo({ to = "/" }: { to?: string }) {
   return (
-    <Link to="/" className="flex items-center gap-3">
+    <Link to={to} className="flex items-center gap-3">
       {/* Logo Mark - Arched Background matching screenshot */}
       <div className="relative flex h-12 w-10 items-end justify-center overflow-hidden rounded-t-full rounded-b-sm bg-secondary pb-1">
         <Palmtree

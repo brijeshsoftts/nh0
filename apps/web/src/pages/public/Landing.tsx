@@ -132,7 +132,7 @@ function HeroSection() {
       onMouseLeave={() => setIsHeroHovered(false)}
     >
       {/* Background Image & Blend Layer */}
-      <div className="absolute top-0 right-0 z-0 h-150 w-full overflow-hidden md:h-175 md:w-full lg:h-[min(85vh,900px)]">
+      <div className="absolute top-0 right-0 z-0 h-190 w-full overflow-hidden md:h-175 md:w-full lg:h-[min(85vh,900px)]">
         <AnimatePresence initial={false}>
           <motion.img
             key={activeHeroImage}
@@ -226,7 +226,9 @@ function HeroSection() {
         </div>
       </div>
 
-      <BookingBar />
+      <div className="relative -mt-20 lg:mt-0">
+        <BookingBar />
+      </div>
     </section>
   );
 }

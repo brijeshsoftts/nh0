@@ -10,11 +10,13 @@ import { ListResponse } from '../../types/api.types';
 import {
   Category,
   HousekeepingStatus,
+  NotificationType,
   Prisma,
   TaskStatus,
   UserRole,
 } from '../../types/prisma.types';
 import { StatItem } from '../../types/shared.types';
+import { NotificationsService } from '../notifications/notifications.service';
 import { lockRoom } from '../rooms/room-status-lifecycle';
 
 import { CreateTaskDto } from './dto/create-task.dto';
@@ -25,7 +27,10 @@ import { TaskItem } from './tasks.types';
 
 @Injectable()
 export class TasksService {
-  constructor(private readonly prismaService: PrismaService) {}
+  constructor(
+    private readonly prismaService: PrismaService,
+    private readonly notificationsService: NotificationsService,
+  ) {}
 
   async getStats(userId: string, role: UserRole): Promise<StatItem[]> {
     let assignedTo: string | undefined;
@@ -101,64 +106,85 @@ export class TasksService {
     ];
   }
 
-  async create(dto: CreateTaskDto): Promise<TaskItem> {
-    const task = await this.prismaService.$transaction(async (tx) => {
-      await lockRoom(tx, dto.roomId);
-      const [room, staff] = await Promise.all([
-        tx.room.findUnique({
-          where: { id: dto.roomId },
-          select: { id: true, isActive: true, occupancyStatus: true },
-        }),
-        tx.staff.findUnique({
-          where: { userId: dto.assignedTo },
-          select: {
-            category: true,
-            user: {
-              select: { isActive: true, softDeletedAt: true },
+  async create(dto: CreateTaskDto, assignedById: string): Promise<TaskItem> {
+    const task = await this.prismaService.$transaction(
+      async (tx) => {
+        await lockRoom(tx, dto.roomId);
+        const [room, staff] = await Promise.all([
+          tx.room.findUnique({
+            where: { id: dto.roomId },
+            select: { id: true, isActive: true, occupancyStatus: true },
+          }),
+          tx.staff.findUnique({
+            where: { userId: dto.assignedTo },
+            select: {
+              category: true,
+              user: {
+                select: { isActive: true, softDeletedAt: true },
+              },
             },
+          }),
+        ]);
+
+        if (!room) {
+          throw new NotFoundException(TASK_ERROR_MSG.ROOM_NOT_FOUND);
+        }
+        if (!room.isActive) {
+          throw new ConflictException(
+            'Housekeeping tasks cannot be assigned to an inactive room.',
+          );
+        }
+        if (
+          staff?.category !== Category.HOUSEKEEPER ||
+          !staff.user.isActive ||
+          staff.user.softDeletedAt
+        ) {
+          throw new NotFoundException(TASK_ERROR_MSG.HOUSEKEEPER_NOT_FOUND);
+        }
+
+        const createdTask = await tx.housekeepingTask.create({
+          data: {
+            roomId: dto.roomId,
+            assignedTo: dto.assignedTo,
+            taskType: dto.taskType,
+            scheduledDate: dto.scheduledDate,
           },
-        }),
-      ]);
+          select: {
+            id: true,
+            taskType: true,
+            status: true,
+            scheduledDate: true,
+            startedAt: true,
+            completedAt: true,
+            room: { select: { id: true, roomNumber: true } },
+            assignee: { select: { id: true, fullName: true } },
+          },
+        });
 
-      if (!room) {
-        throw new NotFoundException(TASK_ERROR_MSG.ROOM_NOT_FOUND);
-      }
-      if (!room.isActive) {
-        throw new ConflictException(
-          'Housekeeping tasks cannot be assigned to an inactive room.',
-        );
-      }
-      if (
-        staff?.category !== Category.HOUSEKEEPER ||
-        !staff.user.isActive ||
-        staff.user.softDeletedAt
-      ) {
-        throw new NotFoundException(TASK_ERROR_MSG.HOUSEKEEPER_NOT_FOUND);
-      }
+        await this.syncRoomHousekeepingStatus(tx, dto.roomId);
 
-      const createdTask = await tx.housekeepingTask.create({
-        data: {
-          roomId: dto.roomId,
-          assignedTo: dto.assignedTo,
-          taskType: dto.taskType,
-          scheduledDate: dto.scheduledDate,
-        },
-        select: {
-          id: true,
-          taskType: true,
-          status: true,
-          scheduledDate: true,
-          startedAt: true,
-          completedAt: true,
-          room: { select: { id: true, roomNumber: true } },
-          assignee: { select: { id: true, fullName: true } },
-        },
-      });
+        if (dto.assignedTo !== assignedById) {
+          const assigner = await tx.user.findUnique({
+            where: { id: assignedById },
+            select: { fullName: true },
+          });
+          await this.notificationsService.createForUsers(tx, {
+            userIds: [dto.assignedTo],
+            type: NotificationType.HOUSEKEEPING_ASSIGNED,
+            title: 'Housekeeping task assigned',
+            message: `${createdTask.taskType} task for room ${createdTask.room.roomNumber} is scheduled for ${createdTask.scheduledDate.toISOString().slice(0, 10)}. Assigned by ${assigner?.fullName ?? 'management'}.`,
+            referenceType: 'HOUSEKEEPING_TASK',
+            referenceId: createdTask.id,
+          });
+        }
 
-      await this.syncRoomHousekeepingStatus(tx, dto.roomId);
-
-      return createdTask;
-    });
+        return createdTask;
+      },
+      {
+        maxWait: 10_000,
+        timeout: 10_000,
+      },
+    );
 
     return {
       ...task,
@@ -168,11 +194,15 @@ export class TasksService {
     };
   }
 
-  async update(id: string, dto: UpdateTaskDto): Promise<TaskItem> {
+  async update(
+    id: string,
+    dto: UpdateTaskDto,
+    assignedById: string,
+  ): Promise<TaskItem> {
     const [existingTask, room, staff] = await Promise.all([
       this.prismaService.housekeepingTask.findUnique({
         where: { id },
-        select: { id: true, status: true, roomId: true },
+        select: { id: true, status: true, roomId: true, assignedTo: true },
       }),
       dto.roomId
         ? this.prismaService.room.findUnique({
@@ -219,7 +249,12 @@ export class TasksService {
     const task = await this.prismaService.$transaction(async (tx) => {
       const currentTask = await tx.housekeepingTask.findUnique({
         where: { id },
-        select: { id: true, status: true, roomId: true },
+        select: {
+          id: true,
+          status: true,
+          roomId: true,
+          assignedTo: true,
+        },
       });
       if (!currentTask) {
         throw new NotFoundException(TASK_ERROR_MSG.NOT_FOUND);
@@ -241,7 +276,7 @@ export class TasksService {
 
       const lockedTask = await tx.housekeepingTask.findUnique({
         where: { id },
-        select: { status: true, roomId: true },
+        select: { status: true, roomId: true, assignedTo: true },
       });
       if (
         !lockedTask ||
@@ -327,6 +362,25 @@ export class TasksService {
 
       if (!updatedTask) {
         throw new NotFoundException(TASK_ERROR_MSG.NOT_FOUND);
+      }
+
+      if (
+        dto.assignedTo !== undefined &&
+        dto.assignedTo !== lockedTask.assignedTo &&
+        dto.assignedTo !== assignedById
+      ) {
+        const assigner = await tx.user.findUnique({
+          where: { id: assignedById },
+          select: { fullName: true },
+        });
+        await this.notificationsService.createForUsers(tx, {
+          userIds: [updatedTask.assignee.id],
+          type: NotificationType.HOUSEKEEPING_ASSIGNED,
+          title: 'Housekeeping task assigned',
+          message: `${updatedTask.taskType} task for room ${updatedTask.room.roomNumber} is scheduled for ${updatedTask.scheduledDate.toISOString().slice(0, 10)}. Assigned by ${assigner?.fullName ?? 'management'}.`,
+          referenceType: 'HOUSEKEEPING_TASK',
+          referenceId: updatedTask.id,
+        });
       }
 
       return updatedTask;

@@ -15,9 +15,74 @@ import {
 import { NOTIFICATIONS_ERROR_MSG } from './notifications.constants';
 import { NotificationItem } from './notifications.types';
 
+export type CreateNotificationInput = {
+  userIds: string[];
+  type: NotificationType;
+  title: string;
+  message: string;
+  referenceType: string;
+  referenceId: string;
+};
+
 @Injectable()
 export class NotificationsService {
   constructor(private readonly prismaService: PrismaService) {}
+
+  async createForUsers(
+    tx: Prisma.TransactionClient,
+    input: CreateNotificationInput,
+  ): Promise<void> {
+    const userIds = [...new Set(input.userIds)];
+    if (userIds.length === 0) return;
+
+    const recipients = await tx.user.findMany({
+      where: {
+        id: { in: userIds },
+        isActive: true,
+        softDeletedAt: null,
+      },
+      select: { id: true },
+    });
+
+    await Promise.all(
+      recipients.map(({ id }) =>
+        tx.notification.create({
+          data: {
+            userId: id,
+            type: input.type,
+            title: input.title,
+            message: input.message,
+            referenceType: input.referenceType,
+            referenceId: input.referenceId,
+            reads: { create: { userId: id } },
+          },
+          select: { id: true },
+        }),
+      ),
+    );
+  }
+
+  async createForRoles(
+    tx: Prisma.TransactionClient,
+    input: Omit<CreateNotificationInput, 'userIds'>,
+    roles: UserRole[],
+    excludedUserIds: string[] = [],
+  ): Promise<void> {
+    const recipients = await tx.user.findMany({
+      where: {
+        role: { in: roles },
+        isActive: true,
+        softDeletedAt: null,
+        ...(excludedUserIds.length > 0 && { id: { notIn: excludedUserIds } }),
+      },
+      select: { id: true },
+    });
+
+    await this.createForUsers(tx, {
+      ...input,
+      userIds: recipients.map(({ id }) => id),
+    });
+  }
 
   async findUnread(
     userId: string,
@@ -115,18 +180,31 @@ export class NotificationsService {
     ];
 
     if (role === UserRole.CUSTOMER) {
-      return { notification: { type: { in: bookingAndPaymentTypes } } };
-    }
-
-    if (role === UserRole.STAFF && category === Category.RECEPTIONIST) {
-      return { notification: { type: { in: bookingAndPaymentTypes } } };
-    }
-
-    if (role === UserRole.STAFF && category === Category.HOUSEKEEPER) {
       return {
         notification: {
-          type: { in: [NotificationType.HOUSEKEEPING_ASSIGNED] },
+          type: {
+            in: [...bookingAndPaymentTypes, NotificationType.ISSUE_UPDATED],
+          },
         },
+      };
+    }
+
+    if (role === UserRole.STAFF) {
+      const staffTypes = [
+        NotificationType.ISSUE_ASSIGNED,
+        NotificationType.ISSUE_UPDATED,
+        ...(category === Category.RECEPTIONIST ? bookingAndPaymentTypes : []),
+        ...(category === Category.HOUSEKEEPER
+          ? [NotificationType.HOUSEKEEPING_ASSIGNED]
+          : []),
+      ];
+
+      if (staffTypes.length > 0) {
+        return { notification: { type: { in: staffTypes } } };
+      }
+
+      return {
+        notification: { type: { in: staffTypes } },
       };
     }
 

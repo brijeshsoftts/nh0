@@ -25,23 +25,23 @@ import {
   apiResponse,
 } from '../../common/helpers';
 import { fileValidationPipe, ValidationPipe } from '../../common/pipes';
+import {
+  PaymentsQueryDto,
+  PaymentsQuerySchema,
+} from '../payments/dto/payments-query.dto';
 
 import {
   CreateCustomerDto,
   CreateCustomerSchema,
 } from './dto/create-customer.dto';
 import {
-  CustomersQueryDto,
-  CustomersQuerySchema,
-} from './dto/customers-query.dto';
-import {
   CustomerBookingsQueryDto,
   CustomerBookingsQuerySchema,
 } from './dto/customer-bookings-query.dto';
 import {
-  PaymentsQueryDto,
-  PaymentsQuerySchema,
-} from '../payments/dto/payments-query.dto';
+  CustomersQueryDto,
+  CustomersQuerySchema,
+} from './dto/customers-query.dto';
 import {
   UpdateCustomerDto,
   UpdateCustomerSchema,

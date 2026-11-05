@@ -17,12 +17,14 @@ import {
   BookingStatus,
   Category,
   InvoiceStatus,
+  NotificationType,
   PaymentMethod,
   PaymentStatus,
   Prisma,
   UserRole,
 } from '../../types/prisma.types';
 import { StatItem } from '../../types/shared.types';
+import { NotificationsService } from '../notifications/notifications.service';
 import { confirmPaidBooking } from '../rooms/room-status-lifecycle';
 
 import { CreatePaymentDto } from './dto/create-payment.dto';
@@ -97,7 +99,10 @@ const ORDER_CREATION_LEASE_MS = 2 * 60_000;
 @Injectable()
 export class PaymentsService {
   private razorpay: Razorpay;
-  constructor(private readonly prismaService: PrismaService) {
+  constructor(
+    private readonly prismaService: PrismaService,
+    private readonly notificationsService: NotificationsService,
+  ) {
     this.razorpay = new Razorpay({
       key_id: env.RAZORPAY_KEY_ID,
       key_secret: env.RAZORPAY_KEY_SECRET,
@@ -293,7 +298,17 @@ export class PaymentsService {
                 id: true,
                 status: true,
                 paymentMethod: true,
-                bookingRoom: { select: { assignedRoomId: true } },
+                bookingReference: true,
+                checkInDate: true,
+                checkOutDate: true,
+                totalGuests: true,
+                specialRequest: true,
+                bookingRoom: {
+                  select: {
+                    assignedRoomId: true,
+                    roomType: { select: { name: true } },
+                  },
+                },
               },
             },
           },
@@ -444,8 +459,31 @@ export class PaymentsService {
           data: { status: InvoiceStatus.PAID },
         });
 
-        if (invoice.booking.status === BookingStatus.PENDING) {
-          await confirmPaidBooking(tx, invoice.bookingId);
+        const bookingConfirmed =
+          invoice.booking.status === BookingStatus.PENDING &&
+          (await confirmPaidBooking(tx, invoice.bookingId));
+
+        await this.createPaymentReceivedNotification(tx, {
+          id: payment.id,
+          customerId: invoice.customerId,
+          paymentReference: payment.paymentReference,
+          transactionId: dto.transactionId,
+          amount: payment.amount,
+          paymentMethod: payment.paymentMethod,
+          booking: { bookingReference: invoice.booking.bookingReference },
+        });
+
+        if (bookingConfirmed) {
+          await this.createBookingConfirmedNotification(tx, {
+            id: invoice.booking.id,
+            customerId: invoice.customerId,
+            bookingReference: invoice.booking.bookingReference,
+            checkInDate: invoice.booking.checkInDate,
+            checkOutDate: invoice.booking.checkOutDate,
+            totalGuests: invoice.booking.totalGuests,
+            specialRequest: invoice.booking.specialRequest,
+            bookingRoom: invoice.booking.bookingRoom,
+          });
         }
 
         return {
@@ -1114,7 +1152,17 @@ export class PaymentsService {
                 id: true,
                 status: true,
                 paymentMethod: true,
-                bookingRoom: { select: { assignedRoomId: true } },
+                bookingReference: true,
+                checkInDate: true,
+                checkOutDate: true,
+                totalGuests: true,
+                specialRequest: true,
+                bookingRoom: {
+                  select: {
+                    assignedRoomId: true,
+                    roomType: { select: { name: true } },
+                  },
+                },
               },
             },
           },
@@ -1300,6 +1348,7 @@ export class PaymentsService {
           data: { status: invoiceStatus },
         });
 
+        let bookingConfirmed = false;
         if (
           invoiceStatus === InvoiceStatus.PAID &&
           invoice.booking.status === BookingStatus.PENDING
@@ -1310,6 +1359,30 @@ export class PaymentsService {
               'Cash was not recorded because the booking could not be confirmed. Recheck room availability.',
             );
           }
+          bookingConfirmed = confirmed;
+        }
+
+        await this.createPaymentReceivedNotification(tx, {
+          id: payment.id,
+          customerId: invoice.customerId,
+          paymentReference: payment.paymentReference,
+          transactionId: null,
+          amount: payment.amount,
+          paymentMethod: payment.paymentMethod,
+          booking: { bookingReference: invoice.booking.bookingReference },
+        });
+
+        if (bookingConfirmed) {
+          await this.createBookingConfirmedNotification(tx, {
+            id: invoice.booking.id,
+            customerId: invoice.customerId,
+            bookingReference: invoice.booking.bookingReference,
+            checkInDate: invoice.booking.checkInDate,
+            checkOutDate: invoice.booking.checkOutDate,
+            totalGuests: invoice.booking.totalGuests,
+            specialRequest: invoice.booking.specialRequest,
+            bookingRoom: invoice.booking.bookingRoom,
+          });
         }
 
         return {
@@ -1339,6 +1412,56 @@ export class PaymentsService {
     ) {
       throw new ForbiddenException(PAYMENTS_ERROR_MSG.PAYMENT_NOT_ALLOWED);
     }
+  }
+
+  private async createPaymentReceivedNotification(
+    tx: Prisma.TransactionClient,
+    payment: {
+      id: string;
+      customerId: string | null;
+      paymentReference: string;
+      transactionId: string | null;
+      amount: number;
+      paymentMethod: PaymentMethod;
+      booking: { bookingReference: string };
+    },
+  ): Promise<void> {
+    if (!payment.customerId) return;
+
+    const reference = payment.transactionId ?? payment.paymentReference;
+    await this.notificationsService.createForUsers(tx, {
+      userIds: [payment.customerId],
+      type: NotificationType.PAYMENT_RECEIVED,
+      title: 'Payment received',
+      message: `₹${payment.amount.toLocaleString('en-IN')} received by ${payment.paymentMethod}. Reference ${reference} for booking ${payment.booking.bookingReference}.`,
+      referenceType: 'PAYMENT',
+      referenceId: payment.id,
+    });
+  }
+
+  private async createBookingConfirmedNotification(
+    tx: Prisma.TransactionClient,
+    booking: {
+      id: string;
+      customerId: string | null;
+      bookingReference: string;
+      checkInDate: Date;
+      checkOutDate: Date;
+      totalGuests: number;
+      specialRequest: string | null;
+      bookingRoom: { roomType: { name: string } } | null;
+    },
+  ): Promise<void> {
+    if (!booking.customerId) return;
+
+    await this.notificationsService.createForUsers(tx, {
+      userIds: [booking.customerId],
+      type: NotificationType.BOOKING_CONFIRMED,
+      title: 'Booking confirmed',
+      message: `Booking ${booking.bookingReference} for ${booking.bookingRoom?.roomType.name ?? 'your room'} is confirmed for ${booking.checkInDate.toISOString().slice(0, 10)} to ${booking.checkOutDate.toISOString().slice(0, 10)}. Guests: ${booking.totalGuests}.${booking.specialRequest ? ` Request: ${booking.specialRequest}` : ''}`,
+      referenceType: 'BOOKING',
+      referenceId: booking.id,
+    });
   }
 
   private assertQrPaymentRecorder(role: UserRole, category?: Category): void {
@@ -1676,8 +1799,52 @@ export class PaymentsService {
         },
       });
 
-      if ((completedPayments._sum.amount ?? 0) >= invoice.totalAmount) {
-        await confirmPaidBooking(tx, current.bookingId);
+      const bookingConfirmed =
+        (completedPayments._sum.amount ?? 0) >= invoice.totalAmount &&
+        (await confirmPaidBooking(tx, current.bookingId));
+
+      const completedPayment = await tx.payment.findUniqueOrThrow({
+        where: { id: current.id },
+        select: {
+          id: true,
+          customerId: true,
+          paymentReference: true,
+          transactionId: true,
+          amount: true,
+          paymentMethod: true,
+          invoice: {
+            select: {
+              booking: {
+                select: { bookingReference: true, customerId: true },
+              },
+            },
+          },
+        },
+      });
+
+      await this.createPaymentReceivedNotification(tx, {
+        ...completedPayment,
+        customerId:
+          completedPayment.customerId ??
+          completedPayment.invoice.booking.customerId,
+        booking: completedPayment.invoice.booking,
+      });
+
+      if (bookingConfirmed) {
+        const confirmedBooking = await tx.booking.findUniqueOrThrow({
+          where: { id: current.bookingId },
+          select: {
+            id: true,
+            customerId: true,
+            bookingReference: true,
+            checkInDate: true,
+            checkOutDate: true,
+            totalGuests: true,
+            specialRequest: true,
+            bookingRoom: { select: { roomType: { select: { name: true } } } },
+          },
+        });
+        await this.createBookingConfirmedNotification(tx, confirmedBooking);
       }
     };
 

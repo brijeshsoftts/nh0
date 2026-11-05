@@ -11,10 +11,12 @@ import {
   BookingStatus,
   IssuePriority,
   IssueStatus,
+  NotificationType,
   Prisma,
   UserRole,
 } from '../../types/prisma.types';
 import { StatItem } from '../../types/shared.types';
+import { NotificationsService } from '../notifications/notifications.service';
 import { lockRoom } from '../rooms/room-status-lifecycle';
 
 import { CreateIssueDto } from './dto/create-issue.dto';
@@ -51,7 +53,10 @@ type IssueDetailsRecord = Prisma.IssueGetPayload<{
 
 @Injectable()
 export class IssuesService {
-  constructor(private readonly prismaService: PrismaService) {}
+  constructor(
+    private readonly prismaService: PrismaService,
+    private readonly notificationsService: NotificationsService,
+  ) {}
 
   async getStats(userId: string, role: UserRole): Promise<StatItem[]> {
     const isCustomer = role === UserRole.CUSTOMER;
@@ -140,13 +145,34 @@ export class IssuesService {
     return this.mapIssueDetails(issue);
   }
 
-  async update(id: string, dto: UpdateIssueDto): Promise<IssueDetails> {
+  async update(
+    id: string,
+    dto: UpdateIssueDto,
+    updatedById: string,
+  ): Promise<IssueDetails> {
     return this.prismaService.$transaction(async (tx) => {
+      const issueReference = await tx.issue.findUnique({
+        where: { id },
+        select: { roomId: true },
+      });
+
+      if (!issueReference) {
+        throw new NotFoundException(ISSUE_ERROR_MSG.NOT_FOUND);
+      }
+
+      await lockRoom(tx, issueReference.roomId);
+
       const issue = await tx.issue.findUnique({
         where: { id },
         select: {
           roomId: true,
+          reportedById: true,
+          assignedToId: true,
           status: true,
+          title: true,
+          description: true,
+          category: true,
+          priority: true,
           startedAt: true,
           completedAt: true,
           resolvedAt: true,
@@ -157,10 +183,30 @@ export class IssuesService {
         throw new NotFoundException(ISSUE_ERROR_MSG.NOT_FOUND);
       }
 
-      await lockRoom(tx, issue.roomId);
-
       if (dto.status === issue.status && Object.keys(dto).length === 1) {
         throw new BadRequestException(ISSUE_ERROR_MSG.STATUS_UNCHANGED);
+      }
+
+      const changedFields = (
+        ['title', 'description', 'category', 'priority', 'status'] as const
+      ).filter(
+        (field) => dto[field] !== undefined && dto[field] !== issue[field],
+      );
+      const assignmentChanged =
+        dto.assignedToId !== undefined &&
+        dto.assignedToId !== issue.assignedToId;
+
+      if (assignmentChanged && dto.assignedToId) {
+        const assignee = await tx.staff.findFirst({
+          where: {
+            userId: dto.assignedToId,
+            user: { isActive: true, softDeletedAt: null },
+          },
+          select: { userId: true },
+        });
+        if (!assignee) {
+          throw new NotFoundException('Issue assignee not found.');
+        }
       }
 
       const timestamp = new Date();
@@ -188,6 +234,40 @@ export class IssuesService {
 
       if (!updated) {
         throw new NotFoundException(ISSUE_ERROR_MSG.NOT_FOUND);
+      }
+
+      if (changedFields.length > 0 || assignmentChanged) {
+        const updater = await tx.user.findUnique({
+          where: { id: updatedById },
+          select: { fullName: true },
+        });
+        const updaterName = updater?.fullName ?? 'A staff member';
+
+        if (assignmentChanged && updated.assignee?.id !== updatedById) {
+          await this.notificationsService.createForUsers(tx, {
+            userIds: updated.assignee ? [updated.assignee.id] : [],
+            type: NotificationType.ISSUE_ASSIGNED,
+            title: 'Issue assigned to you',
+            message: `Issue ${updated.reference}: ${updated.title} (${updated.category}, ${updated.priority}) was assigned to you by ${updaterName}.`,
+            referenceType: 'ISSUE',
+            referenceId: updated.id,
+          });
+        }
+
+        const stakeholderIds = [
+          updated.reporter.id,
+          ...(updated.assignee ? [updated.assignee.id] : []),
+        ].filter((userId) => userId !== updatedById);
+        if (changedFields.length > 0 && stakeholderIds.length > 0) {
+          await this.notificationsService.createForUsers(tx, {
+            userIds: stakeholderIds,
+            type: NotificationType.ISSUE_UPDATED,
+            title: `Issue updated: ${updated.reference}`,
+            message: `${updated.title} is ${updated.status} with ${updated.priority} priority. Updated by ${updaterName}: ${changedFields.join(', ')}.`,
+            referenceType: 'ISSUE',
+            referenceId: updated.id,
+          });
+        }
       }
 
       return this.mapIssueDetails(updated);
@@ -317,7 +397,7 @@ export class IssuesService {
     try {
       const issue = await this.prismaService.$transaction(async (tx) => {
         await lockRoom(tx, roomId);
-        return tx.issue.create({
+        const issue = await tx.issue.create({
           data: {
             reference,
             roomId,
@@ -332,6 +412,7 @@ export class IssuesService {
             id: true,
             reference: true,
             title: true,
+            description: true,
             category: true,
             priority: true,
             status: true,
@@ -350,6 +431,21 @@ export class IssuesService {
             reportedAt: true,
           },
         });
+
+        await this.notificationsService.createForRoles(
+          tx,
+          {
+            type: NotificationType.ISSUE_CREATED,
+            title: `New issue: ${issue.reference}`,
+            message: `${issue.title} (${issue.category}, ${issue.priority}): ${issue.description.slice(0, 240)}. Reported by ${issue.reporter.fullName}.`,
+            referenceType: 'ISSUE',
+            referenceId: issue.id,
+          },
+          [UserRole.ADMIN, UserRole.MANAGER],
+          [reportedById],
+        );
+
+        return issue;
       });
 
       return {

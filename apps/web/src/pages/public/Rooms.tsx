@@ -26,8 +26,8 @@ import { sectionPaddingClassName } from "./Landing";
 
 function HeroSection() {
   return (
-    <section className="relative w-full bg-background pt-16 font-sans">
-      <div className="absolute top-0 right-0 z-0 h-50 w-full overflow-hidden md:h-100 lg:h-[min(60vh,900px)]">
+    <section className="relative w-full bg-background font-sans">
+      <div className="absolute inset-0 z-0 w-full overflow-hidden">
         <img
           aria-hidden="true"
           className="absolute inset-0 h-full w-full object-cover object-center"
@@ -37,8 +37,8 @@ function HeroSection() {
         <div className="absolute inset-0 bg-linear-to-r from-black/60 via-black/30 to-black/10" />
       </div>
 
-      <div className="relative z-10 container mx-auto flex flex-col justify-center px-6 pb-10 md:px-12">
-        <div className="max-w-145">
+      <div className="relative z-10 container mx-auto flex flex-col justify-center px-6 pt-16 pb-4 md:px-12 md:pt-3 md:pb-0 lg:p-16">
+        <div>
           <span className={cn(sectionEyebrowClassName, "text-white/70")}>
             Our Rooms
           </span>
@@ -46,7 +46,7 @@ function HeroSection() {
           <h1
             className={cn(
               sectionHeadingClassName,
-              "mb-6 text-4xl leading-[1.05] text-white sm:text-5xl md:text-6xl lg:text-[72px]"
+              "mb-6 text-4xl leading-[1.05] text-white sm:text-5xl md:text-5xl lg:text-[72px]"
             )}
           >
             <HoverText
@@ -54,6 +54,7 @@ function HeroSection() {
               staggerDelay={30}
               duration={400}
             />{" "}
+            <br />
             <HoverText
               text="Stay Experience"
               staggerDelay={30}
@@ -61,14 +62,14 @@ function HeroSection() {
             />
           </h1>
 
-          <p className="mb-6 max-w-150 text-base leading-relaxed font-light text-white/80 md:text-lg">
+          <p className="mb-4 max-w-150 text-base leading-relaxed font-light text-white/80 md:mb-2 lg:mb-6 lg:text-lg">
             From cozy rooms to luxurious rooms, each space is designed with
             comfort, elegance and breathtaking views.
           </p>
         </div>
       </div>
 
-      <div className="relative -bottom-12">
+      <div className="relative z-30 lg:mt-10">
         <BookingBar />
       </div>
     </section>
