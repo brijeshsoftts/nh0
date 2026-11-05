@@ -42,8 +42,9 @@ export class TasksController {
   @HttpCode(HttpStatus.CREATED)
   async create(
     @Body(new ValidationPipe(CreateTaskSchema)) body: CreateTaskDto,
+    @CurrentUser('id') userId: string,
   ) {
-    const data = await this.tasksService.create(body);
+    const data = await this.tasksService.create(body, userId);
     return apiResponse({ data, message: TASK_SUCCESS_MSG.CREATED });
   }
 
@@ -53,8 +54,9 @@ export class TasksController {
   async update(
     @Param('id') id: string,
     @Body(new ValidationPipe(UpdateTaskSchema)) body: UpdateTaskDto,
+    @CurrentUser('id') userId: string,
   ) {
-    const data = await this.tasksService.update(id, body);
+    const data = await this.tasksService.update(id, body, userId);
     return apiResponse({ data, message: TASK_SUCCESS_MSG.UPDATED });
   }
 

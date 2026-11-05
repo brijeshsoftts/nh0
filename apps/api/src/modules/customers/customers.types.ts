@@ -30,13 +30,13 @@ export type CustomerDetails = {
   createdAt: Date | null;
   updatedAt: Date | null;
   lastLoginAt: Date | null;
-  idProofNumber: string;
-  address: string;
-  idProof: {
+  idProofNumber?: string;
+  address?: string;
+  idProof?: {
     url: string;
     altText: string | null;
   } | null;
-  signature: {
+  signature?: {
     url: string;
     altText: string | null;
   } | null;

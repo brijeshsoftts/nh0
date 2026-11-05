@@ -11,17 +11,16 @@ import { PrismaService } from '../../prisma/prisma.service';
 import { ListResponse } from '../../types/api.types';
 import {
   BookingStatus,
-  InvoiceStatus,
   PaymentStatus,
   Prisma,
   UserRole,
 } from '../../types/prisma.types';
 import { StatItem } from '../../types/shared.types';
+import type { PaymentsQueryDto } from '../payments/dto/payments-query.dto';
 
 import { CreateCustomerDto } from './dto/create-customer.dto';
 import { CustomerBookingsQueryDto } from './dto/customer-bookings-query.dto';
 import { CustomersQueryDto } from './dto/customers-query.dto';
-import type { PaymentsQueryDto } from '../payments/dto/payments-query.dto';
 import { UpdateCustomerDto } from './dto/update-customer.dto';
 import { CUSTOMER_ERROR_MSG } from './customers.constants';
 import {
@@ -178,6 +177,7 @@ export class CustomersService {
         fullName: true,
         email: true,
         phone: true,
+        role: true,
         isActive: true,
         createdAt: true,
         updatedAt: true,
@@ -207,9 +207,6 @@ export class CustomersService {
     if (!customer) {
       throw new NotFoundException(CUSTOMER_ERROR_MSG.NOT_FOUND);
     }
-    if (!customer.customer) {
-      throw new NotFoundException(CUSTOMER_ERROR_MSG.PROFILE_NOT_FOUND);
-    }
 
     return {
       id: customer.id,
@@ -220,10 +217,10 @@ export class CustomersService {
       createdAt: customer.createdAt,
       updatedAt: customer.updatedAt,
       lastLoginAt: customer.lastLoginAt,
-      idProofNumber: customer.customer.idProofNumber,
-      address: customer.customer.address,
-      idProof: customer.customer.idProofImage,
-      signature: customer.customer.signatureImage,
+      idProofNumber: customer.customer?.idProofNumber,
+      address: customer.customer?.address,
+      idProof: customer.customer?.idProofImage,
+      signature: customer.customer?.signatureImage,
       profile: customer.profile,
     };
   }

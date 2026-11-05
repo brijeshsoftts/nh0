@@ -15,6 +15,7 @@ import {
   BookingStatus,
   Category,
   InvoiceStatus,
+  NotificationType,
   OccupancyStatus,
   PaymentMethod,
   PaymentStatus,
@@ -23,6 +24,7 @@ import {
   UserRole,
 } from '../../types/prisma.types';
 import { StatItem } from '../../types/shared.types';
+import { NotificationsService } from '../notifications/notifications.service';
 import {
   canReserveRoomForBooking,
   lockRoom,
@@ -150,7 +152,10 @@ function bookingCalendarDate(date: Date): string {
 
 @Injectable()
 export class BookingsService {
-  constructor(private readonly prismaService: PrismaService) {}
+  constructor(
+    private readonly prismaService: PrismaService,
+    private readonly notificationsService: NotificationsService,
+  ) {}
 
   async getStats(
     userId: string,
@@ -481,7 +486,16 @@ export class BookingsService {
           checkInDate: true,
           checkOutDate: true,
           paymentMethod: true,
-          bookingRoom: { select: { assignedRoomId: true } },
+          customerId: true,
+          bookingReference: true,
+          totalGuests: true,
+          specialRequest: true,
+          bookingRoom: {
+            select: {
+              assignedRoomId: true,
+              roomType: { select: { name: true } },
+            },
+          },
           invoice: {
             select: {
               totalAmount: true,
@@ -659,6 +673,26 @@ export class BookingsService {
             data: { housekeepingStatus: 'DIRTY' },
           });
         }
+      }
+
+      if (
+        booking.customerId &&
+        (nextStatus === BookingStatus.CONFIRMED ||
+          nextStatus === BookingStatus.CANCELLED)
+      ) {
+        const isCancellation = nextStatus === BookingStatus.CANCELLED;
+        await this.notificationsService.createForUsers(tx, {
+          userIds: [booking.customerId],
+          type: isCancellation
+            ? NotificationType.BOOKING_CANCELLED
+            : NotificationType.BOOKING_CONFIRMED,
+          title: isCancellation ? 'Booking cancelled' : 'Booking confirmed',
+          message: isCancellation
+            ? `Booking ${booking.bookingReference} was cancelled. Stay dates: ${booking.checkInDate.toISOString().slice(0, 10)} to ${booking.checkOutDate.toISOString().slice(0, 10)}.`
+            : `Booking ${booking.bookingReference} for ${booking.bookingRoom?.roomType.name ?? 'your room'} is confirmed for ${booking.checkInDate.toISOString().slice(0, 10)} to ${booking.checkOutDate.toISOString().slice(0, 10)}. Guests: ${booking.totalGuests}.${booking.specialRequest ? ` Request: ${booking.specialRequest}` : ''}`,
+          referenceType: 'BOOKING',
+          referenceId: booking.id,
+        });
       }
 
       return { id, status: nextStatus };
@@ -1250,11 +1284,31 @@ export class BookingsService {
             recordedBy: isCashPayment ? createdBy : null,
           },
           select: {
+            id: true,
             paymentMethod: true,
             paymentStatus: true,
             paymentReference: true,
           },
         });
+
+        if (isCashPayment) {
+          await this.notificationsService.createForUsers(tx, {
+            userIds: [customerId],
+            type: NotificationType.BOOKING_CONFIRMED,
+            title: 'Booking confirmed',
+            message: `Booking ${booking.bookingReference} for ${room.roomType.name} is confirmed for ${checkInDate.toISOString().slice(0, 10)} to ${checkOutDate.toISOString().slice(0, 10)}. Guests: ${totalGuests}.${dto.specialRequest ? ` Request: ${dto.specialRequest}` : ''}`,
+            referenceType: 'BOOKING',
+            referenceId: booking.id,
+          });
+          await this.notificationsService.createForUsers(tx, {
+            userIds: [customerId],
+            type: NotificationType.PAYMENT_RECEIVED,
+            title: 'Payment received',
+            message: `₹${totalAmount.toLocaleString('en-IN')} received by ${payment.paymentMethod}. Reference ${payment.paymentReference} for booking ${booking.bookingReference}.`,
+            referenceType: 'PAYMENT',
+            referenceId: payment.id,
+          });
+        }
 
         return {
           id: booking.id,

@@ -73,8 +73,9 @@ export class IssuesController {
   async update(
     @Param('id') id: string,
     @Body(new ValidationPipe(UpdateIssueSchema)) body: UpdateIssueDto,
+    @CurrentUser('id') userId: string,
   ) {
-    const data = await this.issuesService.update(id, body);
+    const data = await this.issuesService.update(id, body, userId);
     return apiResponse({ data, message: ISSUE_SUCCESS_MSG.UPDATED });
   }
 

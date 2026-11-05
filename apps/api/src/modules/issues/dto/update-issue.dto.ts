@@ -3,6 +3,7 @@ import { z } from 'zod';
 
 export const UpdateIssueSchema = z
   .object({
+    assignedToId: z.string().cuid().nullable().optional(),
     title: z
       .string('Issue title is required')
       .trim()
