@@ -1,14 +1,5 @@
 import { cn } from "cn";
 import {
-  animate,
-  AnimatePresence,
-  motion,
-  useInView,
-  useMotionValue,
-  useReducedMotion,
-  useTransform,
-} from "framer-motion";
-import {
   ArrowLeft,
   ArrowRight,
   Bed,
@@ -25,6 +16,15 @@ import {
   Waves,
   Wifi,
 } from "lucide-react";
+import {
+  animate,
+  AnimatePresence,
+  motion,
+  useInView,
+  useMotionValue,
+  useReducedMotion,
+  useTransform,
+} from "motion/react";
 import * as React from "react";
 import { Link } from "react-router-dom";
 

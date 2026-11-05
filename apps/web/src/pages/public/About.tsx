@@ -1,15 +1,6 @@
 // import { ChevronRight } from "lucide-react";
 
 import {
-  animate,
-  motion,
-  useAnimationFrame,
-  useInView,
-  useMotionValue,
-  useReducedMotion,
-  useTransform,
-} from "framer-motion";
-import {
   ArrowRight,
   BedDouble,
   Gem,
@@ -19,6 +10,15 @@ import {
   Trophy,
   Users,
 } from "lucide-react";
+import {
+  animate,
+  motion,
+  useAnimationFrame,
+  useInView,
+  useMotionValue,
+  useReducedMotion,
+  useTransform,
+} from "motion/react";
 import { useEffect, useRef } from "react";
 import { Link } from "react-router-dom";
 

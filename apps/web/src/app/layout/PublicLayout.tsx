@@ -1,5 +1,3 @@
-import { AnimatePresence, useReducedMotion } from "framer-motion";
-import { motion } from "framer-motion";
 import {
   ArrowRight,
   ArrowUpRight,
@@ -12,15 +10,17 @@ import {
   Phone,
   X,
 } from "lucide-react";
+import { AnimatePresence, motion, useReducedMotion } from "motion/react";
 import { type FormEvent, useEffect, useState } from "react";
 import {
   Link,
   NavLink,
-  Outlet,
   useLocation,
   useNavigate,
+  useOutlet,
 } from "react-router-dom";
 
+import { PageTransition } from "@/components/common/PageTransition";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Separator } from "@/components/ui/separator";
@@ -39,9 +39,17 @@ const navLinks = [
   { name: "Contact", href: "/contact" },
 ];
 
-export function Logo({ to = "/" }: { to?: string }) {
+export function Logo({
+  to = "/",
+  className,
+  inverse = false,
+}: {
+  to?: string;
+  className?: string;
+  inverse?: boolean;
+}) {
   return (
-    <Link to={to} className="flex items-center gap-3">
+    <Link to={to} className={cn("flex items-center gap-3", className)}>
       {/* Logo Mark - Arched Background matching screenshot */}
       <div className="relative flex h-12 w-10 items-end justify-center overflow-hidden rounded-t-full rounded-b-sm bg-secondary pb-1">
         <Palmtree
@@ -52,10 +60,20 @@ export function Logo({ to = "/" }: { to?: string }) {
 
       {/* Logo Text */}
       <div className="flex flex-col justify-center">
-        <span className="font-heading text-[26px] leading-none tracking-wide text-primary">
+        <span
+          className={cn(
+            "font-heading text-[26px] leading-none tracking-wide",
+            inverse ? "text-background" : "text-primary"
+          )}
+        >
           Nivara
         </span>
-        <span className="mt-1 font-sans text-[9px] font-medium tracking-[0.25em] text-primary/80 uppercase">
+        <span
+          className={cn(
+            "mt-1 font-sans text-[9px] font-medium tracking-[0.25em] uppercase",
+            inverse ? "text-background/80" : "text-primary/80"
+          )}
+        >
           Hotel & Resort
         </span>
       </div>
@@ -391,6 +409,7 @@ function Footer() {
 export function PublicLayout() {
   const location = useLocation();
   const navigate = useNavigate();
+  const outlet = useOutlet();
 
   useEffect(() => {
     const searchParams = new URLSearchParams(location.search);
@@ -418,7 +437,7 @@ export function PublicLayout() {
     <>
       <Navbar />
       <main className="min-w-0 flex-1" id="main-content" tabIndex={-1}>
-        <Outlet />
+        <PageTransition>{outlet}</PageTransition>
       </main>
       <Footer />
     </>

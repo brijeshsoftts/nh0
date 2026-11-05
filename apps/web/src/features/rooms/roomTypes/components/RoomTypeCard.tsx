@@ -1,4 +1,3 @@
-import { motion } from "framer-motion";
 import {
   Baby,
   BedDouble,
@@ -10,6 +9,7 @@ import {
   UserRound,
   Users,
 } from "lucide-react";
+import { motion } from "motion/react";
 import { useState } from "react";
 
 import { RoomTypeDetailsDialog } from "@/components/common/RoomTypeDetailsDialog";

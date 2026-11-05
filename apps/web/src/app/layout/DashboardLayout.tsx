@@ -1,7 +1,8 @@
 import { ChevronRight, Moon, Sun } from "lucide-react";
 import { useMemo } from "react";
-import { Link, Navigate, Outlet, useLocation } from "react-router-dom";
+import { Link, Navigate, useLocation, useOutlet } from "react-router-dom";
 
+import { PageTransition } from "@/components/common/PageTransition";
 import { NotificationsPopover } from "@/features/notifications/components/NotificationsPopover";
 import { useAuth } from "@/hooks/useAuth";
 
@@ -15,6 +16,7 @@ import { SidebarProvider, SidebarTrigger } from "../../components/ui/sidebar";
 export function DashboardLayout() {
   const { isLoading, isAuthenticated } = useAuth();
   const location = useLocation();
+  const outlet = useOutlet();
   const { setTheme, theme } = useTheme();
 
   const activeTab = useMemo(() => {
@@ -87,7 +89,7 @@ export function DashboardLayout() {
         </header>
 
         <main className="mx-auto w-full max-w-7xl space-y-6 px-6 py-6 sm:p-6 lg:p-8">
-          <Outlet />
+          <PageTransition duration={0.25}>{outlet}</PageTransition>
         </main>
       </div>
     </SidebarProvider>

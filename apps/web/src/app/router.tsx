@@ -3,6 +3,7 @@ import { createBrowserRouter } from "react-router-dom";
 import { AuthLayout } from "@/app/layout/AuthLayout";
 import { DashboardLayout } from "@/app/layout/DashboardLayout";
 import { PublicLayout } from "@/app/layout/PublicLayout";
+import { RouteTransitionLayout } from "@/app/layout/RouteTransitionLayout";
 import LoginPage from "@/pages/auth/Login";
 import RegisterPage from "@/pages/auth/Register";
 import ResetPasswordPage from "@/pages/auth/ResetPassword";
@@ -29,49 +30,52 @@ import RoomsPage from "@/pages/public/Rooms";
 
 export const router = createBrowserRouter([
   {
-    element: <PublicLayout />,
+    id: "route-transition-root",
+    element: <RouteTransitionLayout />,
     children: [
-      { index: true, element: <LandingPage /> },
-      { path: "about", element: <AboutPage /> },
-      { path: "contact", element: <ContactPage /> },
-      { path: "rooms", element: <RoomsPage /> },
-      { path: "rooms/:slug", element: <RoomDetails /> },
-      { path: "rooms/:slug/book", element: <BookingCheckout /> },
-      { path: "checkout", element: <BookingCheckout /> },
-    ],
-  },
-  {
-    element: <AuthLayout />,
-    children: [
-      { path: "/register", element: <RegisterPage /> },
       {
-        path: "/reset-password",
-        element: <ResetPasswordPage />,
+        id: "public-layout",
+        element: <PublicLayout />,
+        children: [
+          { index: true, element: <LandingPage /> },
+          { path: "about", element: <AboutPage /> },
+          { path: "contact", element: <ContactPage /> },
+          { path: "rooms", element: <RoomsPage /> },
+          { path: "rooms/:slug", element: <RoomDetails /> },
+          { path: "rooms/:slug/book", element: <BookingCheckout /> },
+          { path: "checkout", element: <BookingCheckout /> },
+        ],
       },
       {
-        path: "/login",
-        element: <LoginPage />,
+        id: "auth-layout",
+        element: <AuthLayout />,
+        children: [
+          { path: "/register", element: <RegisterPage /> },
+          { path: "/reset-password", element: <ResetPasswordPage /> },
+          { path: "/login", element: <LoginPage /> },
+        ],
       },
-    ],
-  },
-  {
-    element: <DashboardLayout />,
-    path: "dashboard",
-    children: [
-      { index: true, element: <DashboardPage /> },
-      { path: "users", element: <UsersPage /> },
-      { path: "staff", element: <StaffPage /> },
-      { path: "customers", element: <CustomersPage /> },
-      { path: "rooms", element: <PRoomsPage /> },
-      { path: "bookings", element: <BookingsPage /> },
-      { path: "bookings/new", element: <NewBookingPage /> },
-      { path: "issues", element: <IssuesPage /> },
-      { path: "tasks", element: <TasksPage /> },
-      { path: "invoices", element: <InvoicesPage /> },
-      { path: "payments", element: <PaymentsPage /> },
-      { path: "inquiries", element: <InquiryPage /> },
-      { path: "audit-logs", element: <AuditLogsPage /> },
-      { path: "profile", element: <ProfilePage /> },
+      {
+        id: "dashboard-layout",
+        element: <DashboardLayout />,
+        path: "dashboard",
+        children: [
+          { index: true, element: <DashboardPage /> },
+          { path: "users", element: <UsersPage /> },
+          { path: "staff", element: <StaffPage /> },
+          { path: "customers", element: <CustomersPage /> },
+          { path: "rooms", element: <PRoomsPage /> },
+          { path: "bookings", element: <BookingsPage /> },
+          { path: "bookings/new", element: <NewBookingPage /> },
+          { path: "issues", element: <IssuesPage /> },
+          { path: "tasks", element: <TasksPage /> },
+          { path: "invoices", element: <InvoicesPage /> },
+          { path: "payments", element: <PaymentsPage /> },
+          { path: "inquiries", element: <InquiryPage /> },
+          { path: "audit-logs", element: <AuditLogsPage /> },
+          { path: "profile", element: <ProfilePage /> },
+        ],
+      },
     ],
   },
 ]);

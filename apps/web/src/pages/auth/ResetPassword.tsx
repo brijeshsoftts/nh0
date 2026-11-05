@@ -20,7 +20,7 @@ export default function ResetPasswordPage() {
     useResetPassword(search.get("token") || "");
 
   return (
-    <div className="flex min-h-screen items-center justify-center bg-background p-4 sm:p-8">
+    <div className="w-full">
       <Card className="w-full max-w-md shadow-sm">
         <CardHeader className="space-y-1 text-center">
           <CardTitle className="text-2xl font-bold tracking-tight">

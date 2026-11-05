@@ -10,6 +10,10 @@ import {
 } from "lucide-react";
 
 import HeroImage from "@/assets/landing_hero.png";
+import {
+  StaggerContainer,
+  StaggerItem,
+} from "@/components/common/PageTransition";
 import { Button } from "@/components/ui/button";
 import { BookingBar } from "@/features/public/components/BookingBar";
 import { HoverText } from "@/features/public/components/hoverText";
@@ -99,7 +103,7 @@ function RoomsSection() {
           </div>
         </div>
 
-        <div className="mt-8 grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
+        <StaggerContainer className="mt-8 grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
           {isLoading ? (
             <RoomsSkeleton />
           ) : isError && rooms.length === 0 ? (
@@ -126,9 +130,13 @@ function RoomsSection() {
               No rooms match these filters.
             </p>
           ) : (
-            rooms.map((room) => <RoomCard key={room.id} room={room} />)
+            rooms.map((room) => (
+              <StaggerItem key={room.id}>
+                <RoomCard room={room} />
+              </StaggerItem>
+            ))
           )}
-        </div>
+        </StaggerContainer>
       </div>
     </section>
   );
