@@ -1,6 +1,7 @@
 import { MoreHorizontal } from "lucide-react";
 import { Link, useNavigate } from "react-router-dom";
 
+import { Logo } from "@/app/layout/PublicLayout";
 import { DropdownProfile } from "@/components/common/DropdownProfile";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
@@ -21,8 +22,6 @@ import {
 } from "@/constants/page";
 import { useAuth } from "@/hooks/useAuth";
 import { getInitials } from "@/lib/format";
-
-import { Logo } from "../common/Logo";
 
 import type { NavItem } from "./NavMain";
 import { NavMain } from "./NavMain";
@@ -97,13 +96,13 @@ export function AppSidebar() {
         <SidebarHeader className="border-b border-sidebar-border px-4 py-4">
           <SidebarMenu>
             <SidebarMenuItem>
-              <Link
+              {/* <Link
                 aria-label="Nivara dashboard"
                 to="/dashboard"
                 className="flex min-h-11 w-full items-center rounded-md focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-sidebar-ring"
-              >
-                <Logo size="sm" />
-              </Link>
+              > */}
+              <Logo to="/dashboard" />
+              {/* </Link> */}
             </SidebarMenuItem>
           </SidebarMenu>
         </SidebarHeader>
