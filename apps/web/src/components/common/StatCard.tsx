@@ -1,5 +1,5 @@
-import { motion } from "framer-motion";
 import { Sparkles } from "lucide-react";
+import { motion } from "motion/react";
 import type { ReactNode } from "react";
 import { Link } from "react-router-dom";
 

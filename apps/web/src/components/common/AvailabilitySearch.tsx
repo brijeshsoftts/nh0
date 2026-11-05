@@ -1,5 +1,4 @@
 import { addDays, format, isValid, parseISO, startOfToday } from "date-fns";
-import { motion, useReducedMotion } from "framer-motion";
 import {
   ArrowRight,
   BedDouble,
@@ -9,6 +8,7 @@ import {
   Plus,
   Users,
 } from "lucide-react";
+import { motion, useReducedMotion } from "motion/react";
 import { type FormEvent, useId, useState } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 

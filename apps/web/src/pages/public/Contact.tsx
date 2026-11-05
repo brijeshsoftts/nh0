@@ -1,5 +1,4 @@
 import { zodResolver } from "@hookform/resolvers/zod";
-import { motion, useReducedMotion } from "framer-motion";
 import {
   AlignLeft,
   ArrowRight,
@@ -16,6 +15,7 @@ import {
   UserRound,
   Users,
 } from "lucide-react";
+import { motion, useReducedMotion } from "motion/react";
 import * as React from "react";
 import { Controller, useForm } from "react-hook-form";
 import { Link } from "react-router-dom";

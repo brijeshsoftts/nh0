@@ -1,5 +1,5 @@
-import { motion } from "framer-motion";
 import { CircleCheck, CircleX, Pencil, Sparkles, Trash2 } from "lucide-react";
+import { motion } from "motion/react";
 
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";

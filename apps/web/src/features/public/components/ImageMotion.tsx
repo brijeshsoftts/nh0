@@ -1,4 +1,4 @@
-import { type HTMLMotionProps, motion, useReducedMotion } from "framer-motion";
+import { type HTMLMotionProps, motion, useReducedMotion } from "motion/react";
 import { useState } from "react";
 
 import { cn } from "@/lib/utils";
@@ -79,3 +79,5 @@ export function ImageMotion({
     </motion.div>
   );
 }
+
+export { ImageMotion as AnimatedImage };
