@@ -28,9 +28,31 @@ type AuditLogRecord = Prisma.AuditLogGetPayload<{
   select: typeof AUDIT_LOG_SELECT;
 }>;
 
+export type AuditLogMutation = {
+  userId: string | null;
+  action: string;
+  entityType: string;
+  entityId: string | null;
+  newValues: Prisma.InputJsonValue;
+};
+
 @Injectable()
 export class AuditLogsService {
   constructor(private readonly prismaService: PrismaService) {}
+
+  async recordMutation(input: AuditLogMutation): Promise<void> {
+    const actor = input.userId
+      ? await this.prismaService.user.findUnique({
+          where: { id: input.userId },
+          select: { id: true },
+        })
+      : null;
+
+    await this.prismaService.auditLog.create({
+      data: { ...input, userId: actor?.id ?? null },
+      select: { id: true },
+    });
+  }
 
   async findAll(
     query: AuditLogsQueryDto,
