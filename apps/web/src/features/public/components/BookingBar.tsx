@@ -95,16 +95,16 @@ export function BookingBar() {
 
   return (
     <div
-      className="relative z-30 container mx-auto flex flex-col items-center px-4 pb-8 md:absolute md:-bottom-8 md:left-1/2 md:w-full md:-translate-x-1/2 md:px-8"
+      className="relative z-30 container mx-auto flex flex-col items-center px-4 pb-8 lg:absolute lg:-bottom-8 lg:left-1/2 lg:w-full lg:-translate-x-1/2 lg:px-8"
       id="availability"
     >
-      <div className="grid w-full max-w-200 grid-cols-1 items-center gap-2 rounded-3xl border border-border bg-card p-2 text-card-foreground shadow-[0_8px_30px_rgb(0,0,0,0.06)] sm:grid-cols-2 lg:flex lg:justify-between lg:gap-0 lg:rounded-[2.5rem] lg:p-3">
+      <div className="grid w-full max-w-200 grid-cols-1 items-center gap-2 rounded-3xl border border-border bg-card p-2 text-card-foreground shadow-[0_8px_30px_rgb(0,0,0,0.06)] min-[900px]:flex min-[900px]:justify-between min-[900px]:gap-0 min-[900px]:rounded-[2.5rem] min-[900px]:p-3 sm:grid-cols-2 lg:flex lg:justify-between lg:gap-0 lg:rounded-[2.5rem] lg:p-3">
         <Popover>
           <PopoverTrigger
             render={
               <button
                 type="button"
-                className="flex w-full flex-1 items-center gap-4 rounded-2xl px-4 py-3 text-left transition-colors hover:bg-muted/50 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring lg:w-auto lg:px-6 lg:py-2"
+                className="flex w-full flex-1 items-center gap-4 rounded-2xl px-4 py-3 text-left transition-colors hover:bg-muted/50 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring min-[900px]:w-auto min-[900px]:px-6 min-[900px]:py-2 lg:w-auto lg:px-6 lg:py-2"
               />
             }
           >
@@ -146,7 +146,7 @@ export function BookingBar() {
 
         <Separator
           orientation="vertical"
-          className="hidden h-14 bg-border lg:block"
+          className="hidden h-14 bg-border min-[900px]:block lg:block"
         />
 
         <Popover>
@@ -154,7 +154,7 @@ export function BookingBar() {
             render={
               <button
                 type="button"
-                className="flex w-full flex-1 items-center gap-4 rounded-2xl px-4 py-3 text-left transition-colors hover:bg-muted/50 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring lg:w-auto lg:px-6 lg:py-2"
+                className="flex w-full flex-1 items-center gap-4 rounded-2xl px-4 py-3 text-left transition-colors hover:bg-muted/50 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring min-[900px]:w-auto min-[900px]:px-6 min-[900px]:py-2 lg:w-auto lg:px-6 lg:py-2"
               />
             }
           >
@@ -189,7 +189,7 @@ export function BookingBar() {
 
         <Separator
           orientation="vertical"
-          className="hidden h-14 bg-border lg:block"
+          className="hidden h-14 bg-border min-[900px]:block lg:block"
         />
 
         <Popover>
@@ -197,7 +197,7 @@ export function BookingBar() {
             render={
               <button
                 type="button"
-                className="flex w-full flex-1 items-center gap-4 rounded-2xl px-4 py-3 text-left transition-colors hover:bg-muted/50 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring lg:w-auto lg:px-6 lg:py-2"
+                className="flex w-full flex-1 items-center gap-4 rounded-2xl px-4 py-3 text-left transition-colors hover:bg-muted/50 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring min-[900px]:w-auto min-[900px]:px-6 min-[900px]:py-2 lg:w-auto lg:px-6 lg:py-2"
               />
             }
           >
@@ -283,12 +283,12 @@ export function BookingBar() {
 
         <Separator
           orientation="vertical"
-          className="hidden h-14 bg-border lg:block"
+          className="hidden h-14 bg-border min-[900px]:block lg:block"
         />
 
-        <div className="w-full shrink-0 px-2 pb-2 sm:col-span-2 lg:w-auto lg:pb-0">
+        <div className="w-full shrink-0 px-2 pb-2 min-[900px]:w-auto min-[900px]:pb-0 sm:col-span-2 lg:w-auto lg:pb-0">
           <Button
-            className="h-12 w-full rounded-full bg-primary px-8 text-sm font-medium text-primary-foreground transition-all hover:bg-primary/90 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring lg:h-14 lg:w-auto"
+            className="h-12 w-full rounded-full bg-primary px-8 text-sm font-medium text-primary-foreground transition-all hover:bg-primary/90 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring min-[900px]:h-14 min-[900px]:w-auto lg:h-14 lg:w-auto"
             onClick={handleSearchRooms}
             type="button"
           >

@@ -205,6 +205,7 @@ function AnimatedStatValue({ value }: { value: string }) {
     return () => controls.stop();
   }, [count, isInView, isNumericValue, numericValue, shouldReduceMotion]);
 
+  if (value.includes("/")) return value;
   return (
     <motion.span ref={valueRef} aria-label={value}>
       {displayValue}
