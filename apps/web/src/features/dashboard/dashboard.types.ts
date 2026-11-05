@@ -41,7 +41,7 @@ export type ArrivalItem = {
   bookingReference: string;
   customerName: string;
   roomTypeName: string;
-  roomNumber?: string;
+  roomNumber: string | null;
   checkIn: string;
   bookingStatus: BookingStatus;
 };
@@ -51,7 +51,7 @@ export type DepartureItem = {
   bookingReference: string;
   customerName: string;
   roomTypeName: string;
-  roomNumber?: string;
+  roomNumber: string | null;
   checkOut: string;
   paymentStatus: PaymentStatus;
   outstandingBalance: number;

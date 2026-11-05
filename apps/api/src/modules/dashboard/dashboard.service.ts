@@ -19,6 +19,7 @@ import { StaysQueryDto } from './dto/stays-query.dto';
 import {
   CustomerNextBooking,
   DashboardPayments,
+  RoomStatusCount,
   Stays,
   TaskItem,
 } from './dashboard.types';
@@ -299,6 +300,25 @@ export class DashboardService {
     );
 
     return Object.values(BookingStatus).map((status) => ({
+      status,
+      count: countByStatus.get(status) ?? 0,
+    }));
+  }
+
+  async getRoomStatus(): Promise<RoomStatusCount[]> {
+    const roomCounts = await this.prismaService.room.groupBy({
+      by: ['occupancyStatus'],
+      where: { isActive: true },
+      _count: { _all: true },
+    });
+    const countByStatus = new Map(
+      roomCounts.map(({ occupancyStatus, _count }) => [
+        occupancyStatus,
+        _count._all,
+      ]),
+    );
+
+    return Object.values(OccupancyStatus).map((status) => ({
       status,
       count: countByStatus.get(status) ?? 0,
     }));

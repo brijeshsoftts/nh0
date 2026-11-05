@@ -2,6 +2,7 @@ import type {
   BookingStatus,
   InvoiceStatus,
   IssuePriority,
+  OccupancyStatus,
   PaymentStatus,
   TaskStatus,
   TaskType,
@@ -38,6 +39,11 @@ export type Stays = {
     items: DepartureItem[];
     total: number;
   };
+};
+
+export type RoomStatusCount = {
+  status: OccupancyStatus;
+  count: number;
 };
 
 export type TaskItem = {

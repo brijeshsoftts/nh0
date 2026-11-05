@@ -26,6 +26,8 @@ export const dashboardService = {
     apiClient
       .get("/dashboard/booking-status", { params: { range } })
       .then((res) => res.data?.data),
+  getRoomStatus: (): Promise<DonutChartData[]> =>
+    apiClient.get("/dashboard/room-status").then((res) => res.data?.data),
   getStays: (): Promise<Stays> =>
     apiClient.get("/dashboard/stays").then((res) => res.data?.data),
 };
