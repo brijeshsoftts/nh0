@@ -193,7 +193,7 @@ function Stays() {
     return <>Loading</>;
   }
   if (isError || !data) {
-    return <>Error</>;
+    return null;
   }
 
   return (

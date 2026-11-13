@@ -106,10 +106,7 @@ export const EnumBadge = ({ value, className, ...props }: EnumBadgeProps) => {
 // Use these in your tables/cards to ensure you only pass valid db enum values.
 
 export const StatusBadge = ({ value }: { value: boolean }) => (
-  <Badge
-    variant="outline"
-    className={cn("font-medium", value ? "bg-success" : "text-destructive")}
-  >
+  <Badge variant={value ? "default" : "destructive"}>
     {value ? "Active" : "Inactive"}
   </Badge>
 );

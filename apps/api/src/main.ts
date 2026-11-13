@@ -12,6 +12,7 @@ async function bootstrap() {
     logger: ['error', 'warn', 'debug', 'log'],
     rawBody: true,
   });
+  app.enableShutdownHooks();
 
   app.use(helmet());
 

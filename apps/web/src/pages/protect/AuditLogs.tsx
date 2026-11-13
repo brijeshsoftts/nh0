@@ -9,6 +9,7 @@ import {
   type FilterOption,
 } from "@/components/common/DataTable";
 import { Header } from "@/components/common/Header";
+import { HeaderActionButton } from "@/components/common/HeaderActionButton";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import {
@@ -204,16 +205,15 @@ export default function AuditLogsPage() {
         title="Audit log"
         description="Review account activity and inspect recorded changes."
         rightContent={
-          <Button
+          <HeaderActionButton
             type="button"
             variant="outline"
-            size="sm"
             disabled={isLoading}
             onClick={() => void refetch()}
           >
             {isLoading ? <Spinner /> : <RefreshCw />}
             Refresh
-          </Button>
+          </HeaderActionButton>
         }
       />
 

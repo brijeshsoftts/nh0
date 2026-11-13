@@ -4,8 +4,8 @@ import { Navigate } from "react-router-dom";
 
 import { type ColumnDef, DataTable } from "@/components/common/DataTable";
 import { Header } from "@/components/common/Header";
+import { HeaderActionButton } from "@/components/common/HeaderActionButton";
 import { IconBtn } from "@/components/common/IconBtn";
-import { Button } from "@/components/ui/button";
 import {
   Dialog,
   DialogContent,
@@ -121,16 +121,15 @@ export default function InquiryPage() {
         title="Inquiries"
         description="Review messages sent through the contact form."
         rightContent={
-          <Button
+          <HeaderActionButton
             type="button"
             variant="outline"
-            size="sm"
             disabled={isFetching}
             onClick={() => void refetch()}
           >
             {isFetching ? <Spinner /> : <RefreshCw />}
             Refresh
-          </Button>
+          </HeaderActionButton>
         }
       />
 
@@ -175,10 +174,7 @@ function ActionDropdownMenu({ inquiry }: { inquiry: Inquiry }) {
           </IconBtn>
         </DropdownMenuTrigger>
 
-        <DropdownMenuContent
-          align="end"
-          className=" "
-        >
+        <DropdownMenuContent align="end" className=" ">
           <DropdownMenuItem onClick={() => setIsViewOpen(true)}>
             <Eye className="mr-2 size-4" />
             View
@@ -216,7 +212,7 @@ function ActionDropdownMenu({ inquiry }: { inquiry: Inquiry }) {
               <dt className="text-xs font-medium text-muted-foreground">
                 Phone
               </dt>
-              <dd className="text-sm break-words text-foreground">
+              <dd className="text-sm wrap-break-word text-foreground">
                 {inquiry.phone || "Not provided"}
               </dd>
             </div>

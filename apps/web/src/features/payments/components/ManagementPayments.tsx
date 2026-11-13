@@ -1,5 +1,5 @@
 import { formatDate } from "date-fns";
-import { Banknote, EllipsisVertical } from "lucide-react";
+import { Banknote, EllipsisVertical, Eye } from "lucide-react";
 import { useState } from "react";
 
 import { type ColumnDef, DataTable } from "@/components/common/DataTable";
@@ -18,12 +18,12 @@ import {
 import { useAuth } from "@/hooks/useAuth";
 import { useListParams } from "@/hooks/useListParams";
 import { formatPrice } from "@/lib/format";
-import { CollectCashDialog } from "./CollectCashDialog";
 
 import { usePayments } from "../hooks/usePayments";
 import { usePaymentsStats } from "../hooks/usePaymentsStats";
 import type { PaymentItem } from "../payments.types";
 
+import { CollectCashDialog } from "./CollectCashDialog";
 import { PaymentDownload } from "./PaymentDownload";
 import { ViewPaymentDetails } from "./ViewPaymentDetails";
 
@@ -185,11 +185,9 @@ function ActionDropdownMenu({ payment }: { payment: PaymentItem }) {
           </IconBtn>
         </DropdownMenuTrigger>
 
-        <DropdownMenuContent
-          align="end"
-          className=" "
-        >
+        <DropdownMenuContent align="end" className=" ">
           <DropdownMenuItem onClick={() => setIsViewModal(true)}>
+            <Eye />
             View
           </DropdownMenuItem>
           {canCollectCash && (

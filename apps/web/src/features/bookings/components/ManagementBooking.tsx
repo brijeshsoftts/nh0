@@ -4,7 +4,7 @@ import { Link } from "react-router-dom";
 import { type ColumnDef, DataTable } from "@/components/common/DataTable";
 import { BookingBadge, InvoiceBadge } from "@/components/common/EnumBadges";
 import { Header } from "@/components/common/Header";
-import { Button } from "@/components/ui/button";
+import { HeaderActionButton } from "@/components/common/HeaderActionButton";
 import { useListParams } from "@/hooks/useListParams";
 
 import { bookingFilters } from "../booking-filters";
@@ -150,12 +150,13 @@ export function ManagementBooking() {
         title="Bookings"
         description="Find reservations, check stay details, and keep arrivals moving."
         rightContent={
-          <Link to="/dashboard/bookings/new">
-            <Button className="shrink-0 ">
-              <Plus className="size-4" />
-              New booking
-            </Button>
-          </Link>
+          <HeaderActionButton
+            nativeButton={false}
+            render={<Link to="/dashboard/bookings/new" />}
+          >
+            <Plus />
+            New booking
+          </HeaderActionButton>
         }
       />
 

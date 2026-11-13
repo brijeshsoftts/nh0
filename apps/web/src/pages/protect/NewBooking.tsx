@@ -711,7 +711,7 @@ export default function NewBookingPage() {
             <div className="space-y-4">
               {booking.guests.map((guest, index) => (
                 <div
-                  key={`${index}-${guest.fullName || "guest"}`}
+                  key={`guest-${index}`}
                   className="overflow-hidden rounded-2xl border"
                 >
                   <div className="flex items-center justify-between gap-3 border-b bg-muted/25 px-4 py-3 sm:px-5">

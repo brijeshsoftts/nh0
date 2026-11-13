@@ -20,6 +20,7 @@ const envSchema = z.object({
   HOST_NAME: z.string(),
   JWT_ACCESS_SECRET: z.string().min(32),
   DATABASE_URL: z.url(),
+  DATABASE_POOL_MAX: z.coerce.number().int().positive().default(10),
   APPWRITE_ENDPOINT: z.url(),
   APPWRITE_PROJECT_ID: z.string(),
   APPWRITE_API_KEY: z.string(),

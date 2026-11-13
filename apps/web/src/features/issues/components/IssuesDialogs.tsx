@@ -1,6 +1,7 @@
 import { CirclePlus, Send } from "lucide-react";
 import { useState } from "react";
 
+import { HeaderActionButton } from "@/components/common/HeaderActionButton";
 import { InputField } from "@/components/common/InputField";
 import {
   SelectField,
@@ -54,10 +55,10 @@ export function CreateCustomerIssueDialog() {
   return (
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger>
-        <Button type="button">
+        <HeaderActionButton type="button">
           <CirclePlus />
           Report an issue
-        </Button>
+        </HeaderActionButton>
       </DialogTrigger>
       <DialogContent className="sm:max-w-lg">
         <DialogHeader>

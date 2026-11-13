@@ -1,5 +1,5 @@
 import { formatDate } from "date-fns";
-import { EllipsisVertical } from "lucide-react";
+import { EllipsisVertical, Eye } from "lucide-react";
 import { useState } from "react";
 
 import { type ColumnDef, DataTable } from "@/components/common/DataTable";
@@ -163,11 +163,9 @@ function ActionDropdownMenu({ invoice }: { invoice: InvoiceItem }) {
           </IconBtn>
         </DropdownMenuTrigger>
 
-        <DropdownMenuContent
-          align="end"
-          className=" "
-        >
+        <DropdownMenuContent align="end" className=" ">
           <DropdownMenuItem onClick={() => setIsViewModal(true)}>
+            <Eye />
             View
           </DropdownMenuItem>
           {isActiveDownload && (

@@ -76,7 +76,7 @@ function DetailItem({
         <p className="text-sm text-muted-foreground">{label}</p>
 
         <p
-          className={`text-sm font-medium break-words ${
+          className={`text-sm font-medium wrap-break-word ${
             mono ? "font-mono text-xs sm:text-sm" : ""
           }`}
         >

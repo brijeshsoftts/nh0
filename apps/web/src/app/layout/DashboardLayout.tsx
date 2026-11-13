@@ -3,6 +3,7 @@ import { useMemo } from "react";
 import { Link, Navigate, useLocation, useOutlet } from "react-router-dom";
 
 import { PageTransition } from "@/components/common/PageTransition";
+import { getNavigationGroupLabel } from "@/components/sidebar/navigation";
 import { NotificationsPopover } from "@/features/notifications/components/NotificationsPopover";
 import { useAuth } from "@/hooks/useAuth";
 
@@ -36,6 +37,7 @@ export function DashboardLayout() {
       .replace(/[-_]/g, " ")
       .replace(/\b\w/g, (char) => char.toUpperCase());
   }, [location.pathname]);
+  const activeGroup = getNavigationGroupLabel(activeTab);
 
   if (isLoading) return <FullScreenLoader />;
 
@@ -56,7 +58,7 @@ export function DashboardLayout() {
                 to="/dashboard"
                 className="text-muted-foreground transition-colors hover:text-foreground"
               >
-                Overview
+                {activeGroup}
               </Link>
               <ChevronRight
                 aria-hidden="true"

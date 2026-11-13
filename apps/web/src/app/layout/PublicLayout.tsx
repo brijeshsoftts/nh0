@@ -43,39 +43,57 @@ export function Logo({
   to = "/",
   className,
   inverse = false,
+  compact = false,
 }: {
   to?: string;
   className?: string;
   inverse?: boolean;
+  compact?: boolean;
 }) {
   return (
-    <Link to={to} className={cn("flex items-center gap-3", className)}>
+    <Link
+      to={to}
+      className={cn("flex items-center gap-3", compact && "gap-2", className)}
+    >
       {/* Logo Mark - Arched Background matching screenshot */}
-      <div className="relative flex h-12 w-10 items-end justify-center overflow-hidden rounded-t-full rounded-b-sm bg-secondary pb-1">
+      <div
+        className={cn(
+          "relative flex items-end justify-center overflow-hidden",
+          compact
+            ? "size-7 rounded-md bg-sidebar-accent"
+            : "h-12 w-10 rounded-t-full rounded-b-sm bg-secondary pb-1"
+        )}
+      >
         <Palmtree
-          className="absolute -bottom-1 h-7 w-7 text-primary"
+          className={cn(
+            "absolute text-primary",
+            compact ? "bottom-0 size-5" : "-bottom-1 h-7 w-7"
+          )}
           strokeWidth={1.5}
         />
       </div>
 
       {/* Logo Text */}
-      <div className="flex flex-col justify-center">
+      <div className="flex min-w-0 flex-col justify-center">
         <span
           className={cn(
-            "font-heading text-[26px] leading-none tracking-wide",
+            "font-heading leading-none tracking-wide",
+            compact ? "text-lg" : "text-[26px]",
             inverse ? "text-background" : "text-primary"
           )}
         >
           Nivara
         </span>
-        <span
-          className={cn(
-            "mt-1 font-sans text-[9px] font-medium tracking-[0.25em] uppercase",
-            inverse ? "text-background/80" : "text-primary/80"
-          )}
-        >
-          Hotel & Resort
-        </span>
+        {!compact && (
+          <span
+            className={cn(
+              "mt-1 font-sans text-[9px] font-medium tracking-[0.25em] uppercase",
+              inverse ? "text-background/80" : "text-primary/80"
+            )}
+          >
+            Hotel & Resort
+          </span>
+        )}
       </div>
     </Link>
   );

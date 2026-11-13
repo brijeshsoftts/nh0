@@ -4,12 +4,13 @@ import {
   CalendarPlus,
   CircleDollarSign,
   ClipboardCheck,
-  FileClock,
+  ClipboardList,
   FileText,
   LayoutDashboard,
-  Pickaxe,
+  Mail,
   UserCheck,
   UserRound,
+  UserRoundCog,
   Users,
   Wrench,
 } from "lucide-react";
@@ -29,7 +30,7 @@ export const ADMIN_PAGES: NavItem[] = [
   },
   {
     title: "Staff",
-    icon: Pickaxe,
+    icon: UserRoundCog,
     href: "/dashboard/staff",
   },
   {
@@ -74,12 +75,12 @@ export const ADMIN_PAGES: NavItem[] = [
   },
   {
     title: "Inquiries",
-    icon: FileClock,
+    icon: Mail,
     href: "/dashboard/inquiries",
   },
   {
     title: "Audit Logs",
-    icon: FileClock,
+    icon: ClipboardList,
     href: "/dashboard/audit-logs",
   },
   {
@@ -97,7 +98,7 @@ export const MANAGER_PAGES: NavItem[] = [
   },
   {
     title: "Staff",
-    icon: Pickaxe,
+    icon: UserRoundCog,
     href: "/dashboard/staff",
   },
   {
@@ -142,7 +143,7 @@ export const MANAGER_PAGES: NavItem[] = [
   },
   {
     title: "Inquiries",
-    icon: FileClock,
+    icon: Mail,
     href: "/dashboard/inquiries",
   },
   {
