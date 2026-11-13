@@ -139,7 +139,7 @@ function StorySection() {
               <Button
                 nativeButton={false}
                 render={<Link to="/rooms" />}
-                className="h-11 rounded-full px-8 text-sm font-medium shadow-md transition-all"
+                className="h-11 rounded-lg px-8 text-sm font-medium shadow-md transition-all"
               >
                 Explore Rooms <ArrowRight className="ml-2 h-4 w-4" />
               </Button>
@@ -240,7 +240,7 @@ function StatsSection() {
   return (
     <section className="flex w-full justify-center bg-muted px-4 py-12 font-sans md:px-8 md:py-16">
       {/* Stats Card Container */}
-      <div className="w-full max-w-275 rounded-2xl border border-border/60 bg-card px-6 py-8 shadow-[0_4px_24px_rgb(0,0,0,0.02)] md:rounded-[24px] md:px-10">
+      <div className="w-full max-w-275 rounded-2xl border border-border/60 bg-card px-6 py-8 shadow-[0_4px_24px_rgb(0,0,0,0.02)] md:rounded-3xl md:px-10">
         {/* Grid Layout */}
         <div className="grid grid-cols-1 gap-y-8 sm:grid-cols-2 sm:gap-y-12 lg:grid-cols-4 lg:gap-y-0">
           {stats.map((stat, index) => {
@@ -331,7 +331,7 @@ function ValuesSection() {
             <div>
               <Link to="/#amenities">
                 <Button
-                  className="h-11 rounded-full px-8 text-sm font-medium shadow-md transition-all"
+                  className="h-11 rounded-lg px-8 text-sm font-medium shadow-md transition-all"
                   variant={"secondary"}
                 >
                   Our Amenities <ArrowRight className="ml-2 h-4 w-4" />
@@ -386,7 +386,7 @@ function ExperienceSection() {
             />
 
             {/* Floating Badge */}
-            <div className="absolute bottom-6 left-6 z-10 flex items-center gap-4 rounded-[16px] border border-border/40 bg-card px-6 py-4 text-card-foreground shadow-lg md:bottom-8 md:left-8">
+            <div className="absolute bottom-6 left-6 z-10 flex items-center gap-4 rounded-xl border border-border/40 bg-card px-6 py-4 text-card-foreground shadow-lg md:bottom-8 md:left-8">
               <div className="shrink-0">
                 <BedDouble className="h-6 w-6 text-primary" strokeWidth={1.5} />
               </div>
@@ -419,7 +419,7 @@ function ExperienceSection() {
             {/* Action Button */}
             {/* <div>
               <Button
-                className="h-11 rounded-full px-8 text-sm font-medium shadow-md transition-all"
+                className="h-11 rounded-lg px-8 text-sm font-medium shadow-md transition-all"
                 variant={"outline"}
               >
                 Meet Our Team <ArrowRight className="ml-2 h-4 w-4" />
@@ -509,7 +509,7 @@ function GalleryStripSection() {
                       shouldReduceMotion ? { opacity: 0.8 } : { scale: 0.96 }
                     }
                     transition={{ duration: 0.2, ease: "easeOut" }}
-                    className="relative h-35 w-70 shrink-0 overflow-hidden rounded-2xl border border-border/40 shadow-sm sm:h-40 sm:w-[320px] md:h-45 md:w-95 md:rounded-[20px] lg:h-50 lg:w-105 xl:w-115"
+                    className="relative h-35 w-70 shrink-0 overflow-hidden rounded-2xl border border-border/40 shadow-sm sm:h-40 sm:w-[320px] md:h-45 md:w-95 md:rounded-2xl lg:h-50 lg:w-105 xl:w-115"
                   >
                     <ImageMotion
                       src={img.src}

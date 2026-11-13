@@ -1,7 +1,5 @@
 import type { DashboardStat } from "@/components/common/Stat";
 
-const trends = new Set<DashboardStat["trend"]>(["up", "down", "neutral"]);
-
 const STAT_FILTERS: Record<string, Record<string, string>> = {
   "total-bookings": { route: "bookings" },
   "confirmed-bookings": { route: "bookings", status: "CONFIRMED" },
@@ -141,7 +139,9 @@ function normalizeStatLink(
   }
 
   const query = params.toString();
-  return query ? `${route}?${query}` : route;
+  const dashboardPath =
+    route === "dashboard" ? "/dashboard" : `/dashboard/${route}`;
+  return query ? `${dashboardPath}?${query}` : dashboardPath;
 }
 
 export function toDashboardStats(
@@ -164,17 +164,14 @@ export function toDashboardStats(
 
     if (!label || value === undefined) return [];
 
-    const changePercentage = toNumericValue(stat.changePercentage) ?? 0;
-    const trend = trends.has(stat.trend as DashboardStat["trend"])
-      ? (stat.trend as DashboardStat["trend"])
-      : "neutral";
-
     return [
       {
         label,
         value,
-        changePercentage,
-        trend,
+        icon:
+          typeof stat.icon === "string" && stat.icon.trim()
+            ? stat.icon
+            : "BedDouble",
         link: normalizeStatLink(
           typeof stat.link === "string" ? stat.link : "",
           String(stat.id ?? ""),

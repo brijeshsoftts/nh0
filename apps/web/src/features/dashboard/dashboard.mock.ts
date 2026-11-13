@@ -1,50 +1,9 @@
 import { DEMO_CUSTOMERS } from "../shared/demo-hotel-data";
-import { toDashboardStats } from "../shared/stat-response";
 
 import type { DonutChartData } from "./components/DonutChart";
 import type { StatusBarChart } from "./components/StatusBarChart";
 import type { TrendChart } from "./components/TrendChart";
 import type { TodaysArrival, TodaysDeparture } from "./dashboard.types";
-
-// MANAGEMENT MOCK DATA
-export const MANAGEMENT_STAT = toDashboardStats([
-  {
-    id: "occupancy",
-    title: "Occupancy",
-    value: "58%",
-    description: "56 occupied / 96 active rooms",
-    icon: "BedDouble",
-    link: "/rooms?status=occupied",
-    tone: "emerald",
-  },
-  {
-    id: "todays-arrivals",
-    title: "Arrivals",
-    value: "5",
-    description: "2 confirmed · 3 pending",
-    icon: "LogIn",
-    link: "/bookings?checkIn=today",
-    tone: "gold",
-  },
-  {
-    id: "todays-departures",
-    title: "Departures",
-    value: "5",
-    description: "4 checked-in · 1 pending",
-    icon: "LogOut",
-    link: "/bookings?checkOut=today",
-    tone: "violet",
-  },
-  {
-    id: "pending-bookings",
-    title: "Pending Bookings",
-    value: "5",
-    description: "Awaiting payment or confirmation",
-    icon: "Clock",
-    link: "/bookings?status=pending",
-    tone: "sky",
-  },
-]);
 
 export const TODAYS_ARRIVALS: TodaysArrival[] = [
   {
@@ -237,86 +196,6 @@ export const ROOM_STATUS = [
     count: 6,
   },
 ];
-
-// STAFF MOCK DATA
-export const STAFF_STAT = toDashboardStats([
-  {
-    id: "todays-arrivals",
-    title: "Today's Arrivals",
-    value: "5",
-    description: "2 confirmed · 3 pending",
-    icon: "LogIn",
-    link: "/bookings?checkIn=today",
-    tone: "rose",
-  },
-  {
-    id: "todays-departures",
-    title: "Today's Departures",
-    value: "5",
-    description: "4 checked-in · 1 pending",
-    icon: "LogOut",
-    link: "/bookings?checkOut=today",
-    tone: "teal",
-  },
-  {
-    id: "available-rooms",
-    title: "Available Rooms",
-    value: "28",
-    description: "Ready for new bookings",
-    icon: "BedDouble",
-    link: "/rooms?status=available",
-    tone: "sky",
-  },
-  {
-    id: "pending-bookings",
-    title: "Pending Bookings",
-    value: "5",
-    description: "Awaiting payment or confirmation",
-    icon: "Clock",
-    link: "/bookings?status=pending",
-    tone: "violet",
-  },
-]);
-
-// HOUSEKEEPER MOCK DATA
-export const HOUSEKEEPER_STAT = toDashboardStats([
-  {
-    id: "pending-tasks",
-    title: "My Pending Tasks",
-    value: "8",
-    description: "Tasks waiting to be completed",
-    icon: "ClipboardList",
-    link: "/housekeeping/tasks?status=pending",
-    tone: "emerald",
-  },
-  {
-    id: "in-progress",
-    title: "In Progress",
-    value: "2",
-    description: "Tasks currently being handled",
-    icon: "LoaderCircle",
-    link: "/housekeeping/tasks?status=in-progress",
-    tone: "gold",
-  },
-  {
-    id: "completed-today",
-    title: "Completed Today",
-    value: "6",
-    description: "Tasks completed today",
-    icon: "CircleCheck",
-    link: "/housekeeping/tasks?status=completed&date=today",
-    tone: "rose",
-  },
-  {
-    id: "dirty-rooms",
-    title: "Dirty Rooms",
-    value: "7",
-    description: "Rooms requiring cleaning",
-    icon: "BedDouble",
-    link: "/rooms?status=dirty",
-    tone: "sky",
-  },
-]);
 
 export const TASKS_STATUS: DonutChartData[] = [
   {

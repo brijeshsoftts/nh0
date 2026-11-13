@@ -33,7 +33,7 @@ export function RoomCard({ room, onView }: RoomCardProps) {
       : `${room.adults} adults`;
 
   return (
-    <Card className="group h-full gap-0 overflow-hidden rounded-3xl border-border/60 py-0 transition-shadow duration-300 hover:shadow-2xl hover:shadow-amber-500/10 motion-reduce:transition-none">
+    <Card className="group h-full gap-0 overflow-hidden rounded-xl border-border/60 py-0 transition-shadow duration-300 hover:shadow-2xl hover:shadow-amber-500/10 motion-reduce:transition-none">
       {/* Image */}
       <div className="relative aspect-4/3 overflow-hidden bg-muted">
         {room.image ? (
@@ -137,7 +137,7 @@ export function RoomCard({ room, onView }: RoomCardProps) {
             <Button
               type="button"
               variant="outline"
-              className="rounded-full"
+              className="rounded-lg"
               aria-haspopup="dialog"
               onClick={() => onView(room.slug)}
             >
@@ -146,13 +146,13 @@ export function RoomCard({ room, onView }: RoomCardProps) {
             </Button>
 
             {soldOut ? (
-              <Button disabled className="rounded-full">
+              <Button disabled className="rounded-lg">
                 <CalendarCheck className="size-4" />
                 Book
               </Button>
             ) : (
               <Link to={`/rooms/${room.slug}/book`}>
-                <Button className={cn("rounded-full", goldButton)}>
+                <Button className={cn("rounded-lg", goldButton)}>
                   <CalendarCheck className="size-4" />
                   Book
                 </Button>
@@ -167,8 +167,8 @@ export function RoomCard({ room, onView }: RoomCardProps) {
 
 export function RoomCardSkeleton() {
   return (
-    <Card className="h-full gap-0 overflow-hidden rounded-3xl py-0" aria-hidden>
-      <Skeleton className="aspect-4/3 w-full rounded-none" />
+    <Card className="h-full gap-0 overflow-hidden rounded-xl py-0" aria-hidden>
+      <Skeleton className="aspect-4/3 w-full" />
       <div className="space-y-4 p-6">
         <Skeleton className="h-7 w-2/3" />
         <Skeleton className="h-4 w-full" />

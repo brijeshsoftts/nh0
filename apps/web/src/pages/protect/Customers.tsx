@@ -30,7 +30,7 @@ export default function CustomersPage() {
                 id="btn-add-customer"
                 variant="default"
                 size="sm"
-                className="h-10 gap-1.5 rounded-none px-4 text-xs font-medium"
+                className="h-10 gap-1.5  px-4 text-xs font-medium"
               >
                 <Plus className="h-3.5 w-3.5" />
                 <span>New Customer</span>

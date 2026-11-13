@@ -44,7 +44,7 @@ export function IssueRowActions({ issue }: { issue: ActionIssue }) {
         </DropdownMenuTrigger>
         <DropdownMenuContent
           align="end"
-          className="rounded-none **:data-[slot=dropdown-menu-item]:rounded-none"
+          className=" "
         >
           <DropdownMenuItem onClick={() => setDetailsOpen(true)}>
             <Eye aria-hidden="true" />

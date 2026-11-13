@@ -33,12 +33,12 @@ const columns: ColumnDef<Customer>[] = [
           <img
             src={customer.profile.url}
             alt={customer.profile.altText ?? customer.name}
-            className="size-9 rounded-none border object-cover"
+            className="size-9 rounded-full border object-cover"
           />
         ) : (
           <span
             aria-hidden="true"
-            className="grid size-9 shrink-0 place-items-center rounded-none bg-muted text-xs font-semibold text-muted-foreground"
+            className="grid size-9 shrink-0 place-items-center rounded-full bg-muted text-xs font-semibold text-muted-foreground"
           >
             {customer.name
               .split(" ")
@@ -66,7 +66,7 @@ const columns: ColumnDef<Customer>[] = [
     cell: (customer) => (
       <Badge
         variant={customer.activeBooking ? "secondary" : "outline"}
-        className="rounded-none"
+        className=""
       >
         {customer.activeBooking ? "Active" : "None"}
       </Badge>
@@ -87,7 +87,7 @@ const columns: ColumnDef<Customer>[] = [
     key: "isActive",
     header: "Status",
     cell: (customer) => (
-      <span className="**:data-[slot=badge]:rounded-none">
+      <span className="">
         <StatusBadge value={customer.isActive} />
       </span>
     ),
@@ -180,10 +180,7 @@ function ActionDropdownMenu({ customer }: { customer: Customer }) {
           </IconBtn>
         </DropdownMenuTrigger>
 
-        <DropdownMenuContent
-          align="end"
-          className="rounded-none **:data-[slot=dropdown-menu-item]:rounded-none"
-        >
+        <DropdownMenuContent align="end" className=" ">
           <DropdownMenuItem onClick={() => setIsViewModal(true)}>
             <Eye className="mr-2 size-4" />
             View

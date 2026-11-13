@@ -85,7 +85,7 @@ export const columns: ColumnDef<CustomerBooking>[] = [
     key: "status",
     header: "Status",
     cell: (booking) => (
-      <span className="**:data-[slot=badge]:rounded-none">
+      <span className="">
         <BookingBadge value={booking.status} />
       </span>
     ),
@@ -147,7 +147,7 @@ function ActionDropdownMenu({ booking }: { booking: CustomerBooking }) {
         </DropdownMenuTrigger>
         <DropdownMenuContent
           align="end"
-          className="rounded-none **:data-[slot=dropdown-menu-item]:rounded-none"
+          className=" "
         >
           <DropdownMenuItem onClick={() => setDetailsOpen(true)}>
             <Eye />
@@ -204,7 +204,7 @@ function BookingDetailsDialog({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-120 gap-0 rounded-none">
+      <DialogContent className="max-w-120 gap-0 ">
         <DialogHeader className="text-left">
           <DialogTitle className="text-lg break-all">
             {booking?.bookingNumber ?? "Booking details"}
@@ -226,7 +226,7 @@ function BookingDetailsDialog({
             <Button
               type="button"
               variant="outline"
-              className="rounded-none"
+              className=""
               onClick={() => void refetch()}
             >
               Try again
@@ -236,7 +236,7 @@ function BookingDetailsDialog({
           <div className="my-4 max-h-100 space-y-5 overflow-y-auto">
             <div className="flex flex-wrap items-center justify-between gap-3 border-y py-3">
               <span className="text-sm text-muted-foreground">Status</span>
-              <span className="**:data-[slot=badge]:rounded-none">
+              <span className="">
                 <BookingBadge value={booking.status} />
               </span>
             </div>
@@ -319,7 +319,7 @@ function BookingDetailsDialog({
           <Button
             type="button"
             variant="outline"
-            className="rounded-none"
+            className=""
             onClick={() => onOpenChange(false)}
           >
             Close

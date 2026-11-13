@@ -29,7 +29,7 @@ function AmenitySearch({
           value={value}
           onChange={(event) => onChange(event.target.value)}
           placeholder={placeholder}
-          className="h-10 rounded-none border-border/60 bg-card pr-9 pl-9 transition-all duration-200 placeholder:text-muted-foreground/70 focus-visible:ring-2 focus-visible:ring-ring/20"
+          className="h-10  border-border/60 bg-card pr-9 pl-9 transition-all duration-200 placeholder:text-muted-foreground/70 focus-visible:ring-2 focus-visible:ring-ring/20"
         />
         {value && (
           <Button
@@ -45,7 +45,7 @@ function AmenitySearch({
         )}
       </div>
       <NewAmenityModal>
-        <Button className="h-10 w-full rounded-none sm:w-auto">
+        <Button className="h-10 w-full  sm:w-auto">
           <Plus className="size-4" />
           New Amenity
         </Button>

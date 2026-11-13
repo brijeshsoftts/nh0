@@ -88,7 +88,7 @@ function InvoicesTable() {
       key: "status",
       header: "Status",
       cell: (invoice) => (
-        <span className="**:data-[slot=badge]:rounded-none">
+        <span className="">
           <InvoiceBadge value={invoice.status} />
         </span>
       ),
@@ -144,7 +144,7 @@ function ActionDropdownMenu({ invoice }: { invoice: CustomerInvoice }) {
         </DropdownMenuTrigger>
         <DropdownMenuContent
           align="end"
-          className="rounded-none **:data-[slot=dropdown-menu-item]:rounded-none"
+          className=" "
         >
           <DropdownMenuItem>
             <Eye />

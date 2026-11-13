@@ -1,6 +1,5 @@
 import { StatGrid } from "@/components/common/Stat";
 
-// import { MANAGEMENT_STAT } from "@/features/dashboard/dashboard.mock";
 import { useCustomerStat } from "../hooks/useCustomerStat";
 
 export function CustomerStat() {

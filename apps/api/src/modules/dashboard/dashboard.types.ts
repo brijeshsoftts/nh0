@@ -78,3 +78,10 @@ export type CustomerNextBooking = {
   checkOutDate: string;
   roomTypeName: string | null;
 };
+
+export type DashboardStat = {
+  label: string;
+  value: number;
+  link: string;
+  icon: string;
+};

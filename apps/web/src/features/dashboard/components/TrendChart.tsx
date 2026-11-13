@@ -76,8 +76,8 @@ export function TrendChart({
   } satisfies ChartConfig;
 
   return (
-    <Card className="h-full w-full min-w-0 rounded-none border border-border bg-card text-card-foreground">
-      <CardHeader className="flex flex-row items-start justify-between gap-4 rounded-none">
+    <Card className="h-full w-full min-w-0  border border-border bg-card text-card-foreground">
+      <CardHeader className="flex flex-row items-start justify-between gap-4 ">
         <div className="min-w-0">
           <CardTitle>{title}</CardTitle>
           <CardDescription>{description}</CardDescription>
@@ -90,14 +90,14 @@ export function TrendChart({
           >
             <SelectTrigger
               aria-label="Revenue time range"
-              className="h-8 w-27.5 rounded-none text-xs"
+              className="h-8 w-27.5  text-xs"
             >
               <SelectValue />
             </SelectTrigger>
 
-            <SelectContent className="rounded-none">
+            <SelectContent className="">
               {options?.map(({ label, value }) => (
-                <SelectItem key={value} value={value} className="rounded-none">
+                <SelectItem key={value} value={value} className="">
                   {label}
                 </SelectItem>
               ))}
@@ -121,7 +121,7 @@ export function TrendChart({
                 variant="outline"
                 size="sm"
                 onClick={onRetry}
-                className="rounded-none"
+                className=""
               >
                 Try again
               </Button>
@@ -193,7 +193,7 @@ export function TrendChart({
                 cursor={false}
                 content={
                   <ChartTooltipContent
-                    className="rounded-none border border-border bg-card text-card-foreground shadow-md"
+                    className=" border border-border bg-card text-card-foreground shadow-md"
                     formatter={(value) =>
                       `₹${Number(value).toLocaleString("en-IN")}`
                     }

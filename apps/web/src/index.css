@@ -1,302 +1,457 @@
-/* =========================================================
-   SAHARA SANDS — BRAND DESIGN SYSTEM
-   Tailwind CSS v4 + shadcn/ui
-   Palette: Earth Brown / Sand Gold / Beige / Warm Taupe
-   Typography: Playfair Display + Inter
-   ========================================================= */
+/** =========================================================**/
 
-/* 1. Imports */
+/* NIVARA HOTELS — BRAND DESIGN SYSTEM */
+
+/* Tailwind CSS v4 + shadcn/ui */
+
+/* Palette: Forest Green / Warm Ivory / Muted Brass / Sage */
+
+/* Typography: Playfair Display + Inter */
+
+/* ========================================================= */
+
+/** 1. Imports*/
+
 @import "tailwindcss";
+
 @import "tw-animate-css";
+
 @import "shadcn/tailwind.css";
+
 @import "@fontsource-variable/inter";
+
 @import "@fontsource-variable/playfair-display";
 
-/* 2. Dark mode variant */
+/** 2. Dark mode variant*/
+
 @custom-variant dark (&:is(.dark *));
 
-/* 3. Tailwind v4 theme mappings */
+/** 3. Tailwind v4 theme mappings*/
+
 @theme inline {
-  /* Typography */
+  /** Typography*/
+
   --font-sans: "Inter Variable", "Inter", sans-serif;
+
   --font-heading:
     "Playfair Display Variable", "Playfair Display", Georgia, serif;
 
-  /* Brand colors */
+  /** Brand colors*/
+
   --color-brand-primary: var(--brand-primary);
+
   --color-brand-secondary: var(--brand-secondary);
+
   --color-brand-accent: var(--brand-accent);
+
   --color-brand-muted: var(--brand-muted);
+
   --color-brand-ivory: var(--brand-ivory);
+
   --color-brand-foreground: var(--brand-foreground);
 
-  /* Semantic colors */
+  /** Semantic colors*/
+
   --color-background: var(--background);
+
   --color-foreground: var(--foreground);
+
   --color-card: var(--card);
+
   --color-card-foreground: var(--card-foreground);
+
   --color-popover: var(--popover);
+
   --color-popover-foreground: var(--popover-foreground);
 
   --color-primary: var(--primary);
+
   --color-primary-foreground: var(--primary-foreground);
+
   --color-secondary: var(--secondary);
+
   --color-secondary-foreground: var(--secondary-foreground);
 
   --color-muted: var(--muted);
+
   --color-muted-foreground: var(--muted-foreground);
+
   --color-accent: var(--accent);
+
   --color-accent-foreground: var(--accent-foreground);
 
   --color-destructive: var(--destructive);
+
   --color-border: var(--border);
+
   --color-input: var(--input);
+
   --color-ring: var(--ring);
 
-  /* Feedback */
+  /** Feedback*/
+
   --color-success: var(--success);
+
   --color-success-foreground: var(--success-foreground);
+
   --color-warning: var(--warning);
+
   --color-warning-foreground: var(--warning-foreground);
+
   --color-error: var(--error);
+
   --color-error-foreground: var(--error-foreground);
+
   --color-info: var(--info);
+
   --color-info-foreground: var(--info-foreground);
 
-  /* Charts */
+  /** Charts*/
+
   --color-chart-1: var(--chart-1);
+
   --color-chart-2: var(--chart-2);
+
   --color-chart-3: var(--chart-3);
+
   --color-chart-4: var(--chart-4);
+
   --color-chart-5: var(--chart-5);
 
-  /* Sidebar */
+  /** Sidebar*/
+
   --color-sidebar: var(--sidebar);
+
   --color-sidebar-foreground: var(--sidebar-foreground);
+
   --color-sidebar-primary: var(--sidebar-primary);
+
   --color-sidebar-primary-foreground: var(--sidebar-primary-foreground);
+
   --color-sidebar-accent: var(--sidebar-accent);
+
   --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
+
   --color-sidebar-border: var(--sidebar-border);
+
   --color-sidebar-ring: var(--sidebar-ring);
 
-  /* Radius */
+  /** Radius*/
+
   --radius-xs: calc(var(--radius) * 0.4);
+
   --radius-sm: calc(var(--radius) * 0.6);
+
   --radius-md: calc(var(--radius) * 0.8);
+
   --radius-lg: var(--radius);
+
   --radius-xl: calc(var(--radius) * 1.35);
+
   --radius-2xl: calc(var(--radius) * 1.7);
+
   --radius-3xl: calc(var(--radius) * 2.1);
+
   --radius-4xl: calc(var(--radius) * 2.6);
 
-  /* Shadows */
+  /** Shadows*/
+
   --shadow-xs: var(--shadow-xs-value);
+
   --shadow-sm: var(--shadow-sm-value);
+
   --shadow-md: var(--shadow-md-value);
+
   --shadow-lg: var(--shadow-lg-value);
+
   --shadow-xl: var(--shadow-xl-value);
+
   --shadow-brand: var(--shadow-brand-value);
 
-  /* Typography scale */
+  /** Typography scale*/
+
   --text-2xs: 0.6875rem;
+
   --text-xs: 0.75rem;
+
   --text-sm: 0.8125rem;
+
   --text-base: 0.9375rem;
+
   --text-lg: 1.0625rem;
+
   --text-xl: 1.25rem;
+
   --text-2xl: 1.5rem;
+
   --text-3xl: 1.875rem;
+
   --text-4xl: 2.25rem;
+
   --text-5xl: 3rem;
 
-  /* Motion */
+  /** Motion*/
+
   --ease-brand: cubic-bezier(0.22, 1, 0.36, 1);
 }
 
-/* =========================================================
-   4. LIGHT THEME
-   Default application theme
-   ========================================================= */
+/** =========================================================**/
+
+/* 4. LIGHT THEME */
+
+/* Default application theme */
+
+/* ========================================================= */
 
 :root {
   color-scheme: light;
 
-  /* Official Sahara Sands palette */
-  --brand-primary: #8b6b4c;
-  --brand-secondary: #e0d2b8;
-  --brand-accent: #c8ad7f;
-  --brand-muted: #a49079;
-  --brand-ivory: #f5f0e9;
-  --brand-foreground: #342a22;
+  /** Official Nivara palette*/
 
-  /* Application surfaces */
-  --background: #f7f3ec;
-  --foreground: #342a22;
+  --brand-primary: #173f35;
 
-  --card: #fbf9f5;
-  --card-foreground: #342a22;
+  --brand-secondary: #dce7df;
 
-  --popover: #fbf9f5;
-  --popover-foreground: #342a22;
+  --brand-accent: #b58a4a;
 
-  /* Primary actions */
-  --primary: #8b6b4c;
+  --brand-muted: #5f6b63;
+
+  --brand-ivory: #f7f5ef;
+
+  --brand-foreground: #26332e;
+
+  /** Application surfaces*/
+
+  --background: #f7f5ef;
+
+  --foreground: #26332e;
+
+  --card: #ffffff;
+
+  --card-foreground: #26332e;
+
+  --popover: #ffffff;
+
+  --popover-foreground: #26332e;
+
+  /** Primary actions*/
+
+  --primary: #173f35;
+
   --primary-foreground: #ffffff;
 
-  /* Secondary actions */
-  --secondary: #e0d2b8;
-  --secondary-foreground: #342a22;
+  /** Secondary actions*/
 
-  /* Muted surfaces */
-  --muted: #f0e9de;
-  --muted-foreground: #746452;
+  --secondary: #dce7df;
 
-  /* Accent surfaces */
-  --accent: #eae0d1;
-  --accent-foreground: #6f5036;
+  --secondary-foreground: #26332e;
 
-  /* Borders and focus */
-  --border: #e2d8c9;
-  --input: #d6c8b5;
-  --ring: #8b6b4c;
+  /** Muted surfaces*/
 
-  /* Destructive */
-  --destructive: #704b3a;
+  --muted: #e9e3d7;
 
-  /* Feedback colors stay within the brand palette */
-  --success: #52634a;
+  --muted-foreground: #5f6b63;
+
+  /** Accent surfaces*/
+
+  --accent: #dce7df;
+
+  --accent-foreground: #173f35;
+
+  /** Borders and focus*/
+
+  --border: #dedcd3;
+
+  --input: #dedcd3;
+
+  --ring: #173f35;
+
+  /** Destructive*/
+
+  --destructive: #a64f36;
+
+  /** Feedback colors stay within the brand palette*/
+
+  --success: #166534;
+
   --success-foreground: #ffffff;
 
-  --warning: #8b6b4c;
+  --warning: #92400e;
+
   --warning-foreground: #ffffff;
 
-  --error: #704b3a;
+  --error: #991b1b;
+
   --error-foreground: #ffffff;
 
-  --info: #a49079;
-  --info-foreground: #342a22;
+  --info: #1e40af;
 
-  /* Charts — Sahara palette */
-  --chart-1: #8b6b4c;
-  --chart-2: #c8ad7f;
-  --chart-3: #a49079;
-  --chart-4: #e0d2b8;
-  --chart-5: #6f5036;
+  --info-foreground: #ffffff;
 
-  /* Light sidebar */
-  --sidebar: #f5f0e9;
-  --sidebar-foreground: #342a22;
+  /** Charts — Nivara palette*/
 
-  --sidebar-primary: #8b6b4c;
+  --chart-1: #173f35;
+
+  --chart-2: #b58a4a;
+
+  --chart-3: #5f6b63;
+
+  --chart-4: #dce7df;
+
+  --chart-5: #173f35;
+
+  /** Light sidebar*/
+
+  --sidebar: #f7f5ef;
+
+  --sidebar-foreground: #26332e;
+
+  --sidebar-primary: #173f35;
+
   --sidebar-primary-foreground: #ffffff;
 
-  --sidebar-accent: #e0d2b8;
-  --sidebar-accent-foreground: #342a22;
+  --sidebar-accent: #dce7df;
 
-  --sidebar-border: #e2d8c9;
-  --sidebar-ring: #8b6b4c;
+  --sidebar-accent-foreground: #26332e;
 
-  /* Geometry */
+  --sidebar-border: #dedcd3;
+
+  --sidebar-ring: #173f35;
+
+  /** Geometry*/
+
   --radius: 0.75rem;
 
-  /* Shadows */
-  --shadow-xs-value: 0 1px 2px rgb(52 42 34 / 4%);
+  /** Shadows*/
 
-  --shadow-sm-value: 0 1px 3px rgb(52 42 34 / 6%), 0 1px 2px rgb(52 42 34 / 3%);
+  --shadow-xs-value: 0 1px 2px rgb(38 51 46 / 4%);
+
+  --shadow-sm-value: 0 1px 3px rgb(38 51 46 / 6%), 0 1px 2px rgb(38 51 46 / 3%);
 
   --shadow-md-value:
-    0 4px 12px rgb(52 42 34 / 7%), 0 2px 4px rgb(52 42 34 / 3%);
+    0 4px 12px rgb(38 51 46 / 7%), 0 2px 4px rgb(38 51 46 / 3%);
 
   --shadow-lg-value:
-    0 12px 28px rgb(52 42 34 / 9%), 0 4px 10px rgb(52 42 34 / 4%);
+    0 12px 28px rgb(38 51 46 / 9%), 0 4px 10px rgb(38 51 46 / 4%);
 
   --shadow-xl-value:
-    0 24px 48px rgb(52 42 34 / 12%), 0 8px 20px rgb(52 42 34 / 5%);
+    0 24px 48px rgb(38 51 46 / 12%), 0 8px 20px rgb(38 51 46 / 5%);
 
   --shadow-brand-value:
-    0 6px 18px rgb(139 107 76 / 18%), 0 2px 6px rgb(52 42 34 / 5%);
+    0 6px 18px rgb(23 63 53 / 18%), 0 2px 6px rgb(38 51 46 / 5%);
 }
 
-/* =========================================================
-   5. DARK THEME
-   Optional application-wide dark appearance
-   ========================================================= */
+/** =========================================================**/
+
+/* 5. DARK THEME */
+
+/* Optional application-wide dark appearance */
+
+/* ========================================================= */
 
 .dark {
   color-scheme: dark;
 
-  --background: #29231d;
-  --foreground: #f5f0e9;
+  --background: #14231e;
 
-  --card: #342b23;
-  --card-foreground: #f5f0e9;
+  --foreground: #f7f5ef;
 
-  --popover: #3b3027;
-  --popover-foreground: #f5f0e9;
+  --card: #1d3029;
 
-  --primary: #c8ad7f;
-  --primary-foreground: #342a22;
+  --card-foreground: #f7f5ef;
 
-  --secondary: #514131;
-  --secondary-foreground: #f5f0e9;
+  --popover: #243a32;
 
-  --muted: #42372d;
-  --muted-foreground: #c4b39c;
+  --popover-foreground: #f7f5ef;
 
-  --accent: #514131;
-  --accent-foreground: #e0d2b8;
+  --primary: #b58a4a;
 
-  --destructive: #a49079;
+  --primary-foreground: #14231e;
 
-  --border: #554639;
-  --input: #62503e;
-  --ring: #c8ad7f;
+  --secondary: #30483d;
 
-  --success: #c8ad7f;
-  --success-foreground: #342a22;
+  --secondary-foreground: #f7f5ef;
 
-  --warning: #a49079;
-  --warning-foreground: #342a22;
+  --muted: #293d35;
 
-  --error: #c8ad7f;
-  --error-foreground: #342a22;
+  --muted-foreground: #c2cec6;
 
-  --info: #e0d2b8;
-  --info-foreground: #342a22;
+  --accent: #30483d;
 
-  --chart-1: #c8ad7f;
-  --chart-2: #a49079;
-  --chart-3: #e0d2b8;
-  --chart-4: #8b6b4c;
-  --chart-5: #f5f0e9;
+  --accent-foreground: #dce7df;
 
-  /* Dark sidebar */
-  --sidebar: #342b23;
-  --sidebar-foreground: #f5f0e9;
+  --destructive: #f87171;
 
-  --sidebar-primary: #c8ad7f;
-  --sidebar-primary-foreground: #342a22;
+  --border: #3b5147;
 
-  --sidebar-accent: #514131;
-  --sidebar-accent-foreground: #f5f0e9;
+  --input: #496055;
 
-  --sidebar-border: #554639;
-  --sidebar-ring: #c8ad7f;
+  --ring: #b58a4a;
 
-  /* Dark shadows */
+  --success: #4ade80;
+
+  --success-foreground: #14231e;
+
+  --warning: #fbbf24;
+
+  --warning-foreground: #14231e;
+
+  --error: #f87171;
+
+  --error-foreground: #14231e;
+
+  --info: #60a5fa;
+
+  --info-foreground: #ffffff;
+
+  --chart-1: #b58a4a;
+
+  --chart-2: #a7c4b2;
+
+  --chart-3: #dce7df;
+
+  --chart-4: #6fa58a;
+
+  --chart-5: #f7f5ef;
+
+  /** Dark sidebar*/
+
+  --sidebar: #1d3029;
+
+  --sidebar-foreground: #f7f5ef;
+
+  --sidebar-primary: #b58a4a;
+
+  --sidebar-primary-foreground: #14231e;
+
+  --sidebar-accent: #30483d;
+
+  --sidebar-accent-foreground: #f7f5ef;
+
+  --sidebar-border: #3b5147;
+
+  --sidebar-ring: #b58a4a;
+
+  /** Dark shadows*/
+
   --shadow-xs-value: 0 1px 2px rgb(0 0 0 / 16%);
+
   --shadow-sm-value: 0 2px 5px rgb(0 0 0 / 18%);
+
   --shadow-md-value: 0 5px 14px rgb(0 0 0 / 22%);
+
   --shadow-lg-value: 0 12px 28px rgb(0 0 0 / 28%);
+
   --shadow-xl-value: 0 24px 48px rgb(0 0 0 / 36%);
 
-  --shadow-brand-value: 0 6px 18px rgb(200 173 127 / 15%);
+  --shadow-brand-value: 0 6px 18px rgb(181 138 74 / 15%);
 }
 
-/* =========================================================
-   6. BASE STYLES
-   ========================================================= */
+/** =========================================================**/
+
+/* 6. BASE STYLES */
+
+/* ========================================================= */
 
 @layer base {
   *,
@@ -309,11 +464,17 @@
     @apply font-sans;
 
     min-height: 100%;
+
     font-synthesis: none;
+
     text-rendering: optimizeLegibility;
+
     -webkit-font-smoothing: antialiased;
+
     -moz-osx-font-smoothing: grayscale;
+
     scroll-behavior: smooth;
+
     scrollbar-gutter: stable;
   }
 
@@ -321,16 +482,22 @@
     @apply bg-background text-foreground;
 
     min-width: 0;
+
     min-height: 100vh;
+
     margin: 0;
 
     font-family: var(--font-sans);
+
     font-size: var(--text-base);
+
     line-height: 1.6;
+
     font-feature-settings: "cv02", "cv03", "cv04", "cv11";
   }
 
-  /* Editorial headings */
+  /** Editorial headings*/
+
   h1,
   h2,
   h3,
@@ -338,14 +505,19 @@
   h5,
   h6 {
     font-family: var(--font-heading);
+
     font-weight: 500;
+
     line-height: 1.15;
+
     letter-spacing: -0.02em;
+
     text-wrap: balance;
   }
 
   h1 {
     font-size: clamp(2.25rem, 5vw, 4.5rem);
+
     line-height: 1.08;
   }
 
@@ -359,13 +531,17 @@
 
   h4 {
     font-size: 1.125rem;
+
     line-height: 1.3;
   }
 
-  /* Functional dashboard typography */
+  /** Functional dashboard typography*/
+
   .dashboard-shell :is(h1, h2, h3, h4, h5, h6) {
     font-family: var(--font-sans);
+
     font-weight: 600;
+
     letter-spacing: -0.025em;
   }
 
@@ -375,6 +551,7 @@
 
   a {
     color: inherit;
+
     text-decoration: none;
   }
 
@@ -399,6 +576,7 @@
   input::placeholder,
   textarea::placeholder {
     color: var(--muted-foreground);
+
     opacity: 1;
   }
 
@@ -414,11 +592,13 @@
 
   ::selection {
     color: #ffffff;
-    background: #8b6b4c;
+
+    background: #173f35;
   }
 
   :focus-visible {
     outline: 2px solid var(--ring);
+
     outline-offset: 3px;
   }
 
@@ -426,14 +606,17 @@
     scroll-margin-top: 6rem;
   }
 
-  /* Scrollbars */
+  /** Scrollbars*/
+
   * {
     scrollbar-width: thin;
+
     scrollbar-color: var(--border) transparent;
   }
 
   ::-webkit-scrollbar {
     width: 8px;
+
     height: 8px;
   }
 
@@ -443,8 +626,11 @@
 
   ::-webkit-scrollbar-thumb {
     background: var(--border);
+
     border: 2px solid transparent;
+
     border-radius: 999px;
+
     background-clip: padding-box;
   }
 
@@ -458,8 +644,11 @@
   *::before,
   *::after {
     animation-duration: 0.01ms !important;
+
     animation-iteration-count: 1 !important;
+
     scroll-behavior: auto !important;
+
     transition-duration: 0.01ms !important;
   }
 }

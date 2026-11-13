@@ -29,7 +29,7 @@ function IssuesTable() {
       key: "status",
       header: "Status",
       cell: (row) => (
-        <span className="**:data-[slot=badge]:rounded-none">
+        <span className="">
           <IssueStatusBadge value={row.status} />
         </span>
       ),

@@ -131,7 +131,7 @@ function Navbar() {
               <Button
                 nativeButton={false}
                 render={<Link to="/dashboard" />}
-                className="h-11 rounded-full px-5 font-semibold"
+                className="h-11 rounded-lg px-5 font-semibold"
                 variant="outline"
               >
                 <LayoutDashboard aria-hidden="true" className="size-4" />
@@ -148,7 +148,7 @@ function Navbar() {
           <Button
             nativeButton={false}
             render={<Link to="/rooms" />}
-            className="h-11 rounded-full px-5 font-semibold"
+            className="h-11 rounded-lg px-5 font-semibold"
             variant="default"
           >
             <Calendar aria-hidden="true" />
@@ -223,7 +223,7 @@ function Navbar() {
                     <Button
                       nativeButton={false}
                       render={<Link to="/login" onClick={closeMenu} />}
-                      className="h-11 w-full rounded-full font-semibold"
+                      className="h-11 w-full rounded-lg font-semibold"
                       variant="outline"
                     >
                       Log in
@@ -231,7 +231,7 @@ function Navbar() {
                     <Button
                       nativeButton={false}
                       render={<Link to="/rooms" onClick={closeMenu} />}
-                      className="h-11 w-full rounded-full font-semibold"
+                      className="h-11 w-full rounded-lg font-semibold"
                       variant="default"
                     >
                       <Calendar aria-hidden="true" className="size-4" />
@@ -378,7 +378,7 @@ function Footer() {
                   disabled={!HOTEL_DETAILS.email}
                   size="icon"
                   aria-label="Send newsletter request"
-                  className="absolute right-1 h-10 w-10 shrink-0 rounded-xl bg-primary text-primary-foreground shadow-sm hover:bg-primary/90"
+                  className="absolute right-1 h-10 w-10 shrink-0 rounded-lg bg-primary text-primary-foreground shadow-sm hover:bg-primary/90"
                 >
                   <ArrowRight aria-hidden="true" className="h-4 w-4" />
                 </Button>

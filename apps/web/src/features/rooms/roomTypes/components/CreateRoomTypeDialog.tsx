@@ -227,7 +227,7 @@ export function CreateRoomTypeDialog({ children }: CreateRoomTypeDialogProps) {
   return (
     <Dialog onOpenChange={handleOpenChange}>
       <DialogTrigger>{children}</DialogTrigger>
-      <DialogContent className="flex max-h-[92vh] max-w-4xl flex-col gap-0 overflow-hidden rounded-2xl border bg-background p-0 shadow-2xl sm:w-full md:min-w-150">
+      <DialogContent className="flex max-h-[92vh] max-w-4xl flex-col gap-0 overflow-hidden rounded-xl border bg-background p-0 shadow-2xl sm:w-full md:min-w-150">
         {/* Header */}
         <DialogHeader className="border-b px-5 py-5 sm:px-7">
           <div className="flex items-start gap-4">

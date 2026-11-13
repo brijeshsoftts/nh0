@@ -445,7 +445,7 @@ export function ContactForm() {
 export function LocationPanel() {
   return (
     <Reveal className="min-w-0">
-      <Card className="overflow-hidden rounded-lg border-border bg-card p-2 shadow-sm">
+      <Card className="overflow-hidden rounded-xl border-border bg-card p-2 shadow-sm">
         <div className="p-3 sm:p-4">
           <h2 className="font-heading text-2xl font-medium text-foreground">
             Our location
@@ -497,7 +497,7 @@ function QuickHelp() {
         {helpOptions.map(
           ({ title, description, href, action, icon: Icon }, index) => (
             <Reveal delay={index * 0.06} key={title}>
-              <Card className="flex h-full flex-col items-center rounded-lg border-border bg-card px-4 py-5 text-center shadow-sm transition-colors hover:border-primary/40">
+              <Card className="flex h-full flex-col items-center rounded-xl border-border bg-card px-4 py-5 text-center shadow-sm transition-colors hover:border-primary/40">
                 <span className="grid size-11 place-items-center rounded-full bg-secondary text-primary">
                   <Icon aria-hidden="true" className="size-5" />
                 </span>

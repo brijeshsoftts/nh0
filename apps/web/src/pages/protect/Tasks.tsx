@@ -25,7 +25,7 @@ export default function TasksPage() {
                 id="btn-add-customer"
                 variant="default"
                 size="sm"
-                className="h-9 gap-1.5 rounded-full bg-foreground px-4 text-xs font-medium text-background hover:bg-foreground/90"
+                className="h-9 gap-1.5 rounded-lg bg-foreground px-4 text-xs font-medium text-background hover:bg-foreground/90"
                 onClick={() => setOpen(true)}
               >
                 <Plus className="h-3.5 w-3.5" />

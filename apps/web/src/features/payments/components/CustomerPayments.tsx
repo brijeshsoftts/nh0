@@ -49,7 +49,7 @@ function PaymentsTable() {
       key: "paymentMethod",
       header: "Payment Method",
       cell: (payment) => (
-        <span className="**:data-[slot=badge]:rounded-none">
+        <span className="">
           <PaymentMethodBadge value={payment.paymentMethod} />
         </span>
       ),
@@ -68,7 +68,7 @@ function PaymentsTable() {
       key: "status",
       header: "Status",
       cell: (payment) => (
-        <span className="**:data-[slot=badge]:rounded-none">
+        <span className="">
           <PaymentStatusBadge value={payment.status} />
         </span>
       ),
@@ -150,7 +150,7 @@ function ActionDropdownMenu({ payment }: { payment: CustomerPayment }) {
         </DropdownMenuTrigger>
         <DropdownMenuContent
           align="end"
-          className="rounded-none **:data-[slot=dropdown-menu-item]:rounded-none"
+          className=" "
         >
           <DropdownMenuItem>
             <Eye />

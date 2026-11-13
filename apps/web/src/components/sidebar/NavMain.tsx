@@ -67,7 +67,7 @@ function NavMainItem({ item }: { item: NavItem; id: number }) {
   if (item.isSection && item.label) {
     return (
       <SidebarGroup className="px-0 py-1 first:pt-0">
-        <SidebarGroupLabel className="h-8 rounded-none px-3 pt-2 pb-1 text-[11px] font-semibold tracking-[0.12em] text-sidebar-foreground/55 uppercase">
+        <SidebarGroupLabel className="h-8  px-3 pt-2 pb-1 text-[11px] font-semibold tracking-[0.12em] text-sidebar-foreground/55 uppercase">
           {item.label}
         </SidebarGroupLabel>
       </SidebarGroup>

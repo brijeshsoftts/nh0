@@ -73,7 +73,7 @@ export function DashboardLayout() {
               type="button"
               variant="ghost"
               size="lg"
-              className="relative hidden h-10 w-10 shrink-0 rounded-full sm:block"
+              className="relative hidden h-10 w-10 shrink-0 rounded-lg sm:block"
               onClick={() => setTheme(theme === "dark" ? "light" : "dark")}
             >
               {theme === "dark" ? (

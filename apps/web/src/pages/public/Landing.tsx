@@ -185,7 +185,7 @@ function HeroSection() {
           <Button
             nativeButton={false}
             render={<Link to="/rooms" />}
-            className="h-12 rounded-full bg-primary px-8 text-sm font-medium text-primary-foreground shadow-md transition-all hover:bg-primary/90"
+            className="h-12 rounded-lg bg-primary px-8 text-sm font-medium text-primary-foreground shadow-md transition-all hover:bg-primary/90"
           >
             Explore Rooms <ArrowRight className="ml-2 h-4 w-4" />
           </Button>
@@ -246,7 +246,7 @@ function AboutSection() {
             <ImageMotion
               src="https://manasresort.in/_next/image?url=%2Fimages%2Frooms%2Frooms-view.jpg&w=1920&q=75"
               alt="Our resort pool"
-              className="h-full w-full rounded-3xl object-cover shadow-sm lg:rounded-[2.5rem]"
+              className="h-full w-full rounded-3xl object-cover shadow-sm lg:rounded-4xl"
               hoverScale={1.03}
             />
             <img />
@@ -285,7 +285,7 @@ function AboutSection() {
             <div className="flex flex-col gap-6 sm:flex-row sm:gap-8">
               {/* Feature 1 */}
               <div className="flex items-center gap-3">
-                <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-[10px] bg-primary text-primary-foreground">
+                <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-lg bg-primary text-primary-foreground">
                   <Bed className="h-5 w-5" />
                 </div>
                 <div className="flex flex-col">
@@ -300,7 +300,7 @@ function AboutSection() {
 
               {/* Feature 2 */}
               <div className="flex items-center gap-3">
-                <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-[10px] bg-primary text-primary-foreground">
+                <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-lg bg-primary text-primary-foreground">
                   <ShieldCheck className="h-5 w-5" />
                 </div>
                 <div className="flex flex-col">
@@ -315,7 +315,7 @@ function AboutSection() {
 
               {/* Feature 3 */}
               <div className="flex items-center gap-3">
-                <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-[10px] bg-primary text-primary-foreground">
+                <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-lg bg-primary text-primary-foreground">
                   <MapPin className="h-5 w-5" />
                 </div>
                 <div className="flex flex-col">
@@ -518,7 +518,7 @@ function TestimonialsSection() {
         <div className="absolute top-0 left-0 z-0 h-10 w-10 rounded-tl-[28px] border-t-2 border-l-2 border-primary/70" />
 
         {/* Main Card */}
-        <Card className="relative z-10 rounded-[24px] border-border/40 bg-card p-7 shadow-[0_4px_24px_rgb(0,0,0,0.04)] md:p-8">
+        <Card className="relative z-10 rounded-xl border-border/40 bg-card p-7 shadow-[0_4px_24px_rgb(0,0,0,0.04)] md:p-8">
           {/* Header: Quotes & Stars inline */}
           <div className="mb-5 flex items-center gap-4">
             {/* Custom Quote Icon matching the chunky, filled style */}
@@ -806,7 +806,7 @@ function CTASection() {
             <Button
               nativeButton={false}
               render={<Link to="/rooms" />}
-              className="group h-11 rounded-full px-7 text-[14px] font-semibold shadow-md transition-all"
+              className="group h-11 rounded-lg px-7 text-[14px] font-semibold shadow-md transition-all"
               variant="secondary"
             >
               Book Your Stay

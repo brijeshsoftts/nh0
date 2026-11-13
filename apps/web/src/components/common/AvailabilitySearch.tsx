@@ -68,7 +68,7 @@ function DatePickerField({
           />
           {format(date, "dd MMM yyyy")}
         </PopoverTrigger>
-        <PopoverContent align="start" className="w-72 rounded-md p-2">
+        <PopoverContent align="start" className="w-72 rounded-lg p-2">
           <Calendar
             mode="single"
             selected={date}
@@ -108,9 +108,7 @@ function GuestCounter({
     <div className="flex items-center justify-between gap-4 py-3">
       <div>
         <p className="text-sm font-medium text-foreground">{label}</p>
-        <p className="mt-0.5 text-[11px] text-muted-foreground">
-          {description}
-        </p>
+        <p className="mt-0.5 text-2xs text-muted-foreground">{description}</p>
       </div>
 
       <div className="flex shrink-0 items-center gap-3">
@@ -322,7 +320,7 @@ export function AvailabilitySearch({
               aria-hidden="true"
             />
           </PopoverTrigger>
-          <PopoverContent align="start" className="w-72 rounded-md p-4 sm:w-80">
+          <PopoverContent align="start" className="w-72 rounded-lg p-4 sm:w-80">
             <div className="mb-2 flex items-center justify-between">
               <p className="font-heading text-lg font-medium text-popover-foreground">
                 Guests

@@ -110,7 +110,7 @@ function SectionHeading({
 }) {
   return (
     <div className="mb-6 space-y-1.5">
-      <p className="text-[11px] font-semibold tracking-[0.18em] text-primary uppercase">
+      <p className="text-2xs font-semibold tracking-[0.18em] text-primary uppercase">
         {eyebrow}
       </p>
       <h2 className="text-xl font-semibold tracking-tight text-foreground sm:text-2xl">
@@ -155,7 +155,12 @@ export default function NewBookingPage() {
     [booking.roomId, rooms]
   );
 
-  if (user?.role !== "ADMIN") {
+  const canAccess =
+    user?.role === "ADMIN" ||
+    user?.role === "MANAGER" ||
+    (user?.role === "STAFF" && user.category === "RECEPTIONIST");
+
+  if (!canAccess) {
     return <Navigate to="/dashboard" replace />;
   }
 
@@ -303,7 +308,7 @@ export default function NewBookingPage() {
               title="Who is this booking for?"
               description="Find an existing customer or create a new customer profile before arranging their stay."
             />
-            <div className="rounded-2xl rounded-none border bg-muted/20 p-4 sm:p-5">
+            <div className="rounded-2xl border bg-muted/20 p-4 sm:p-5">
               <div className="mb-3 flex items-center gap-2">
                 <CircleUserRound className="h-4 w-4 text-primary" />
                 <FieldLabel>Search customer</FieldLabel>
@@ -317,10 +322,10 @@ export default function NewBookingPage() {
               </p>
             </div>
             {selectedCustomer ? (
-              <div className="relative overflow-hidden rounded-2xl rounded-none border border-primary/25 bg-primary/[0.045] p-5">
-                <div className="absolute top-0 right-0 h-24 w-24 rounded-bl-full bg-primary/[0.06]" />
+              <div className="relative overflow-hidden rounded-2xl border border-primary/25 bg-primary/4.5 p-5">
+                <div className="absolute top-0 right-0 h-24 w-24 rounded-bl-full bg-primary/6" />
                 <div className="relative flex items-start gap-4">
-                  <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-none rounded-xl bg-primary/10 text-primary">
+                  <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl bg-primary/10 text-primary">
                     <CircleUserRound className="h-6 w-6" />
                   </div>
                   <div className="min-w-0 flex-1">
@@ -343,7 +348,7 @@ export default function NewBookingPage() {
                 </div>
               </div>
             ) : (
-              <div className="flex items-start gap-3 rounded-none rounded-xl border border-dashed p-4 text-sm text-muted-foreground">
+              <div className="flex items-start gap-3 rounded-xl border border-dashed p-4 text-sm text-muted-foreground">
                 <ShieldCheck className="mt-0.5 h-4 w-4 shrink-0" />
                 <p>
                   Choose a customer to prefill the primary guest details in the
@@ -351,7 +356,7 @@ export default function NewBookingPage() {
                 </p>
               </div>
             )}
-            <div className="flex flex-col justify-between gap-3 rounded-2xl rounded-none border p-4 sm:flex-row sm:items-center sm:px-5">
+            <div className="flex flex-col justify-between gap-3 rounded-2xl border p-4 sm:flex-row sm:items-center sm:px-5">
               <div>
                 <p className="font-medium">New to Nivara?</p>
                 <p className="mt-1 text-sm text-muted-foreground">
@@ -375,7 +380,7 @@ export default function NewBookingPage() {
               title="Plan the guest's stay"
               description="Choose the dates and occupancy first, then search rooms available for the complete stay."
             />
-            <div className="rounded-2xl rounded-none border p-4 sm:p-5">
+            <div className="rounded-2xl border p-4 sm:p-5">
               <div className="mb-4 flex items-center gap-2">
                 <CalendarDays className="h-4 w-4 text-primary" />
                 <h3 className="font-semibold">Stay details</h3>
@@ -463,9 +468,9 @@ export default function NewBookingPage() {
                   />
                 </label>
               </div>
-              <div className="mt-5 flex flex-col gap-3 rounded-none rounded-xl bg-muted/40 p-3 sm:flex-row sm:items-center sm:justify-between sm:px-4">
+              <div className="mt-5 flex flex-col gap-3 rounded-xl bg-muted/40 p-3 sm:flex-row sm:items-center sm:justify-between sm:px-4">
                 <div className="flex items-center gap-3">
-                  <div className="flex h-10 w-10 items-center justify-center rounded-none rounded-xl bg-background">
+                  <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-background">
                     <Users className="h-4 w-4 text-primary" />
                   </div>
                   <div>
@@ -489,7 +494,7 @@ export default function NewBookingPage() {
             <div className="space-y-4">
               <div className="flex flex-wrap items-end justify-between gap-2">
                 <div>
-                  <p className="text-[11px] font-semibold tracking-[0.18em] text-primary uppercase">
+                  <p className="text-2xs font-semibold tracking-[0.18em] text-primary uppercase">
                     Room inventory
                   </p>
                   <h3 className="mt-1 text-lg font-semibold">
@@ -504,8 +509,8 @@ export default function NewBookingPage() {
                 )}
               </div>
               {!roomSearch ? (
-                <div className="rounded-2xl rounded-none border border-dashed px-5 py-10 text-center">
-                  <div className="mx-auto mb-3 flex h-12 w-12 items-center justify-center rounded-2xl rounded-none bg-muted">
+                <div className="rounded-2xl border border-dashed px-5 py-10 text-center">
+                  <div className="mx-auto mb-3 flex h-12 w-12 items-center justify-center rounded-2xl bg-muted">
                     <BedDouble className="h-5 w-5 text-muted-foreground" />
                   </div>
                   <p className="font-medium">
@@ -516,12 +521,12 @@ export default function NewBookingPage() {
                   </p>
                 </div>
               ) : isLoadingRooms ? (
-                <div className="flex items-center justify-center gap-3 rounded-2xl rounded-none border p-10 text-sm text-muted-foreground">
+                <div className="flex items-center justify-center gap-3 rounded-2xl border p-10 text-sm text-muted-foreground">
                   <Loader2 className="h-5 w-5 animate-spin text-primary" />{" "}
                   Checking room availability…
                 </div>
               ) : rooms.length === 0 ? (
-                <div className="rounded-2xl rounded-none border border-dashed px-5 py-10 text-center">
+                <div className="rounded-2xl border border-dashed px-5 py-10 text-center">
                   <BedDouble className="mx-auto mb-3 h-6 w-6 text-muted-foreground" />
                   <p className="font-medium">
                     No rooms available for these dates
@@ -537,7 +542,7 @@ export default function NewBookingPage() {
                     return (
                       <Card
                         key={room.id}
-                        className={`group overflow-hidden rounded-2xl rounded-none p-0 transition-all duration-200 ${isSelected ? "border-primary ring-2 ring-primary/20" : "hover:border-primary/40 hover:shadow-md"}`}
+                        className={`group overflow-hidden rounded-2xl p-0 transition-all duration-200 ${isSelected ? "border-primary ring-2 ring-primary/20" : "hover:border-primary/40 hover:shadow-md"}`}
                       >
                         <div className="relative h-44 overflow-hidden bg-muted sm:h-48">
                           {room.roomType.image?.url ? (
@@ -550,11 +555,11 @@ export default function NewBookingPage() {
                               className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-[1.03]"
                             />
                           ) : (
-                            <div className="flex h-full items-center justify-center bg-gradient-to-br from-muted to-muted/50">
+                            <div className="flex h-full items-center justify-center bg-linear-to-br from-muted to-muted/50">
                               <BedDouble className="h-10 w-10 text-muted-foreground/50" />
                             </div>
                           )}
-                          <div className="absolute inset-x-0 bottom-0 h-20 bg-gradient-to-t from-black/55 to-transparent" />
+                          <div className="absolute inset-x-0 bottom-0 h-20 bg-linear-to-t from-black/55 to-transparent" />
                           <div className="absolute right-4 bottom-3 left-4 flex items-end justify-between gap-3 text-white">
                             <div>
                               <p className="text-xs font-medium tracking-[0.16em] text-white/80 uppercase">
@@ -602,7 +607,7 @@ export default function NewBookingPage() {
                               .map((amenity) => (
                                 <span
                                   key={amenity.id}
-                                  className="rounded-full rounded-none border bg-background px-2.5 py-1 text-xs text-muted-foreground"
+                                  className="rounded-full border bg-background px-2.5 py-1 text-xs text-muted-foreground"
                                 >
                                   {amenity.name}
                                 </span>
@@ -648,9 +653,9 @@ export default function NewBookingPage() {
               )}
             </div>
             {selectedRoom && (
-              <div className="flex flex-col gap-3 rounded-2xl rounded-none border border-primary/25 bg-primary/[0.045] p-4 sm:flex-row sm:items-center sm:justify-between sm:px-5">
+              <div className="flex flex-col gap-3 rounded-2xl border border-primary/25 bg-primary/4.5 p-4 sm:flex-row sm:items-center sm:justify-between sm:px-5">
                 <div className="flex items-center gap-3">
-                  <div className="flex h-10 w-10 items-center justify-center rounded-none rounded-xl bg-primary/10 text-primary">
+                  <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-primary/10 text-primary">
                     <CheckCircle2 className="h-5 w-5" />
                   </div>
                   <div>
@@ -680,9 +685,9 @@ export default function NewBookingPage() {
               title="Who will be staying?"
               description="Enter the details for every adult and child included in this reservation. The primary guest is prefilled from the customer profile where possible."
             />
-            <div className="flex items-center justify-between gap-3 rounded-none rounded-xl bg-muted/40 p-4">
+            <div className="flex items-center justify-between gap-3 rounded-xl bg-muted/40 p-4">
               <div className="flex items-center gap-3">
-                <div className="flex h-10 w-10 items-center justify-center rounded-none rounded-xl bg-background">
+                <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-background">
                   <Users className="h-4 w-4 text-primary" />
                 </div>
                 <div>
@@ -707,11 +712,11 @@ export default function NewBookingPage() {
               {booking.guests.map((guest, index) => (
                 <div
                   key={`${index}-${guest.fullName || "guest"}`}
-                  className="overflow-hidden rounded-2xl rounded-none border"
+                  className="overflow-hidden rounded-2xl border"
                 >
                   <div className="flex items-center justify-between gap-3 border-b bg-muted/25 px-4 py-3 sm:px-5">
                     <div className="flex items-center gap-3">
-                      <div className="flex h-9 w-9 items-center justify-center rounded-none rounded-xl border bg-background text-sm font-semibold text-primary">
+                      <div className="flex h-9 w-9 items-center justify-center rounded-xl border bg-background text-sm font-semibold text-primary">
                         {String(index + 1).padStart(2, "0")}
                       </div>
                       <div>
@@ -770,7 +775,7 @@ export default function NewBookingPage() {
                     <label className="space-y-2">
                       <FieldLabel>Gender</FieldLabel>
                       <select
-                        className="h-10 w-full rounded-md rounded-none border border-input bg-background px-3 text-sm transition-colors outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                        className="h-10 w-full rounded-md border border-input bg-background px-3 text-sm transition-colors outline-none focus-visible:ring-2 focus-visible:ring-ring"
                         value={guest.gender}
                         onChange={(event) =>
                           handleGuestChange(
@@ -829,7 +834,7 @@ export default function NewBookingPage() {
                 rows={4}
                 maxLength={1000}
                 placeholder="Early check-in, accessibility needs, or other preferences…"
-                className="w-full resize-y rounded-none rounded-xl border border-input bg-background px-3.5 py-3 text-sm transition-colors outline-none placeholder:text-muted-foreground focus-visible:ring-2 focus-visible:ring-ring"
+                className="w-full resize-y rounded-xl border border-input bg-background px-3.5 py-3 text-sm transition-colors outline-none placeholder:text-muted-foreground focus-visible:ring-2 focus-visible:ring-ring"
                 value={booking.specialRequest ?? ""}
                 onChange={(event) =>
                   setBooking((current) => ({
@@ -855,7 +860,7 @@ export default function NewBookingPage() {
             />
             <div className="grid gap-5 lg:grid-cols-[1fr_0.8fr]">
               <div className="space-y-4">
-                <div className="rounded-2xl rounded-none border p-4 sm:p-5">
+                <div className="rounded-2xl border p-4 sm:p-5">
                   <div className="mb-4 flex items-center gap-2">
                     <CalendarDays className="h-4 w-4 text-primary" />
                     <h3 className="font-semibold">Stay summary</h3>
@@ -894,8 +899,8 @@ export default function NewBookingPage() {
                       </p>
                     </div>
                   </div>
-                  <div className="mt-4 flex items-center gap-3 rounded-none rounded-xl bg-muted/40 p-3">
-                    <div className="h-14 w-16 shrink-0 overflow-hidden rounded-lg rounded-none bg-muted">
+                  <div className="mt-4 flex items-center gap-3 rounded-xl bg-muted/40 p-3">
+                    <div className="h-14 w-16 shrink-0 overflow-hidden rounded-lg bg-muted">
                       {selectedRoom?.roomType.image?.url ? (
                         <img
                           src={selectedRoom.roomType.image.url}
@@ -941,10 +946,10 @@ export default function NewBookingPage() {
                           paymentMethod: "CASH",
                         }))
                       }
-                      className={`flex items-start gap-3 rounded-2xl rounded-none border p-4 text-left transition-all ${booking.paymentMethod === "CASH" ? "border-primary bg-primary/[0.045] ring-2 ring-primary/15" : "hover:border-primary/40"}`}
+                      className={`flex items-start gap-3 rounded-2xl border p-4 text-left transition-all ${booking.paymentMethod === "CASH" ? "border-primary bg-primary/4.5 ring-2 ring-primary/15" : "hover:border-primary/40"}`}
                     >
                       <div
-                        className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-none rounded-xl ${booking.paymentMethod === "CASH" ? "bg-primary/10 text-primary" : "bg-muted text-muted-foreground"}`}
+                        className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-xl ${booking.paymentMethod === "CASH" ? "bg-primary/10 text-primary" : "bg-muted text-muted-foreground"}`}
                       >
                         <Wallet className="h-5 w-5" />
                       </div>
@@ -966,10 +971,10 @@ export default function NewBookingPage() {
                           paymentMethod: "ONLINE",
                         }))
                       }
-                      className={`flex items-start gap-3 rounded-2xl rounded-none border p-4 text-left transition-all ${booking.paymentMethod === "ONLINE" ? "border-primary bg-primary/[0.045] ring-2 ring-primary/15" : "hover:border-primary/40"}`}
+                      className={`flex items-start gap-3 rounded-2xl border p-4 text-left transition-all ${booking.paymentMethod === "ONLINE" ? "border-primary bg-primary/4.5 ring-2 ring-primary/15" : "hover:border-primary/40"}`}
                     >
                       <div
-                        className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-none rounded-xl ${booking.paymentMethod === "ONLINE" ? "bg-primary/10 text-primary" : "bg-muted text-muted-foreground"}`}
+                        className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-xl ${booking.paymentMethod === "ONLINE" ? "bg-primary/10 text-primary" : "bg-muted text-muted-foreground"}`}
                       >
                         <CreditCard className="h-5 w-5" />
                       </div>
@@ -990,7 +995,7 @@ export default function NewBookingPage() {
                   </p>
                 </div>
               </div>
-              <div className="h-fit overflow-hidden rounded-2xl rounded-none border bg-card">
+              <div className="h-fit overflow-hidden rounded-2xl border bg-card">
                 <div className="border-b bg-muted/25 p-5">
                   <p className="text-xs font-semibold tracking-[0.16em] text-primary uppercase">
                     Price breakdown
@@ -1023,7 +1028,7 @@ export default function NewBookingPage() {
                       Inclusive of calculated GST
                     </p>
                   </div>
-                  <div className="rounded-none rounded-xl bg-muted/40 p-3 text-xs leading-5 text-muted-foreground">
+                  <div className="rounded-xl bg-muted/40 p-3 text-xs leading-5 text-muted-foreground">
                     <ShieldCheck className="mr-1.5 inline h-3.5 w-3.5 text-primary" />
                     Confirm the final amount before completing the reservation.
                   </div>
@@ -1036,13 +1041,13 @@ export default function NewBookingPage() {
       case 5:
         return (
           <div className="space-y-6">
-            <div className="rounded-2xl rounded-none border border-primary/25 bg-primary/[0.045] p-5 sm:p-6">
+            <div className="rounded-2xl border border-primary/25 bg-primary/4.5 p-5 sm:p-6">
               <div className="flex items-start gap-4">
-                <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl rounded-none bg-primary/10 text-primary">
+                <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-primary/10 text-primary">
                   <FileCheck2 className="h-6 w-6" />
                 </div>
                 <div>
-                  <p className="text-[11px] font-semibold tracking-[0.18em] text-primary uppercase">
+                  <p className="text-2xs font-semibold tracking-[0.18em] text-primary uppercase">
                     Final step
                   </p>
                   <h2 className="mt-1 text-xl font-semibold sm:text-2xl">
@@ -1058,13 +1063,13 @@ export default function NewBookingPage() {
             </div>
             <div className="grid gap-5 lg:grid-cols-[1fr_300px]">
               <div className="space-y-4">
-                <div className="rounded-2xl rounded-none border p-4 sm:p-5">
+                <div className="rounded-2xl border p-4 sm:p-5">
                   <div className="mb-4 flex items-center justify-between gap-3">
                     <h3 className="font-semibold">Reservation details</h3>
                     <Badge variant="outline">Draft review</Badge>
                   </div>
                   <div className="grid gap-4 sm:grid-cols-2">
-                    <div className="rounded-none rounded-xl bg-muted/30 p-3">
+                    <div className="rounded-xl bg-muted/30 p-3">
                       <p className="text-xs text-muted-foreground">Customer</p>
                       <p className="mt-1 font-semibold">
                         {selectedCustomer?.fullName ?? "—"}
@@ -1075,7 +1080,7 @@ export default function NewBookingPage() {
                           "Contact not provided"}
                       </p>
                     </div>
-                    <div className="rounded-none rounded-xl bg-muted/30 p-3">
+                    <div className="rounded-xl bg-muted/30 p-3">
                       <p className="text-xs text-muted-foreground">
                         Stay duration
                       </p>
@@ -1088,8 +1093,8 @@ export default function NewBookingPage() {
                       </p>
                     </div>
                   </div>
-                  <div className="mt-4 flex items-center gap-3 rounded-none rounded-xl border p-3">
-                    <div className="h-16 w-20 shrink-0 overflow-hidden rounded-lg rounded-none bg-muted">
+                  <div className="mt-4 flex items-center gap-3 rounded-xl border p-3">
+                    <div className="h-16 w-20 shrink-0 overflow-hidden rounded-lg bg-muted">
                       {selectedRoom?.roomType.image?.url ? (
                         <img
                           src={selectedRoom.roomType.image.url}
@@ -1128,7 +1133,7 @@ export default function NewBookingPage() {
                     </Button>
                   </div>
                 </div>
-                <div className="rounded-2xl rounded-none border p-4 sm:p-5">
+                <div className="rounded-2xl border p-4 sm:p-5">
                   <div className="mb-4 flex items-center justify-between gap-3">
                     <h3 className="font-semibold">Guest list</h3>
                     <Button
@@ -1146,7 +1151,7 @@ export default function NewBookingPage() {
                         key={`${index}-${guest.fullName || "guest"}`}
                         className="flex items-center gap-3"
                       >
-                        <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full rounded-none bg-muted text-xs font-semibold">
+                        <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-muted text-xs font-semibold">
                           {guest.fullName
                             .trim()
                             .split(/\s+/)
@@ -1182,7 +1187,7 @@ export default function NewBookingPage() {
                   )}
                 </div>
               </div>
-              <aside className="h-fit overflow-hidden rounded-2xl rounded-none border">
+              <aside className="h-fit overflow-hidden rounded-2xl border">
                 <div className="bg-foreground p-5 text-background">
                   <div className="flex items-center gap-2 text-background/70">
                     <Sparkles className="h-4 w-4" />
@@ -1222,7 +1227,7 @@ export default function NewBookingPage() {
                       {booking.paymentMethod === "CASH" ? "Cash" : "Online"}
                     </span>
                   </div>
-                  <div className="rounded-none rounded-xl bg-muted/40 p-3 text-xs leading-5 text-muted-foreground">
+                  <div className="rounded-xl bg-muted/40 p-3 text-xs leading-5 text-muted-foreground">
                     <MapPin className="mr-1 inline h-3.5 w-3.5" />
                     Cash bookings are confirmed and paid on creation. Online
                     payments remain pending until verified.
@@ -1238,11 +1243,11 @@ export default function NewBookingPage() {
   };
 
   return (
-    <div className="mx-auto w-full max-w-[1440px] space-y-6 pb-8">
+    <div className="mx-auto w-full max-w-360 space-y-6 pb-8">
       <header className="flex flex-col justify-between gap-4 border-b pb-5 sm:flex-row sm:items-end">
         <div>
           <div className="flex items-center gap-3">
-            <div className="flex h-11 w-11 items-center justify-center rounded-2xl rounded-none bg-primary/10 text-primary">
+            <div className="flex h-11 w-11 items-center justify-center rounded-2xl bg-primary/10 text-primary">
               <CalendarDays className="h-5 w-5" />
             </div>
             <div>
@@ -1257,16 +1262,16 @@ export default function NewBookingPage() {
         </div>
         <Badge
           variant="outline"
-          className="w-fit gap-1.5 rounded-full rounded-none px-3 py-1.5 text-xs"
+          className="w-fit gap-1.5 rounded-full px-3 py-1.5 text-xs"
         >
-          <span className="h-1.5 w-1.5 rounded-full rounded-none bg-primary" />
+          <span className="h-1.5 w-1.5 rounded-full bg-primary" />
           Step {step} of {TOTAL_STEPS}
         </Badge>
       </header>
 
       <nav
         aria-label="Booking progress"
-        className="rounded-2xl rounded-none border bg-card p-3 sm:p-4"
+        className="rounded-2xl border bg-card p-3 sm:p-4"
       >
         <div className="mb-4 flex items-center justify-between gap-3 px-1">
           <p className="text-sm font-semibold">Reservation progress</p>
@@ -1274,9 +1279,9 @@ export default function NewBookingPage() {
             {Math.round(((step - 1) / (TOTAL_STEPS - 1)) * 100)}% complete
           </p>
         </div>
-        <div className="mb-4 h-1.5 overflow-hidden rounded-full rounded-none bg-muted">
+        <div className="mb-4 h-1.5 overflow-hidden rounded-full bg-muted">
           <div
-            className="h-full rounded-full rounded-none bg-primary transition-all duration-300"
+            className="h-full rounded-full bg-primary transition-all duration-300"
             style={{ width: `${((step - 1) / (TOTAL_STEPS - 1)) * 100}%` }}
           />
         </div>
@@ -1295,10 +1300,10 @@ export default function NewBookingPage() {
                 }}
                 disabled={number >= step}
                 aria-current={active ? "step" : undefined}
-                className={`group flex min-w-0 flex-col items-center gap-2 rounded-none rounded-xl px-1 py-2 text-center transition-colors sm:flex-row sm:gap-3 sm:px-3 sm:text-left ${active ? "bg-primary/[0.07]" : ""} ${number < step ? "cursor-pointer hover:bg-muted/70" : "cursor-default"}`}
+                className={`group flex min-w-0 flex-col items-center gap-2 rounded-xl px-1 py-2 text-center transition-colors sm:flex-row sm:gap-3 sm:px-3 sm:text-left ${active ? "bg-primary/[0.07]" : ""} ${number < step ? "cursor-pointer hover:bg-muted/70" : "cursor-default"}`}
               >
                 <span
-                  className={`flex h-9 w-9 shrink-0 items-center justify-center rounded-none rounded-xl border transition-colors ${active ? "border-primary bg-primary text-primary-foreground" : complete ? "border-primary/20 bg-primary/10 text-primary" : "border-border bg-background text-muted-foreground"}`}
+                  className={`flex h-9 w-9 shrink-0 items-center justify-center rounded-xl border transition-colors ${active ? "border-primary bg-primary text-primary-foreground" : complete ? "border-primary/20 bg-primary/10 text-primary" : "border-border bg-background text-muted-foreground"}`}
                 >
                   {complete ? (
                     <Check className="h-4 w-4" />
@@ -1308,7 +1313,7 @@ export default function NewBookingPage() {
                 </span>
                 <span className="min-w-0">
                   <span
-                    className={`block truncate text-[11px] font-semibold sm:text-sm ${active ? "text-foreground" : complete ? "text-foreground" : "text-muted-foreground"}`}
+                    className={`block truncate text-2xs font-semibold sm:text-sm ${active ? "text-foreground" : complete ? "text-foreground" : "text-muted-foreground"}`}
                   >
                     {item.title}
                   </span>
@@ -1323,7 +1328,7 @@ export default function NewBookingPage() {
       </nav>
 
       <main className="grid items-start gap-5 xl:grid-cols-[minmax(0,1fr)_280px]">
-        <Card className="min-w-0 rounded-2xl rounded-none border bg-card p-4 shadow-sm sm:p-6 lg:p-7">
+        <Card className="min-w-0 rounded-xl border bg-card p-4 shadow-sm sm:p-6 lg:p-7">
           {renderStepContent()}
           <div className="mt-8 flex items-center justify-between gap-3 border-t pt-5">
             <Button
@@ -1366,7 +1371,7 @@ export default function NewBookingPage() {
           </div>
         </Card>
         <aside className="hidden space-y-4 xl:block">
-          <div className="rounded-2xl rounded-none border bg-card p-5">
+          <div className="rounded-2xl border bg-card p-5">
             <div className="flex items-center gap-2">
               <ShieldCheck className="h-4 w-4 text-primary" />
               <p className="text-sm font-semibold">Booking checklist</p>
@@ -1401,12 +1406,12 @@ export default function NewBookingPage() {
               ].map((item) => (
                 <div key={item.label} className="flex items-start gap-2.5">
                   <span
-                    className={`mt-0.5 flex h-5 w-5 shrink-0 items-center justify-center rounded-full rounded-none ${item.done ? "bg-primary/10 text-primary" : "bg-muted text-muted-foreground"}`}
+                    className={`mt-0.5 flex h-5 w-5 shrink-0 items-center justify-center rounded-full ${item.done ? "bg-primary/10 text-primary" : "bg-muted text-muted-foreground"}`}
                   >
                     {item.done ? (
                       <Check className="h-3 w-3" />
                     ) : (
-                      <span className="h-1.5 w-1.5 rounded-full rounded-none bg-current" />
+                      <span className="h-1.5 w-1.5 rounded-full bg-current" />
                     )}
                   </span>
                   <span
@@ -1418,8 +1423,8 @@ export default function NewBookingPage() {
               ))}
             </div>
           </div>
-          <div className="rounded-2xl rounded-none border bg-muted/25 p-5">
-            <div className="flex h-9 w-9 items-center justify-center rounded-none rounded-xl bg-background text-primary">
+          <div className="rounded-2xl border bg-muted/25 p-5">
+            <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-background text-primary">
               <Sparkles className="h-4 w-4" />
             </div>
             <p className="mt-3 text-sm font-semibold">Nivara standard</p>
@@ -1429,7 +1434,7 @@ export default function NewBookingPage() {
             </p>
           </div>
           {step >= 2 && (
-            <div className="rounded-2xl rounded-none border p-5">
+            <div className="rounded-2xl border p-5">
               <p className="text-xs font-semibold tracking-[0.16em] text-muted-foreground uppercase">
                 Current estimate
               </p>

@@ -155,7 +155,7 @@ function IncludedAmenitiesBar() {
   return (
     <section className="flex w-full justify-center bg-background px-4 py-8 font-sans md:px-8 md:py-12">
       {/* Main Container Card */}
-      <div className="flex w-full max-w-300 flex-col items-center gap-8 rounded-2xl border border-border/60 bg-secondary/40 p-8 shadow-sm md:rounded-[20px] md:p-10 lg:flex-row lg:gap-12">
+      <div className="flex w-full max-w-300 flex-col items-center gap-8 rounded-2xl border border-border/60 bg-secondary/40 p-8 shadow-sm md:rounded-2xl md:p-10 lg:flex-row lg:gap-12">
         {/* Left: Heading */}
         <div className="shrink-0 text-center lg:text-left">
           <h3 className="font-heading text-2xl leading-tight tracking-tight text-foreground md:text-[28px]">

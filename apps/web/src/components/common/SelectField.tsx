@@ -54,51 +54,46 @@ export function SelectField<
 
   return (
     <div className="space-y-1">
-      <div className="space-y-1">
-        <Label htmlFor={id}>{label}</Label>
-        <Controller
-          name={name}
-          control={control}
-          render={({ field }) => {
-            const selectedOption = options.find(
-              (option) => option.id === field.value
-            );
+      <Label htmlFor={id}>{label}</Label>
 
-            return (
-              <Select
-                value={field.value}
-                onValueChange={field.onChange}
-                disabled={disabled}
+      <Controller
+        name={name}
+        control={control}
+        render={({ field }) => {
+          const selectedOption = options.find(
+            (option) => option.id === String(field.value ?? "")
+          );
+
+          return (
+            <Select
+              value={field.value == null ? "" : String(field.value)}
+              onValueChange={field.onChange}
+              disabled={disabled}
+            >
+              <SelectTrigger
+                id={id}
+                className="h-10! w-full"
+                aria-invalid={!!error}
+                aria-describedby={error ? `${id}-error` : undefined}
               >
-                <SelectTrigger
-                  id={id}
-                  className="h-10! w-full rounded-none"
-                  aria-invalid={!!error}
-                  aria-describedby={error ? `${id}-error` : undefined}
-                >
-                  <SelectValue placeholder={placeholder}>
-                    {selectedOption
-                      ? formatString(selectedOption.name)
-                      : undefined}
-                  </SelectValue>
-                </SelectTrigger>
+                <SelectValue placeholder={placeholder}>
+                  {selectedOption
+                    ? formatString(selectedOption.name)
+                    : undefined}
+                </SelectValue>
+              </SelectTrigger>
 
-                <SelectContent className={cn("h-10 rounded-none", className)}>
-                  {options.map((option) => (
-                    <SelectItem
-                      key={option.id}
-                      value={option.id}
-                      className="rounded-none"
-                    >
-                      {formatString(option.name)}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            );
-          }}
-        />
-      </div>
+              <SelectContent className={cn("max-h-60", className)}>
+                {options.map((option) => (
+                  <SelectItem key={option.id} value={option.id}>
+                    {formatString(option.name)}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          );
+        }}
+      />
 
       {error && (
         <span id={`${id}-error`} className="text-sm text-destructive">

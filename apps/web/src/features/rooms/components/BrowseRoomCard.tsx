@@ -27,10 +27,10 @@ export function BrowseRoomCard({ room }: { room: BrowseRoom }) {
   }).format(room.pricePerNight);
 
   return (
-    <Card className="group overflow-hidden rounded-lg border-border bg-card py-0 shadow-sm transition-shadow hover:shadow-md">
+    <Card className="group overflow-hidden rounded-xl border-border bg-card py-0 shadow-sm transition-shadow hover:shadow-md">
       <div className="flex flex-col sm:flex-row">
         {/* Image */}
-        <div className="relative h-44 shrink-0 overflow-hidden bg-muted sm:h-auto sm:min-h-[190px] sm:w-40 md:w-48">
+        <div className="relative h-44 shrink-0 overflow-hidden bg-muted sm:h-auto sm:min-h-47.5 sm:w-40 md:w-48">
           <img
             src={room.image}
             alt={room.name}
@@ -78,7 +78,7 @@ export function BrowseRoomCard({ room }: { room: BrowseRoom }) {
             {/* Price & Availability */}
             <div className="flex flex-wrap items-end justify-between gap-2 border-t border-border pt-3">
               <div>
-                <p className="text-[11px] text-muted-foreground">
+                <p className="text-2xs text-muted-foreground">
                   Price per night
                 </p>
                 <p className="text-xl leading-tight font-bold text-card-foreground">

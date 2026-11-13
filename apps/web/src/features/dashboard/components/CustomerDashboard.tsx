@@ -107,7 +107,7 @@ function NextBookingCard() {
               You don’t have an upcoming booking yet.
             </p>
             <Link
-              to="/dashboard/rooms"
+              to="/rooms"
               className="text-sm font-medium text-primary underline-offset-4 hover:underline"
             >
               Browse rooms
@@ -147,10 +147,10 @@ const QUICK_ACTIONS: {
   href: string;
   icon: LucideIcon;
 }[] = [
-  { label: "Browse rooms", href: "/dashboard/rooms", icon: BedDouble },
+  { label: "Browse rooms", href: "/rooms", icon: BedDouble },
   {
     label: "New booking",
-    href: "/dashboard/bookings/new",
+    href: "/rooms",
     icon: CalendarPlus,
   },
   {
