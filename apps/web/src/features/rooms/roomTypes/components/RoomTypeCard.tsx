@@ -54,7 +54,7 @@ export function RoomTypeCard({ roomType }: RoomTypeCardProps) {
         }}
         className="h-full"
       >
-        <Card className="group flex h-full flex-col overflow-hidden rounded-none border-border/60 bg-card p-0 shadow-sm transition-shadow duration-300 hover:shadow-xl">
+        <Card className="group flex h-full flex-col overflow-hidden rounded-xl border-border/60 bg-card p-0 shadow-sm transition-shadow duration-300 hover:shadow-xl">
           {/* ───────────────── Image ───────────────── */}
           <div className="relative aspect-16/10 overflow-hidden bg-muted">
             {roomType.primaryImage?.url ? (
@@ -121,12 +121,12 @@ export function RoomTypeCard({ roomType }: RoomTypeCardProps) {
                   {formattedPrice}
                 </p>
 
-                <p className="text-[11px] text-muted-foreground">per night</p>
+                <p className="text-2xs text-muted-foreground">per night</p>
               </div>
             </div>
 
             {/* Occupancy */}
-            <div className="mt-5 grid grid-cols-3 divide-x rounded-none border border-border/60 bg-muted/30 py-3">
+            <div className="mt-5 grid grid-cols-3 divide-x rounded-lg border border-border/60 bg-muted/30 py-3">
               <InfoItem
                 icon={Users}
                 label="Guests"
@@ -182,7 +182,7 @@ export function RoomTypeCard({ roomType }: RoomTypeCardProps) {
                         {visibleAmenities.map((amenity, index) => (
                           <span
                             key={`${amenity.name}-${index}`}
-                            className="border border-border bg-secondary px-2.5 py-1.5 text-[10px] text-secondary-foreground"
+                            className="rounded-full border border-border bg-secondary px-2.5 py-1.5 text-[10px] text-secondary-foreground"
                           >
                             {amenity.name}
                           </span>
@@ -199,7 +199,7 @@ export function RoomTypeCard({ roomType }: RoomTypeCardProps) {
                     {remainingAmenities > 0 && (
                       <Badge
                         variant="outline"
-                        className="rounded-md px-2 py-1 text-xs font-normal text-muted-foreground"
+                        className="rounded-full px-2 py-1 text-xs font-normal text-muted-foreground"
                       >
                         +{remainingAmenities} more
                       </Badge>
@@ -216,7 +216,7 @@ export function RoomTypeCard({ roomType }: RoomTypeCardProps) {
               type="button"
               variant="outline"
               size="sm"
-              className="gap-2 rounded-none"
+              className="gap-2"
               onClick={() => setEditOpen(true)}
             >
               <Pencil className="size-3.5" />
@@ -226,27 +226,17 @@ export function RoomTypeCard({ roomType }: RoomTypeCardProps) {
               type="button"
               variant="outline"
               size="sm"
-              className="gap-2 rounded-none"
+              className="gap-2"
               onClick={() => setOpen(true)}
             >
               <Eye className="size-3.5" />
               View
             </Button>
-            <Button
-              type="button"
-              variant="outline"
-              size="sm"
-              className="gap-2 rounded-none"
-            >
+            <Button type="button" variant="outline" size="sm" className="gap-2">
               Book Now
             </Button>
 
-            <Button
-              type="button"
-              variant="outline"
-              size="sm"
-              className="gap-2 rounded-none"
-            >
+            <Button type="button" variant="outline" size="sm" className="gap-2">
               <Trash2 className="size-3.5" />
               Delete
             </Button>

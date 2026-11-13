@@ -12,13 +12,14 @@ import {
   TaskStatus,
   UserRole,
 } from '../../types/prisma.types';
-import { StatItem } from '../../types/shared.types';
 
 import { PaymentsQueryDto } from './dto/payments-query.dto';
 import { StaysQueryDto } from './dto/stays-query.dto';
 import {
   CustomerNextBooking,
   DashboardPayments,
+  DashboardStat,
+  RoomStatusCount,
   Stays,
   TaskItem,
 } from './dashboard.types';
@@ -34,7 +35,7 @@ export class DashboardService {
     userId: string,
     role: UserRole,
     category?: Category,
-  ): Promise<StatItem[]> {
+  ): Promise<DashboardStat[]> {
     if (role === UserRole.ADMIN || role === UserRole.MANAGER) {
       return this.adminStats();
     }
@@ -304,6 +305,25 @@ export class DashboardService {
     }));
   }
 
+  async getRoomStatus(): Promise<RoomStatusCount[]> {
+    const roomCounts = await this.prismaService.room.groupBy({
+      by: ['occupancyStatus'],
+      where: { isActive: true },
+      _count: { _all: true },
+    });
+    const countByStatus = new Map(
+      roomCounts.map(({ occupancyStatus, _count }) => [
+        occupancyStatus,
+        _count._all,
+      ]),
+    );
+
+    return Object.values(OccupancyStatus).map((status) => ({
+      status,
+      count: countByStatus.get(status) ?? 0,
+    }));
+  }
+
   async getTasks(userId: string): Promise<TaskItem[]> {
     const staff = await this.prismaService.staff.findUnique({
       where: { userId },
@@ -431,7 +451,7 @@ export class DashboardService {
     };
   }
 
-  private async housekeeperStats(userId: string): Promise<StatItem[]> {
+  private async housekeeperStats(userId: string): Promise<DashboardStat[]> {
     const today = new Date();
     today.setHours(0, 0, 0, 0);
     const tomorrow = new Date(today);
@@ -454,13 +474,6 @@ export class DashboardService {
         this.prismaService.housekeepingTask.count({
           where: {
             assignedTo: userId,
-            scheduledDate: { gte: today, lt: tomorrow },
-            status: TaskStatus.IN_PROGRESS,
-          },
-        }),
-        this.prismaService.housekeepingTask.count({
-          where: {
-            assignedTo: userId,
             status: TaskStatus.COMPLETED,
             completedAt: { gte: today, lt: tomorrow },
           },
@@ -476,41 +489,33 @@ export class DashboardService {
 
     return [
       {
-        id: 'pending-tasks',
-        title: 'My pending tasks',
-        value: String(pendingTasks),
-        description: 'Assigned tasks waiting to start',
+        label: 'My pending tasks',
+        value: pendingTasks,
+        link: '/dashboard/tasks?status=PENDING',
         icon: 'ClipboardList',
-        tone: 'gold',
       },
       {
-        id: 'in-progress-tasks',
-        title: 'In progress',
-        value: String(inProgressTasks),
-        description: 'Assigned tasks currently underway',
+        label: 'In progress',
+        value: inProgressTasks,
+        link: '/dashboard/tasks?status=IN_PROGRESS',
         icon: 'LoaderCircle',
-        tone: 'sky',
       },
       {
-        id: 'completed-today',
-        title: 'Completed today',
-        value: String(completedToday),
-        description: 'Tasks finished today',
+        label: 'Completed today',
+        value: completedToday,
+        link: '/dashboard/tasks?status=COMPLETED',
         icon: 'CircleCheck',
-        tone: 'emerald',
       },
       {
-        id: 'overdue-tasks',
-        title: 'Overdue tasks',
-        value: String(overdueTasks),
-        description: 'Unfinished tasks past their due date',
+        label: 'Overdue tasks',
+        value: overdueTasks,
+        link: '/dashboard/tasks?status=PENDING',
         icon: 'CalendarOff',
-        tone: 'rose',
       },
     ];
   }
 
-  private async customerStats(userId: string): Promise<StatItem[]> {
+  private async customerStats(userId: string): Promise<DashboardStat[]> {
     const now = new Date();
     const today = new Date(now);
     today.setHours(0, 0, 0, 0);
@@ -579,181 +584,85 @@ export class DashboardService {
       (outstandingInvoices._sum.totalAmount ?? 0) -
         (completedPayments._sum.amount ?? 0),
     );
-    const formatAmount = (amount: number) =>
-      `₹${amount.toLocaleString('en-IN')}`;
-
     return [
       {
-        id: 'upcoming-bookings',
-        title: 'Upcoming Bookings',
-        value: String(upcomingBookings),
-        description: 'Confirmed future stays',
+        label: 'Upcoming bookings',
+        value: upcomingBookings,
+        link: '/dashboard/bookings',
         icon: 'CalendarCheck',
-        tone: 'gold',
       },
       {
-        id: 'active-stay',
-        title: 'Active Stay',
-        value: currentStay
-          ? currentStay.bookingRoom?.assignedRoom?.roomNumber
-            ? `Room ${currentStay.bookingRoom.assignedRoom.roomNumber}`
-            : 'Checked in'
-          : '0',
-        description: currentStay ? 'Currently checked in' : 'No active stay',
+        label: 'Active stay',
+        value: currentStay ? 1 : 0,
+        link: '/dashboard/bookings',
         icon: 'KeyRound',
-        tone: currentStay ? 'emerald' : 'sky',
       },
       {
-        id: 'pending-payment',
-        title: 'Pending Payment',
-        value: formatAmount(outstandingBalance),
-        description: 'Amount due across unpaid bookings',
+        label: 'Pending balance (INR)',
+        value: outstandingBalance,
+        link: '/dashboard/invoices',
         icon: 'IndianRupee',
-        tone: 'rose',
       },
       {
-        id: 'past-bookings',
-        title: 'Past Bookings',
-        value: String(pastStays),
-        description: 'Completed bookings',
+        label: 'Past bookings',
+        value: pastStays,
+        link: '/dashboard/bookings',
         icon: 'CalendarCheck',
-        tone: 'sky',
       },
     ];
   }
 
-  private async adminStats(): Promise<StatItem[]> {
+  private async adminStats(): Promise<DashboardStat[]> {
     const now = new Date();
-    const today = new Date(now);
-    today.setHours(0, 0, 0, 0);
-    const tomorrow = new Date(today);
-    tomorrow.setDate(tomorrow.getDate() + 1);
     const monthStart = new Date(now.getFullYear(), now.getMonth(), 1);
     const nextMonth = new Date(now.getFullYear(), now.getMonth() + 1, 1);
-
-    const [
-      totalRooms,
-      totalCustomers,
-      totalStaff,
-      activeRooms,
-      occupiedRooms,
-      arrivals,
-      monthlyRevenue,
-      openIssues,
-    ] = await Promise.all([
-      this.prismaService.room.count(),
-      this.prismaService.user.count({
-        where: { role: UserRole.CUSTOMER, softDeletedAt: null },
-      }),
-      this.prismaService.staff.count({
-        where: { user: { is: { softDeletedAt: null } } },
-      }),
-      this.prismaService.room.count({ where: { isActive: true } }),
-      this.prismaService.room.count({
-        where: {
-          isActive: true,
-          occupancyStatus: OccupancyStatus.OCCUPIED,
-        },
-      }),
-      this.prismaService.booking.count({
-        where: {
-          checkInDate: { gte: today, lt: tomorrow },
-          status: { in: [BookingStatus.PENDING, BookingStatus.CONFIRMED] },
-        },
-      }),
-      this.prismaService.payment.aggregate({
-        where: {
-          paymentStatus: PaymentStatus.COMPLETED,
-          paidAt: { gte: monthStart, lt: nextMonth },
-        },
-        _sum: { amount: true },
-      }),
-      this.prismaService.issue.count({
-        where: {
-          status: { in: [IssueStatus.OPEN, IssueStatus.IN_PROGRESS] },
-        },
-      }),
-    ]);
-
-    const occupancyRate = activeRooms
-      ? Math.round((occupiedRooms / activeRooms) * 100)
-      : 0;
-    const revenue = monthlyRevenue._sum.amount ?? 0;
-    const formattedRevenue = new Intl.NumberFormat('en-IN', {
-      style: 'currency',
-      currency: 'INR',
-      notation: 'compact',
-      maximumFractionDigits: 1,
-    }).format(revenue);
+    const [totalRooms, totalCustomers, totalStaff, monthlyRevenue] =
+      await Promise.all([
+        this.prismaService.room.count(),
+        this.prismaService.user.count({
+          where: { role: UserRole.CUSTOMER, softDeletedAt: null },
+        }),
+        this.prismaService.staff.count({
+          where: { user: { is: { softDeletedAt: null } } },
+        }),
+        this.prismaService.payment.aggregate({
+          where: {
+            paymentStatus: PaymentStatus.COMPLETED,
+            paidAt: { gte: monthStart, lt: nextMonth },
+          },
+          _sum: { amount: true },
+        }),
+      ]);
 
     return [
       {
-        id: 'admin-total-rooms',
-        title: 'Total rooms',
-        value: totalRooms.toLocaleString(),
-        description: 'Active and inactive rooms',
+        label: 'Total rooms',
+        value: totalRooms,
+        link: '/dashboard/rooms',
         icon: 'BedDouble',
-        tone: 'sky',
-        link: '/rooms',
       },
       {
-        id: 'admin-total-customers',
-        title: 'Total customers',
-        value: totalCustomers.toLocaleString(),
-        description: 'Registered customer accounts',
+        label: 'Total customers',
+        value: totalCustomers,
+        link: '/dashboard/customers',
         icon: 'Users',
-        tone: 'gold',
-        link: '/customers',
       },
       {
-        id: 'admin-total-staff',
-        title: 'Total staff',
-        value: totalStaff.toLocaleString(),
-        description: 'Operational staff accounts',
-        icon: 'Users',
-        tone: 'teal',
-        link: '/staff',
+        label: 'Total staff',
+        value: totalStaff,
+        link: '/dashboard/staff',
+        icon: 'UserCheck',
       },
       {
-        id: 'occupancy-rate',
-        title: 'Occupancy rate',
-        value: `${occupancyRate}%`,
-        description: 'Occupied rooms ÷ active rooms',
-        icon: 'BedDouble',
-        tone: 'emerald',
-        link: '/rooms?status=occupied',
-      },
-      {
-        id: 'todays-arrivals',
-        title: "Today's arrivals",
-        value: String(arrivals),
-        description: 'Expected check-ins',
-        icon: 'LogIn',
-        tone: 'gold',
-        link: '/bookings?checkIn=today',
-      },
-      {
-        id: 'monthly-revenue',
-        title: 'Revenue this month',
-        value: formattedRevenue,
-        description: 'Successful payments received',
+        label: 'Revenue',
+        value: monthlyRevenue._sum.amount ?? 0,
+        link: '/dashboard/payments',
         icon: 'IndianRupee',
-        tone: 'teal',
-        link: '/payments',
-      },
-      {
-        id: 'open-issues',
-        title: 'Open issues',
-        value: String(openIssues),
-        description: 'Unresolved maintenance issues',
-        icon: 'Wrench',
-        tone: 'rose',
-        link: '/issues',
       },
     ];
   }
 
-  private async receptionistStats(): Promise<StatItem[]> {
+  private async receptionistStats(): Promise<DashboardStat[]> {
     const today = new Date();
     today.setHours(0, 0, 0, 0);
     const tomorrow = new Date(today);
@@ -795,37 +704,28 @@ export class DashboardService {
 
     return [
       {
-        id: 'expected-arrivals',
-        title: 'Expected arrivals',
-        value: String(arrivals),
-        description: 'Bookings scheduled to check in today',
+        label: 'Expected arrivals',
+        value: arrivals,
+        link: '/dashboard/bookings',
         icon: 'LogIn',
-        tone: 'gold',
       },
       {
-        id: 'expected-departures',
-        title: 'Expected departures',
-        value: String(departures),
-        description: 'Bookings scheduled to check out today',
+        label: 'Expected departures',
+        value: departures,
+        link: '/dashboard/bookings',
         icon: 'LogOut',
-        tone: 'violet',
       },
       {
-        id: 'available-rooms',
-        title: 'Available rooms',
-        value: String(availableRooms),
-        description: 'Vacant, clean, active rooms',
+        label: 'Available rooms',
+        value: availableRooms,
+        link: '/dashboard/rooms?occupancyStatus=VACANT&housekeepingStatus=CLEAN&isActive=true',
         icon: 'BedDouble',
-        link: 'rooms?occupancyStatus=VACANT&housekeepingStatus=CLEAN&isActive=true',
-        tone: 'emerald',
       },
       {
-        id: 'pending-payments',
-        title: 'Pending payments',
-        value: String(pendingPayments),
-        description: 'Unpaid or partially paid bookings',
+        label: 'Pending payments',
+        value: pendingPayments,
+        link: '/dashboard/payments',
         icon: 'CreditCard',
-        tone: 'rose',
       },
     ];
   }

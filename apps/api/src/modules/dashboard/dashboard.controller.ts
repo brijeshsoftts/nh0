@@ -1,5 +1,6 @@
 import {
   Controller,
+  ForbiddenException,
   Get,
   HttpCode,
   HttpStatus,
@@ -45,6 +46,21 @@ export class DashboardController {
     return apiResponse({ data });
   }
 
+  @Roles('ADMIN', 'MANAGER', 'STAFF')
+  @Get('room-status')
+  @HttpCode(HttpStatus.OK)
+  async getRoomStatus(
+    @CurrentUser('role') role: UserRole,
+    @CurrentUser('category') category?: Category,
+  ) {
+    if (role === UserRole.STAFF && category !== Category.RECEPTIONIST) {
+      throw new ForbiddenException('Access denied');
+    }
+
+    const data = await this.dashboardService.getRoomStatus();
+    return apiResponse({ data });
+  }
+
   @Roles('CUSTOMER')
   @Get('next-booking')
   @HttpCode(HttpStatus.OK)
@@ -64,13 +80,19 @@ export class DashboardController {
     return apiResponse({ data });
   }
 
-  @Roles('ADMIN', 'MANAGER')
+  @Roles('ADMIN', 'MANAGER', 'STAFF')
   @Get('booking-status')
   @HttpCode(HttpStatus.OK)
   async getBookingStatus(
     @Query(new ValidationPipe(BookingStatusQuerySchema))
     query: BookingStatusQueryDto,
+    @CurrentUser('role') role: UserRole,
+    @CurrentUser('category') category?: Category,
   ) {
+    if (role === UserRole.STAFF && category !== Category.RECEPTIONIST) {
+      throw new ForbiddenException('Access denied');
+    }
+
     const data = await this.dashboardService.getBookingStatus(query.range);
     return apiResponse({ data });
   }

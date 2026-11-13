@@ -109,7 +109,7 @@ export function ManagementBooking() {
       header: "Invoice",
       cell: (booking) =>
         booking.invoice?.status && (
-          <span className="**:data-[slot=badge]:rounded-none">
+          <span className="">
             <InvoiceBadge value={booking.invoice.status} />
           </span>
         ),
@@ -118,7 +118,7 @@ export function ManagementBooking() {
       key: "status",
       header: "Status",
       cell: (booking) => (
-        <span className="**:data-[slot=badge]:rounded-none">
+        <span className="">
           <BookingBadge value={booking.status} />
         </span>
       ),
@@ -151,7 +151,7 @@ export function ManagementBooking() {
         description="Find reservations, check stay details, and keep arrivals moving."
         rightContent={
           <Link to="/dashboard/bookings/new">
-            <Button className="shrink-0 rounded-none">
+            <Button className="shrink-0 ">
               <Plus className="size-4" />
               New booking
             </Button>

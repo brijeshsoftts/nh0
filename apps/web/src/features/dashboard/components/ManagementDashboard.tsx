@@ -46,7 +46,9 @@ function Arrivals({ arrivals }: { arrivals: Stays["arrivals"] }) {
     },
   ];
 
-  const [isVisible, setIsVisible] = useState(false);
+  const [selectedBookingId, setSelectedBookingId] = useState<string | null>(
+    null
+  );
 
   return (
     <>
@@ -57,15 +59,15 @@ function Arrivals({ arrivals }: { arrivals: Stays["arrivals"] }) {
         columns={columns}
         showSearch={false}
         showPagination={false}
-        onRowClick={() => setIsVisible(true)}
+        onRowClick={(row) => setSelectedBookingId(row.bookingId)}
         renderActions={(row) =>
-          isVisible && (
+          selectedBookingId === row.bookingId ? (
             <BookingDetailsSheet
-              onOpenChange={() => setIsVisible(false)}
-              open={isVisible}
+              onOpenChange={() => setSelectedBookingId(null)}
+              open
               bookingId={row.bookingId}
             />
-          )
+          ) : null
         }
       />
     </>
@@ -106,7 +108,9 @@ function Departures({ departures }: { departures: Stays["departures"] }) {
     },
   ];
 
-  const [isVisible, setIsVisible] = useState(false);
+  const [selectedBookingId, setSelectedBookingId] = useState<string | null>(
+    null
+  );
 
   return (
     <DataTable
@@ -116,15 +120,15 @@ function Departures({ departures }: { departures: Stays["departures"] }) {
       columns={columns}
       showSearch={false}
       showPagination={false}
-      onRowClick={() => setIsVisible(true)}
+      onRowClick={(row) => setSelectedBookingId(row.bookingId)}
       renderActions={(row) =>
-        isVisible && (
+        selectedBookingId === row.bookingId ? (
           <BookingDetailsSheet
-            onOpenChange={() => setIsVisible(false)}
-            open={isVisible}
+            onOpenChange={() => setSelectedBookingId(null)}
+            open
             bookingId={row.bookingId}
           />
-        )
+        ) : null
       }
     />
   );

@@ -1,8 +1,6 @@
 import type { DashboardStat } from "@/components/common/Stat";
 import { apiClient } from "@/lib/apiClient";
 
-import { toDashboardStats } from "../shared/stat-response";
-
 import type {
   BookingStatusRange,
   DonutChartData,
@@ -13,9 +11,7 @@ import type { CustomerNextBooking } from "./dashboard.types";
 
 export const dashboardService = {
   getStats: (): Promise<DashboardStat[]> =>
-    apiClient
-      .get("/dashboard/stats")
-      .then((res) => toDashboardStats(res.data?.data, "dashboard")),
+    apiClient.get("/dashboard/stats").then((res) => res.data?.data ?? []),
   getNextBooking: (): Promise<CustomerNextBooking | null> =>
     apiClient.get("/dashboard/next-booking").then((res) => res.data?.data),
   getRevenueTrend: (range: string): Promise<TrendChart[]> =>
@@ -26,6 +22,8 @@ export const dashboardService = {
     apiClient
       .get("/dashboard/booking-status", { params: { range } })
       .then((res) => res.data?.data),
+  getRoomStatus: (): Promise<DonutChartData[]> =>
+    apiClient.get("/dashboard/room-status").then((res) => res.data?.data),
   getStays: (): Promise<Stays> =>
     apiClient.get("/dashboard/stays").then((res) => res.data?.data),
 };

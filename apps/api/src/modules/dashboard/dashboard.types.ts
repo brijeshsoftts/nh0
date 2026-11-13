@@ -2,6 +2,7 @@ import type {
   BookingStatus,
   InvoiceStatus,
   IssuePriority,
+  OccupancyStatus,
   PaymentStatus,
   TaskStatus,
   TaskType,
@@ -40,6 +41,11 @@ export type Stays = {
   };
 };
 
+export type RoomStatusCount = {
+  status: OccupancyStatus;
+  count: number;
+};
+
 export type TaskItem = {
   taskId: string;
   taskType: TaskType;
@@ -71,4 +77,11 @@ export type CustomerNextBooking = {
   checkInDate: string;
   checkOutDate: string;
   roomTypeName: string | null;
+};
+
+export type DashboardStat = {
+  label: string;
+  value: number;
+  link: string;
+  icon: string;
 };

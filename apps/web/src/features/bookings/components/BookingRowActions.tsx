@@ -110,7 +110,7 @@ export function BookingRowActions({ booking }: { booking: BookingListItem }) {
         </DropdownMenuTrigger>
         <DropdownMenuContent
           align="end"
-          className="min-w-fit rounded-none **:data-[slot=dropdown-menu-item]:rounded-none"
+          className="min-w-fit  "
         >
           <DropdownMenuItem
             onClick={() => setIsDetailsOpen(true)}

@@ -1,7 +1,8 @@
-import { Eye, EyeOff } from "lucide-react";
+import { Eye, EyeOff, LockKeyhole, LogIn, Mail } from "lucide-react";
 import { useState } from "react";
 import { Link } from "react-router-dom";
 
+import { Logo } from "@/app/layout/PublicLayout";
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
 import {
@@ -30,17 +31,21 @@ export default function LoginPage() {
   const recovery = useForgotPassword();
 
   return (
-    <div className="w-full">
-      <div className="w-full max-w-sm">
-        <h2 className="font-heading text-3xl font-medium text-foreground sm:text-4xl">
-          Welcome back to Nivara.
-        </h2>
-        <p className="mt-2 text-sm leading-6 text-muted-foreground">
-          Sign in to your account.
+    <div className="w-full rounded-xl border border-border/70 bg-card px-6 py-7 shadow-lg sm:px-9 sm:py-8">
+      <div className="w-full">
+        <Logo
+          className="mx-auto flex-col gap-1.5 [&>div:last-child]:items-center"
+          to="/"
+        />
+        <h1 className="mt-5 text-center font-heading text-3xl font-medium text-foreground">
+          Welcome Back
+        </h1>
+        <p className="mt-1 text-center text-sm leading-6 text-muted-foreground">
+          Sign in to access the hotel management system.
         </p>
 
         <form
-          className="mt-8 space-y-5"
+          className="mt-6 space-y-4"
           noValidate
           onSubmit={handleSubmit((data) => {
             if (rememberEmail) {
@@ -52,24 +57,30 @@ export default function LoginPage() {
           })}
         >
           <div className="space-y-2">
-            <Label htmlFor="login-email">
-              Email address{" "}
-              <span aria-hidden="true" className="text-destructive">
-                *
-              </span>
-            </Label>
-            <Input
-              autoComplete="email"
-              aria-describedby={errors.email ? "login-email-error" : undefined}
-              aria-invalid={Boolean(errors.email)}
-              className="h-12 rounded-md px-3"
-              disabled={isPending}
-              defaultValue={localStorage.getItem("nivaraRememberedEmail") ?? ""}
-              id="login-email"
-              placeholder="you@example.com"
-              type="email"
-              {...register("email")}
-            />
+            <Label htmlFor="login-email">Email address</Label>
+            <div className="relative">
+              <Mail
+                aria-hidden="true"
+                className="absolute top-1/2 left-3 size-4.5 -translate-y-1/2 text-primary"
+                strokeWidth={1.8}
+              />
+              <Input
+                autoComplete="email"
+                aria-describedby={
+                  errors.email ? "login-email-error" : undefined
+                }
+                aria-invalid={Boolean(errors.email)}
+                className="h-11 rounded-md px-3 pl-10"
+                disabled={isPending}
+                defaultValue={
+                  localStorage.getItem("nivaraRememberedEmail") ?? ""
+                }
+                id="login-email"
+                placeholder="Enter your email address"
+                type="email"
+                {...register("email")}
+              />
+            </div>
             {errors.email?.message ? (
               <p className="text-sm text-destructive" id="login-email-error">
                 {errors.email.message}
@@ -78,22 +89,23 @@ export default function LoginPage() {
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="login-password">
-              Password{" "}
-              <span aria-hidden="true" className="text-destructive">
-                *
-              </span>
-            </Label>
+            <Label htmlFor="login-password">Password</Label>
             <div className="relative">
+              <LockKeyhole
+                aria-hidden="true"
+                className="absolute top-1/2 left-3 size-4.5 -translate-y-1/2 text-primary"
+                strokeWidth={1.8}
+              />
               <Input
                 autoComplete="current-password"
                 aria-describedby={
                   errors.password ? "login-password-error" : undefined
                 }
                 aria-invalid={Boolean(errors.password)}
-                className="h-12 rounded-md px-3 pr-14"
+                className="h-11 rounded-md px-3 pr-14 pl-10"
                 disabled={isPending}
                 id="login-password"
+                placeholder="Enter your password"
                 type={showPassword ? "text" : "password"}
                 {...register("password")}
               />
@@ -120,7 +132,7 @@ export default function LoginPage() {
           </div>
 
           <div className="flex flex-wrap items-center justify-between gap-3">
-            <label className="inline-flex min-h-11 items-center gap-3 text-sm text-foreground">
+            <label className="inline-flex min-h-10 items-center gap-2 text-sm text-foreground">
               <Checkbox
                 checked={rememberEmail}
                 onCheckedChange={(checked) =>
@@ -130,7 +142,7 @@ export default function LoginPage() {
               Remember my email
             </label>
             <button
-              className="min-h-11 text-sm font-medium text-foreground underline decoration-border underline-offset-4 hover:text-primary focus-visible:rounded-sm focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring"
+              className="min-h-10 text-sm font-medium text-foreground underline decoration-border underline-offset-4 hover:text-primary focus-visible:rounded-sm focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring"
               onClick={() => {
                 setRecoveryEmail("");
                 setForgotPasswordOpen(true);
@@ -142,15 +154,22 @@ export default function LoginPage() {
           </div>
 
           <Button
-            className="h-12 w-full font-semibold"
+            className="h-11 w-full font-semibold"
             disabled={isPending}
             type="submit"
           >
-            {isPending ? <Spinner className="size-5" /> : "Sign In"}
+            {isPending ? (
+              <Spinner className="size-5" />
+            ) : (
+              <>
+                <LogIn aria-hidden="true" className="size-4" />
+                Login
+              </>
+            )}
           </Button>
         </form>
 
-        <p className="mt-7 text-center text-sm text-muted-foreground">
+        <p className="mt-5 text-center text-sm text-muted-foreground">
           Don&apos;t have an account?{" "}
           <Link
             className="font-semibold text-foreground underline decoration-primary underline-offset-4 transition-colors hover:text-primary focus-visible:rounded-sm focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring"

@@ -22,9 +22,9 @@ const iconButtonVariants = cva(
         card: "border border-border bg-card text-muted-foreground hover:border-border/80 hover:text-foreground",
       },
       shape: {
-        default: "rounded-md",
+        default: "rounded-lg",
         circle: "rounded-full",
-        square: "rounded-none",
+        square: "rounded-lg",
       },
       size: {
         sm: "h-8 w-8 [&_svg]:size-3.5",
@@ -35,7 +35,7 @@ const iconButtonVariants = cva(
     },
     defaultVariants: {
       variant: "card",
-      shape: "circle",
+      shape: "default",
       size: "md",
     },
   }

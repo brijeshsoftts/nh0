@@ -52,7 +52,7 @@ function IssueTable() {
       key: "priority",
       header: "Priority",
       cell: (row) => (
-        <span className="**:data-[slot=badge]:rounded-none">
+        <span className="">
           <IssuePriorityBadge value={row.priority} />
         </span>
       ),
@@ -61,7 +61,7 @@ function IssueTable() {
       key: "status",
       header: "Status",
       cell: (row) => (
-        <span className="**:data-[slot=badge]:rounded-none">
+        <span className="">
           <IssueStatusBadge value={row.status} />
         </span>
       ),

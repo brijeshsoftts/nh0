@@ -20,7 +20,7 @@ export function PaymentPopup({
   return (
     <Button
       type="button"
-      className="rounded-none"
+      className=""
       disabled={isPending || isCheckoutOpen}
       onClick={() =>
         void startPayment(bookingId, bookingReference, paymentContext)

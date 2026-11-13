@@ -94,7 +94,7 @@ function PaymentsTable() {
       key: "paymentMethod",
       header: "Payment Method",
       cell: (payment) => (
-        <span className="**:data-[slot=badge]:rounded-none">
+        <span className="">
           <PaymentMethodBadge value={payment.paymentMethod} />
         </span>
       ),
@@ -103,7 +103,7 @@ function PaymentsTable() {
       key: "paymentStatus",
       header: "Status",
       cell: (payment) => (
-        <span className="**:data-[slot=badge]:rounded-none">
+        <span className="">
           <PaymentStatusBadge value={payment.paymentStatus} />
         </span>
       ),
@@ -187,7 +187,7 @@ function ActionDropdownMenu({ payment }: { payment: PaymentItem }) {
 
         <DropdownMenuContent
           align="end"
-          className="rounded-none **:data-[slot=dropdown-menu-item]:rounded-none"
+          className=" "
         >
           <DropdownMenuItem onClick={() => setIsViewModal(true)}>
             View

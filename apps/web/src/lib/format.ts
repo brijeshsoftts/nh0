@@ -38,3 +38,13 @@ export function formatString(str?: string) {
     .map((word: string) => word.charAt(0) + word.slice(1).toLowerCase())
     .join(" ");
 }
+
+export function formatLabel(value: string): string {
+  return value
+    .replace(/([a-z0-9])([A-Z])/g, "$1 $2")
+    .replace(/[_-]+/g, " ")
+    .trim()
+    .toLowerCase()
+    .replace(/\b\w/g, (char) => char.toUpperCase())
+    .replace(/^All\b/, "All");
+}

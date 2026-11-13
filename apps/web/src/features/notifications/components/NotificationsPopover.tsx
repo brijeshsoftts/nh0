@@ -105,7 +105,7 @@ export function NotificationsPopover() {
           type="button"
           variant="ghost"
           size="lg"
-          className="relative h-10 w-10 shrink-0 rounded-full"
+          className="relative h-10 w-10 shrink-0 rounded-lg"
           aria-label={
             notifications?.length > 0
               ? `Notifications, ${notifications?.length} unread`
@@ -219,17 +219,17 @@ export function NotificationsPopover() {
                         className="block w-full rounded-sm text-left focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none"
                       >
                         <span className="flex items-start gap-2">
-                          <span className="min-w-0 flex-1 text-sm font-medium break-words group-hover:text-foreground">
+                          <span className="min-w-0 flex-1 text-sm font-medium wrap-break-word group-hover:text-foreground">
                             {notification.title}
                           </span>
                         </span>
 
-                        <span className="mt-1 block text-xs leading-5 break-words text-muted-foreground">
+                        <span className="mt-1 block text-xs leading-5 wrap-break-word text-muted-foreground">
                           {notification.message}
                         </span>
                       </button>
 
-                      <div className="mt-2 flex items-center gap-1.5 text-[11px] text-muted-foreground">
+                      <div className="mt-2 flex items-center gap-1.5 text-2xs text-muted-foreground">
                         <Clock className="size-3" aria-hidden="true" />
                         <time dateTime={notification.createdAt}>
                           {formatNotificationDate(notification.createdAt)}

@@ -177,7 +177,7 @@ function ActionDropdownMenu({ inquiry }: { inquiry: Inquiry }) {
 
         <DropdownMenuContent
           align="end"
-          className="rounded-none **:data-[slot=dropdown-menu-item]:rounded-none"
+          className=" "
         >
           <DropdownMenuItem onClick={() => setIsViewOpen(true)}>
             <Eye className="mr-2 size-4" />

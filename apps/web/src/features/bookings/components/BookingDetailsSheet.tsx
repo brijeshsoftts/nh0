@@ -680,7 +680,7 @@ export function BookingDetailsSheet({
                         <Button
                           type="button"
                           variant="outline"
-                          className="rounded-none"
+                          className=""
                           onClick={() => setIsQrDialogOpen(true)}
                         >
                           <QrCode aria-hidden="true" />

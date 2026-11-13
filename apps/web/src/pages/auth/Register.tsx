@@ -1,7 +1,15 @@
-import { Eye, EyeOff } from "lucide-react";
+import {
+  Eye,
+  EyeOff,
+  LockKeyhole,
+  Mail,
+  UserRound,
+  UserRoundPlus,
+} from "lucide-react";
 import { useState } from "react";
 import { Link } from "react-router-dom";
 
+import { Logo } from "@/app/layout/PublicLayout";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -14,19 +22,20 @@ export default function RegisterPage() {
     useRegisterFacade(() => undefined);
 
   return (
-    <div className="w-full max-w-md">
-      <p className="text-xs font-semibold tracking-[0.14em] text-primary uppercase">
-        Welcome to Nivara
-      </p>
-      <h2 className="mt-2 font-heading text-3xl font-medium tracking-tight text-foreground sm:text-4xl">
-        Create your account
-      </h2>
-      <p className="mt-2 text-sm leading-6 text-muted-foreground">
-        Join Nivara and make your next stay easier.
+    <div className="w-full rounded-xl border border-border/70 bg-card px-6 py-7 shadow-lg sm:px-8 sm:py-7">
+      <Logo
+        className="mx-auto flex-col gap-1.5 [&>div:last-child]:items-center"
+        to="/"
+      />
+      <h1 className="mt-4 text-center font-heading text-3xl font-medium text-foreground">
+        Create an Account
+      </h1>
+      <p className="mt-1 text-center text-sm leading-6 text-muted-foreground">
+        Register to manage your stays and bookings.
       </p>
 
       <form
-        className="mt-8 space-y-5"
+        className="mt-6 space-y-4"
         noValidate
         onSubmit={handleSubmit(submit)}
       >
@@ -37,18 +46,25 @@ export default function RegisterPage() {
               *
             </span>
           </Label>
-          <Input
-            autoComplete="name"
-            aria-describedby={
-              errors.fullName ? "register-full-name-error" : undefined
-            }
-            aria-invalid={Boolean(errors.fullName)}
-            className="h-12 rounded-md px-3"
-            disabled={isPending}
-            id="register-full-name"
-            placeholder="Your full name"
-            {...register("fullName")}
-          />
+          <div className="relative">
+            <UserRound
+              aria-hidden="true"
+              className="absolute top-1/2 left-3 size-4.5 -translate-y-1/2 text-primary"
+              strokeWidth={1.8}
+            />
+            <Input
+              autoComplete="name"
+              aria-describedby={
+                errors.fullName ? "register-full-name-error" : undefined
+              }
+              aria-invalid={Boolean(errors.fullName)}
+              className="h-11 rounded-md px-3 pl-10"
+              disabled={isPending}
+              id="register-full-name"
+              placeholder="Enter your full name"
+              {...register("fullName")}
+            />
+          </div>
           {errors.fullName?.message ? (
             <p
               className="text-sm text-destructive"
@@ -59,110 +75,125 @@ export default function RegisterPage() {
           ) : null}
         </div>
 
-        <div className="space-y-2">
-          <Label htmlFor="register-email">
-            Email address{" "}
-            <span aria-hidden="true" className="text-destructive">
-              *
-            </span>
-          </Label>
-          <Input
-            autoComplete="email"
-            aria-describedby={errors.email ? "register-email-error" : undefined}
-            aria-invalid={Boolean(errors.email)}
-            className="h-12 rounded-md px-3"
-            disabled={isPending}
-            id="register-email"
-            placeholder="you@example.com"
-            type="email"
-            {...register("email")}
-          />
-          {errors.email?.message ? (
-            <p className="text-sm text-destructive" id="register-email-error">
-              {errors.email.message}
-            </p>
-          ) : null}
-        </div>
+        <div className="grid gap-4 sm:grid-cols-2">
+          <div className="space-y-2">
+            <Label htmlFor="register-email">
+              Email address{" "}
+              <span aria-hidden="true" className="text-destructive">
+                *
+              </span>
+            </Label>
+            <div className="relative">
+              <Mail
+                aria-hidden="true"
+                className="absolute top-1/2 left-3 size-4.5 -translate-y-1/2 text-primary"
+                strokeWidth={1.8}
+              />
+              <Input
+                autoComplete="email"
+                aria-describedby={
+                  errors.email ? "register-email-error" : undefined
+                }
+                aria-invalid={Boolean(errors.email)}
+                className="h-11 rounded-md px-3 pl-10"
+                disabled={isPending}
+                id="register-email"
+                placeholder="Enter your email address"
+                type="email"
+                {...register("email")}
+              />
+            </div>
+            {errors.email?.message ? (
+              <p className="text-sm text-destructive" id="register-email-error">
+                {errors.email.message}
+              </p>
+            ) : null}
+          </div>
 
-        <div className="space-y-2">
-          <div className="flex items-center justify-between gap-3">
+          <div className="space-y-2">
             <Label htmlFor="register-password">
               Password{" "}
               <span aria-hidden="true" className="text-destructive">
                 *
               </span>
             </Label>
-            <span className="text-xs text-muted-foreground">
-              8–128 characters
-            </span>
+            <div className="relative">
+              <LockKeyhole
+                aria-hidden="true"
+                className="absolute top-1/2 left-3 size-4.5 -translate-y-1/2 text-primary"
+                strokeWidth={1.8}
+              />
+              <Input
+                autoComplete="new-password"
+                aria-describedby={
+                  errors.password
+                    ? "register-password-error"
+                    : "register-password-help"
+                }
+                aria-invalid={Boolean(errors.password)}
+                className="h-11 rounded-md px-3 pr-14 pl-10"
+                disabled={isPending}
+                id="register-password"
+                placeholder="Create a password"
+                type={showPassword ? "text" : "password"}
+                {...register("password")}
+              />
+              <button
+                aria-label={showPassword ? "Hide password" : "Show password"}
+                aria-pressed={showPassword}
+                className="absolute inset-y-0 right-0 inline-flex min-w-11 items-center justify-center text-muted-foreground hover:text-foreground focus-visible:outline-2 focus-visible:outline-offset-[-3px] focus-visible:outline-ring disabled:pointer-events-none disabled:opacity-50"
+                disabled={isPending}
+                onClick={() => setShowPassword((visible) => !visible)}
+                type="button"
+              >
+                {showPassword ? (
+                  <EyeOff aria-hidden="true" className="size-5" />
+                ) : (
+                  <Eye aria-hidden="true" className="size-5" />
+                )}
+              </button>
+            </div>
+            {errors.password?.message ? (
+              <p
+                className="text-sm text-destructive"
+                id="register-password-error"
+              >
+                {errors.password.message}
+              </p>
+            ) : (
+              <p
+                className="text-xs leading-5 text-muted-foreground"
+                id="register-password-help"
+              >
+                Use 8–128 characters.
+              </p>
+            )}
           </div>
-          <div className="relative">
-            <Input
-              autoComplete="new-password"
-              aria-describedby={
-                errors.password
-                  ? "register-password-error"
-                  : "register-password-help"
-              }
-              aria-invalid={Boolean(errors.password)}
-              className="h-12 rounded-md px-3 pr-14"
-              disabled={isPending}
-              id="register-password"
-              type={showPassword ? "text" : "password"}
-              {...register("password")}
-            />
-            <button
-              aria-label={showPassword ? "Hide password" : "Show password"}
-              aria-pressed={showPassword}
-              className="absolute inset-y-0 right-0 inline-flex min-w-12 items-center justify-center text-sm font-medium text-muted-foreground hover:text-foreground focus-visible:outline-2 focus-visible:outline-offset-[-3px] focus-visible:outline-ring disabled:pointer-events-none disabled:opacity-50"
-              disabled={isPending}
-              onClick={() => setShowPassword((visible) => !visible)}
-              type="button"
-            >
-              {showPassword ? (
-                <EyeOff aria-hidden="true" className="size-5" />
-              ) : (
-                <Eye aria-hidden="true" className="size-5" />
-              )}
-            </button>
-          </div>
-          {errors.password?.message ? (
-            <p
-              className="text-sm text-destructive"
-              id="register-password-error"
-            >
-              {errors.password.message}
-            </p>
-          ) : (
-            <p
-              className="text-xs leading-5 text-muted-foreground"
-              id="register-password-help"
-            >
-              Use between 8 and 128 characters.
-            </p>
-          )}
         </div>
 
-        <p className="text-xs leading-5 text-muted-foreground">
-          Your information is kept secure.
-        </p>
-
         <Button
-          className="h-12 w-full font-semibold"
+          className="h-11 w-full font-semibold"
           disabled={isPending}
           type="submit"
         >
-          {isPending ? <Spinner className="size-5" /> : "Create Account"}
+          {isPending ? (
+            <Spinner className="size-5" />
+          ) : (
+            <>
+              <UserRoundPlus aria-hidden="true" className="size-4" />
+              Register
+            </>
+          )}
         </Button>
       </form>
 
-      <p className="mt-7 text-center text-sm text-muted-foreground">
+      <p className="mt-5 text-center text-sm text-muted-foreground">
         Already have an account?{" "}
         <Link
           className="font-semibold text-foreground underline decoration-primary underline-offset-4 transition-colors hover:text-primary focus-visible:rounded-sm focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring"
           to="/login"
         >
-          Sign in
+          Login
         </Link>
       </p>
     </div>

@@ -2,6 +2,7 @@ import { cn } from "cn";
 import { AlertCircle, Inbox, Search } from "lucide-react";
 import * as React from "react";
 
+import { formatLabel } from "@/lib/format";
 import type { Pagination } from "@/types/api.types";
 
 import { Button } from "../ui/button";
@@ -153,7 +154,7 @@ export function DataTable<T extends Record<string, any>>({
 
   return (
     <div className="grid">
-      <div className="w-full overflow-hidden rounded-none border border-border bg-card text-card-foreground shadow-sm">
+      <div className="w-full overflow-hidden rounded-xl border border-border bg-card text-card-foreground shadow-sm">
         {/* Header Controls */}
         <div className="flex flex-col justify-between gap-4 border-b border-border p-4 sm:px-6 sm:py-4 lg:flex-row lg:items-center">
           <div>
@@ -175,7 +176,7 @@ export function DataTable<T extends Record<string, any>>({
                   value={searchQuery}
                   onChange={(e) => handleSearch(e.target.value)}
                   placeholder={searchPlaceholder}
-                  className="w-full rounded-none pl-9 text-xs whitespace-nowrap text-foreground transition-colors focus:ring-1 focus:ring-ring focus:outline-none"
+                  className="w-full pl-9 text-xs whitespace-nowrap text-foreground transition-colors focus:ring-1 focus:ring-ring focus:outline-none"
                 />
               </div>
             )}
@@ -183,34 +184,54 @@ export function DataTable<T extends Record<string, any>>({
             {/* Filters */}
             {filters.length > 0 && (
               <div className="flex w-full items-center gap-2 sm:w-auto">
-                {filters.map((filter) => (
-                  <Select
-                    key={filter.key}
-                    value={filterValues[filter.key] || "All " + filter.label}
-                    onValueChange={(value) =>
-                      handleFilterSelect(filter.key, value)
-                    }
-                  >
-                    <SelectTrigger className="h-10 min-w-35 rounded-none border-border/70 bg-background shadow-none transition-colors hover:bg-muted/50">
-                      <SelectValue placeholder={filter.placeholder} />
-                    </SelectTrigger>
-                    <SelectContent className="rounded-none">
-                      <SelectItem className="rounded-none" value={"All"}>
-                        All {filter.label}
-                      </SelectItem>
-                      {filter.options.map((option) => (
-                        <SelectItem
-                          key={option.value.toString()}
-                          className="rounded-none"
-                          value={option.value.toString()}
-                        >
-                          {option.label.charAt(0).toUpperCase() +
-                            option.label.slice(1).toLowerCase()}
+                {filters.map((filter) => {
+                  const selectedValue = filterValues[filter.key] || "All";
+
+                  const selectedOption = filter.options.find(
+                    (option) => option.value.toString() === selectedValue
+                  );
+
+                  const selectedLabel =
+                    selectedValue === "All"
+                      ? `All ${formatLabel(filter.label).toLowerCase()}`
+                      : selectedOption
+                        ? formatLabel(selectedOption.label)
+                        : undefined;
+
+                  return (
+                    <Select
+                      key={filter.key}
+                      value={selectedValue}
+                      onValueChange={(value) =>
+                        handleFilterSelect(filter.key, value)
+                      }
+                    >
+                      <SelectTrigger className="h-10 min-w-35 border-border/70 bg-background shadow-none transition-colors hover:bg-muted/50">
+                        <SelectValue placeholder={filter.placeholder}>
+                          {selectedLabel
+                            ? selectedLabel.charAt(0).toUpperCase() +
+                              selectedLabel.slice(1)
+                            : undefined}
+                        </SelectValue>
+                      </SelectTrigger>
+
+                      <SelectContent>
+                        <SelectItem value="All">
+                          All {formatLabel(filter.label).toLowerCase()}
                         </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                ))}
+
+                        {filter.options.map((option) => (
+                          <SelectItem
+                            key={option.value.toString()}
+                            value={option.value.toString()}
+                          >
+                            {formatLabel(option.label)}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  );
+                })}
               </div>
             )}
             {headerActions}
@@ -227,7 +248,7 @@ export function DataTable<T extends Record<string, any>>({
                     <TableHead
                       key={idx}
                       className={cn(
-                        "px-4 py-3 text-[11px] font-semibold tracking-wider whitespace-nowrap text-muted-foreground uppercase",
+                        "px-4 py-3 text-2xs font-semibold tracking-wider whitespace-nowrap text-muted-foreground uppercase",
                         col.align === "right"
                           ? "text-right"
                           : col.align === "center"
@@ -266,7 +287,7 @@ export function DataTable<T extends Record<string, any>>({
                           type="button"
                           onClick={refetch}
                           variant="destructive"
-                          className="rounded-none"
+                          className=""
                         >
                           Try Again
                         </Button>
@@ -333,7 +354,7 @@ export function DataTable<T extends Record<string, any>>({
                 type="button"
                 onClick={() => handlePage(Math.max(currentPage - 1, 1))}
                 disabled={currentPage <= 1}
-                className="rounded-none border border-input bg-background px-3 py-1 text-foreground transition-colors hover:bg-accent disabled:pointer-events-none disabled:opacity-50"
+                className="rounded-lg border border-input bg-background px-3 py-1 text-foreground transition-colors hover:bg-accent disabled:pointer-events-none disabled:opacity-50"
               >
                 Previous
               </button>
@@ -361,7 +382,7 @@ export function DataTable<T extends Record<string, any>>({
                         key={page}
                         type="button"
                         onClick={() => handlePage(page)}
-                        className={`flex h-7 w-7 items-center justify-center rounded-none font-medium transition-colors ${
+                        className={`flex h-7 w-7 items-center justify-center rounded-md font-medium transition-colors ${
                           currentPage === page
                             ? "bg-primary text-primary-foreground"
                             : "border border-input bg-background text-foreground hover:bg-accent"
@@ -387,7 +408,7 @@ export function DataTable<T extends Record<string, any>>({
                   handlePage(Math.min(currentPage + 1, totalPages))
                 }
                 disabled={currentPage >= totalPages}
-                className="rounded-none border border-input bg-background px-3 py-1 text-foreground transition-colors hover:bg-accent disabled:pointer-events-none disabled:opacity-50"
+                className="rounded-lg border border-input bg-background px-3 py-1 text-foreground transition-colors hover:bg-accent disabled:pointer-events-none disabled:opacity-50"
               >
                 Next
               </button>

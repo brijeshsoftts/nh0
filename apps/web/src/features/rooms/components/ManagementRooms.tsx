@@ -1,5 +1,4 @@
-import { Plus } from "lucide-react";
-import { useState } from "react";
+import { Bath, BedDouble, Layers, Plus } from "lucide-react";
 
 import { type ColumnDef, DataTable } from "@/components/common/DataTable";
 import {
@@ -24,6 +23,7 @@ const tabs = [
   {
     name: "Rooms",
     value: "rooms",
+    icon: BedDouble,
     content: (
       <>
         <RoomTable />
@@ -33,6 +33,7 @@ const tabs = [
   {
     name: "Rooms Types",
     value: "roomsTypes",
+    icon: Layers,
     content: (
       <>
         <RoomTypeGrid />
@@ -42,6 +43,7 @@ const tabs = [
   {
     name: "Amenities",
     value: "amenities",
+    icon: Bath,
     content: (
       <>
         <AmenityGrid />
@@ -51,27 +53,23 @@ const tabs = [
 ];
 
 export function TabsLine() {
-  const [activeTab, setActiveTab] = useState(tabs[0].value);
   return (
-    <div className="w-full overflow-hidden rounded-none border border-border bg-card text-card-foreground shadow-sm">
+    <div className="w-full text-card-foreground">
       <Tabs defaultValue="rooms" className="w-full">
-        <TabsList
-          variant="line"
-          className="mb-0 flex h-auto w-full justify-start rounded-none border-b border-border bg-muted/40 p-0"
-        >
-          {tabs.map((tab) => (
+        <TabsList className="mb-0 flex h-auto w-full gap-1 rounded-3xl border border-primary/15 bg-card p-1 shadow-sm group-data-horizontal/tabs:h-auto sm:gap-2">
+          {tabs.map(({ name, value, icon: Icon }) => (
             <TabsTrigger
-              key={tab.value}
-              value={tab.value}
-              className={`min-h-12 rounded-none px-5 py-3 text-sm ${activeTab === tab.value ? "bg-primary! text-primary-foreground!" : ""}`}
-              onClick={() => setActiveTab(tab.value)}
+              key={value}
+              value={value}
+              className="max-h-10 min-w-0 flex-1 gap-2 rounded-2xl px-2 py-3 text-xs font-semibold text-foreground/80 transition-colors hover:bg-muted/60 sm:gap-3 sm:px-4 sm:text-sm md:text-base data-active:bg-primary data-active:text-primary-foreground data-active:shadow-md"
             >
-              {tab.name}
+              <Icon className="size-4 shrink-0 sm:size-5" aria-hidden="true" />
+              <span className="truncate">{name}</span>
             </TabsTrigger>
           ))}
         </TabsList>
         {tabs.map((tab) => (
-          <TabsContent key={tab.value} value={tab.value} className="mt-0">
+          <TabsContent key={tab.value} value={tab.value} className="mt-2">
             {tab.content}
           </TabsContent>
         ))}
@@ -107,7 +105,7 @@ function RoomTable() {
       key: "occupancy",
       header: "Occupancy",
       cell: (item) => (
-        <span className="**:data-[slot=badge]:rounded-none">
+        <span className="">
           <OccupancyBadge value={item.occupancyStatus} />
         </span>
       ),
@@ -116,7 +114,7 @@ function RoomTable() {
       key: "housekeeping",
       header: "Housekeeping",
       cell: (item) => (
-        <span className="**:data-[slot=badge]:rounded-none">
+        <span className="">
           <HousekeepingBadge value={item.housekeepingStatus} />
         </span>
       ),
@@ -125,7 +123,7 @@ function RoomTable() {
       key: "isActive",
       header: "Status",
       cell: (item) => (
-        <span className="**:data-[slot=badge]:rounded-none">
+        <span className="">
           <StatusBadge value={item.isActive} />
         </span>
       ),
@@ -149,7 +147,7 @@ function RoomTable() {
         description="Manage rooms and bookings."
         headerActions={
           <CreateRoomDialog>
-            <Button className="h-10 rounded-none">
+            <Button className="h-10">
               <Plus className="size-4" />
               New Room
             </Button>

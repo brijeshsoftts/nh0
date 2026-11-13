@@ -34,7 +34,7 @@ const columns: ColumnDef<HousekeeperRoom>[] = [
     header: "Occupancy",
     className: "min-w-32",
     cell: (room) => (
-      <span className="**:data-[slot=badge]:rounded-none">
+      <span className="">
         <OccupancyBadge value={room.occupancyStatus} />
       </span>
     ),
@@ -44,7 +44,7 @@ const columns: ColumnDef<HousekeeperRoom>[] = [
     header: "Housekeeping Status",
     className: "min-w-44",
     cell: (room) => (
-      <span className="**:data-[slot=badge]:rounded-none">
+      <span className="">
         <HousekeepingBadge value={room.housekeepingStatus} />
       </span>
     ),

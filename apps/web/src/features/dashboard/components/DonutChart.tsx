@@ -25,7 +25,7 @@ import {
 import { Skeleton } from "@/components/ui/skeleton";
 import { formatString } from "@/lib/format";
 
-const bookingStatusConfig = {
+const statusConfig = {
   PENDING: {
     label: "Pending",
     theme: { light: "#d97706", dark: "#fbbf24" },
@@ -49,6 +49,22 @@ const bookingStatusConfig = {
   NO_SHOW: {
     label: "No Show",
     theme: { light: "#64748b", dark: "#94a3b8" },
+  },
+  VACANT: {
+    label: "Vacant",
+    theme: { light: "var(--chart-1)", dark: "var(--chart-1)" },
+  },
+  RESERVED: {
+    label: "Reserved",
+    theme: { light: "var(--chart-2)", dark: "var(--chart-2)" },
+  },
+  OCCUPIED: {
+    label: "Occupied",
+    theme: { light: "var(--chart-3)", dark: "var(--chart-3)" },
+  },
+  OUT_OF_ORDER: {
+    label: "Out of order",
+    theme: { light: "var(--chart-4)", dark: "var(--chart-4)" },
   },
 } satisfies ChartConfig;
 
@@ -74,12 +90,9 @@ export type DonutChartData = {
 interface DonutChartProps {
   data: DonutChartData[];
   config?: ChartConfig;
-
   title?: string;
   description?: string;
-
   centerLabel?: string;
-
   height?: string;
   range?: BookingStatusRange;
   onRangeChange?: (range: BookingStatusRange) => void;
@@ -87,11 +100,13 @@ interface DonutChartProps {
   isLoading?: boolean;
   isError?: boolean;
   onRetry?: () => void;
+  showRange?: boolean;
+  errorMessage?: string;
 }
 
 export function DonutChart({
   data,
-  config = bookingStatusConfig,
+  config = statusConfig,
   title,
   description,
   centerLabel = "Total",
@@ -102,6 +117,8 @@ export function DonutChart({
   isLoading = false,
   isError = false,
   onRetry,
+  showRange = true,
+  errorMessage = "Status data could not be loaded.",
 }: DonutChartProps) {
   const chartData = data.map((item) => ({
     ...item,
@@ -110,36 +127,41 @@ export function DonutChart({
   const total = data.reduce((sum, item) => sum + Number(item.count ?? 0), 0);
 
   return (
-    <Card className="w-full min-w-0 rounded-none border border-border bg-card text-card-foreground">
-      <CardHeader className="flex flex-row items-start justify-between gap-4 rounded-none">
+    <Card className="w-full min-w-0  border border-border bg-card text-card-foreground">
+      <CardHeader className="flex flex-row items-start justify-between gap-4 ">
         <div className="min-w-0">
           <CardTitle>{title}</CardTitle>
           <CardDescription>{description}</CardDescription>
         </div>
 
-        <CardAction>
-          <Select
-            value={range}
-            onValueChange={(value) =>
-              onRangeChange(value as BookingStatusRange)
-            }
-          >
-            <SelectTrigger
-              aria-label="Booking status time range"
-              className="h-8 w-27.5 rounded-none text-xs"
+        {showRange ? (
+          <CardAction>
+            <Select
+              value={range}
+              onValueChange={(value) =>
+                onRangeChange(value as BookingStatusRange)
+              }
             >
-              <SelectValue />
-            </SelectTrigger>
-
-            <SelectContent className="rounded-none">
-              {options.map(({ label, value }) => (
-                <SelectItem key={value} value={value} className="rounded-none">
-                  {label}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
-        </CardAction>
+              <SelectTrigger
+                aria-label="Booking status time range"
+                className="h-8 w-27.5  text-xs"
+              >
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent className="">
+                {options.map(({ label, value }) => (
+                  <SelectItem
+                    key={value}
+                    value={value}
+                    className=""
+                  >
+                    {label}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </CardAction>
+        ) : null}
       </CardHeader>
 
       <CardContent className="min-w-0">
@@ -148,32 +170,30 @@ export function DonutChart({
             role="alert"
             className="flex min-h-80 flex-col items-center justify-center gap-3 text-center"
           >
-            <p className="text-sm text-muted-foreground">
-              Booking status could not be loaded.
-            </p>
-            {onRetry && (
+            <p className="text-sm text-muted-foreground">{errorMessage}</p>
+            {onRetry ? (
               <Button
                 type="button"
                 variant="outline"
                 size="sm"
                 onClick={onRetry}
-                className="rounded-none"
+                className=""
               >
                 Try again
               </Button>
-            )}
+            ) : null}
           </div>
         ) : isLoading ? (
           <div
             role="status"
-            aria-label="Loading booking status"
+            aria-label="Loading chart data"
             aria-busy="true"
             className="space-y-4"
           >
             <div
               className={`mx-auto grid aspect-square ${height} place-items-center`}
             >
-              <div className="grid size-48 place-items-center rounded-none border-14 border-muted">
+              <div className="grid size-48 place-items-center  border-14 border-muted">
                 <Skeleton className="h-5 w-14" />
               </div>
             </div>
@@ -197,7 +217,7 @@ export function DonutChart({
                   cursor={false}
                   content={
                     <ChartTooltipContent
-                      className="rounded-none border border-border bg-card text-card-foreground shadow-md"
+                      className=" border border-border bg-card text-card-foreground shadow-md"
                       hideLabel
                       formatter={(value, _, item) => {
                         const percentage =
@@ -208,7 +228,6 @@ export function DonutChart({
                         return (
                           <div className="flex min-w-35 items-center justify-between gap-4">
                             <span>{item.name}</span>
-
                             <span className="font-medium">
                               {value} ({percentage}%)
                             </span>
@@ -218,23 +237,23 @@ export function DonutChart({
                     />
                   }
                 />
-
                 <Pie
                   data={chartData}
-                  dataKey={String("count")}
-                  nameKey={String("label")}
+                  dataKey="count"
+                  nameKey="label"
                   innerRadius={72}
                   outerRadius={96}
                   paddingAngle={2}
                   stroke="var(--card)"
                   strokeWidth={3}
                 >
-                  {chartData.map((item) => {
-                    const key = String(item.status);
-                    return <Cell key={key} fill={`var(--color-${key})`} />;
-                  })}
+                  {chartData.map((item) => (
+                    <Cell
+                      key={item.status}
+                      fill={`var(--color-${item.status})`}
+                    />
+                  ))}
                 </Pie>
-
                 <text
                   x="50%"
                   y="47%"
@@ -244,7 +263,6 @@ export function DonutChart({
                 >
                   {total}
                 </text>
-
                 <text
                   x="50%"
                   y="57%"
@@ -259,27 +277,24 @@ export function DonutChart({
 
             <div className="grid grid-cols-2 gap-x-4 gap-y-2 pt-2">
               {chartData.map((item) => {
-                const key = String(item.status);
-                const configItem = config[key];
+                const configItem = config[item.status];
 
                 return (
                   <div
-                    key={key}
+                    key={item.status}
                     className="flex min-w-0 items-center justify-between gap-2 text-xs"
                   >
                     <div className="flex min-w-0 items-center gap-2">
                       <span
-                        className="size-2 shrink-0 rounded-none"
+                        className="size-2 shrink-0 "
                         style={{
-                          backgroundColor: `var(--color-${key})`,
+                          backgroundColor: `var(--color-${item.status})`,
                         }}
                       />
-
                       <span className="truncate text-muted-foreground">
-                        {configItem?.label ?? key}
+                        {configItem?.label ?? item.status}
                       </span>
                     </div>
-
                     <span className="font-medium">{Number(item.count)}</span>
                   </div>
                 );

@@ -51,7 +51,7 @@ export function ManualCashPaymentButton({
     <Button
       type="button"
       variant="outline"
-      className="rounded-none"
+      className=""
       disabled={payment.isPending || amount <= 0}
       onClick={recordPayment}
     >

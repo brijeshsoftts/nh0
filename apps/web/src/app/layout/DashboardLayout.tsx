@@ -73,7 +73,7 @@ export function DashboardLayout() {
               type="button"
               variant="ghost"
               size="lg"
-              className="relative hidden h-10 w-10 shrink-0 rounded-full sm:block"
+              className="relative hidden h-10 w-10 shrink-0 rounded-lg sm:block"
               onClick={() => setTheme(theme === "dark" ? "light" : "dark")}
             >
               {theme === "dark" ? (
@@ -88,9 +88,11 @@ export function DashboardLayout() {
           </div>
         </header>
 
-        <main className="mx-auto w-full max-w-7xl space-y-6 px-6 py-6 sm:p-6 lg:p-8">
-          <PageTransition duration={0.25}>{outlet}</PageTransition>
-        </main>
+        <PageTransition duration={0.25}>
+          <main className="mx-auto w-full max-w-7xl space-y-6 px-6 py-6 sm:p-6 lg:p-8">
+            {outlet}
+          </main>
+        </PageTransition>
       </div>
     </SidebarProvider>
   );

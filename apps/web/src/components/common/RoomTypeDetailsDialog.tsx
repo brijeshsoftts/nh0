@@ -125,7 +125,7 @@ function LoadingState() {
       </DialogDescription>
       <div className="grid lg:grid-cols-[1.05fr_1fr]">
         <div>
-          <Skeleton className="aspect-4/3 w-full rounded-none" />
+          <Skeleton className="aspect-4/3 w-full" />
           <div className="flex gap-2 px-4 py-4 sm:px-6">
             {[0, 1, 2].map((i) => (
               <Skeleton key={i} className="h-14 w-20 rounded-lg" />
@@ -158,7 +158,7 @@ function ErrorState({ onRetry }: { onRetry: () => void }) {
         <DialogDescription className="text-muted-foreground">
           Check your connection and try again.
         </DialogDescription>
-        <Button onClick={onRetry} variant="outline" className="rounded-full">
+        <Button onClick={onRetry} variant="outline" className="rounded-lg">
           <RotateCw className="size-4" />
           Try again
         </Button>
@@ -312,7 +312,7 @@ function BookingBar({
           <Button
             variant="outline"
             size="lg"
-            className="hidden rounded-full sm:inline-flex"
+            className="hidden rounded-lg sm:inline-flex"
           >
             Close
           </Button>
@@ -320,7 +320,7 @@ function BookingBar({
         <Button
           variant="outline"
           size="lg"
-          className="hidden rounded-full sm:inline-flex"
+          className="hidden rounded-lg sm:inline-flex"
         >
           Book Now
         </Button>
@@ -328,20 +328,20 @@ function BookingBar({
           <Button
             variant="outline"
             size="lg"
-            className="hidden rounded-full sm:inline-flex"
+            className="hidden rounded-lg sm:inline-flex"
           >
             Delete
           </Button>
         )}
         {room.roomStatusSummary?.occupancy?.available > 0 ? (
-          <Button size="lg" className="rounded-full px-6 sm:px-8">
+          <Button size="lg" className="rounded-lg px-6 sm:px-8">
             <Link to={`/rooms/${room.slug}/book`} onClick={onClose}>
               <CalendarCheck className="size-4" />
               Book this room
             </Link>
           </Button>
         ) : (
-          <Button size="lg" disabled className="rounded-full px-6 sm:px-8">
+          <Button size="lg" disabled className="rounded-lg px-6 sm:px-8">
             Unavailable
           </Button>
         )}
@@ -370,14 +370,14 @@ export function RoomTypeDetailsDialog({
       <DialogContent
         // Full screen on phones, large centred modal from sm up.
         // The built-in close button is hidden in favour of the one below (it sits on photos).
-        className="h-svh w-full max-w-none flex-col gap-0 overflow-hidden rounded-none border-0 p-0 sm:h-auto sm:max-h-153.75 sm:max-w-6xl sm:rounded-3xl sm:border [&>button.absolute]:hidden"
+        className="h-svh w-full max-w-none flex-col gap-0 overflow-hidden border-0 p-0 sm:h-auto sm:max-h-153.75 sm:max-w-6xl sm:rounded-xl sm:border [&>button.absolute]:hidden"
       >
         <div className="absolute top-3 right-3 z-20 sm:top-4 sm:right-4">
           <DialogClose>
             <Button
               size="icon"
               aria-label="Close"
-              className="size-10 rounded-full border-0 bg-black/55 text-white backdrop-blur-md hover:bg-black/75"
+              className="size-10 rounded-lg border-0 bg-black/55 text-white backdrop-blur-md hover:bg-black/75"
             >
               <X className="size-5" />
             </Button>

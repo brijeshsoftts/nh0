@@ -202,7 +202,7 @@ export function UpdateAvatarDialog({
 
   return (
     <Dialog open={open} onOpenChange={handleOpenChange}>
-      <DialogContent className="max-w-md rounded-none border border-border bg-card p-6 shadow-xl sm:max-w-lg">
+      <DialogContent className="max-w-md  border border-border bg-card p-6 shadow-xl sm:max-w-lg">
         <DialogHeader className="gap-1 border-b border-border pb-4">
           <div className="flex items-center gap-2">
             <Camera className="size-4 text-gold" aria-hidden="true" />
@@ -217,7 +217,7 @@ export function UpdateAvatarDialog({
 
         <div className="space-y-5 pt-2">
           {/* Avatar Preview Display */}
-          <div className="flex items-center gap-4 rounded-none border border-border bg-secondary/30 p-4">
+          <div className="flex items-center gap-4  border border-border bg-secondary/30 p-4">
             <div className="relative shrink-0">
               <Avatar
                 size="lg"
@@ -245,7 +245,7 @@ export function UpdateAvatarDialog({
                 </AvatarFallback>
               </Avatar>
               {previewUrl && (
-                <span className="absolute -top-1.5 -right-1.5 flex size-5 items-center justify-center rounded-none bg-gold text-[10px] font-bold text-gold-foreground ring-2 ring-background">
+                <span className="absolute -top-1.5 -right-1.5 flex size-5 items-center justify-center  bg-gold text-[10px] font-bold text-gold-foreground ring-2 ring-background">
                   <Check className="size-3" aria-hidden="true" />
                 </span>
               )}
@@ -257,7 +257,7 @@ export function UpdateAvatarDialog({
                   {previewUrl ? "New selection" : "Current photo"}
                 </span>
                 {previewUrl && (
-                  <span className="rounded-none border border-gold/40 bg-accent/40 px-1.5 py-0.5 text-[10px] font-medium text-accent-foreground">
+                  <span className=" border border-gold/40 bg-accent/40 px-1.5 py-0.5 text-[10px] font-medium text-accent-foreground">
                     Unsaved
                   </span>
                 )}
@@ -300,7 +300,7 @@ export function UpdateAvatarDialog({
           {validationError && (
             <div
               role="alert"
-              className="flex items-start gap-2.5 rounded-none border-l-2 border-destructive bg-destructive/10 p-3 text-xs text-destructive"
+              className="flex items-start gap-2.5  border-l-2 border-destructive bg-destructive/10 p-3 text-xs text-destructive"
             >
               <AlertCircle className="mt-0.5 size-4 shrink-0" aria-hidden="true" />
               <div className="flex-1">
@@ -323,7 +323,7 @@ export function UpdateAvatarDialog({
             onDragOver={handleDragOver}
             onDragLeave={handleDragLeave}
             onDrop={handleDrop}
-            className={`group relative flex flex-col items-center justify-center rounded-none border-2 border-dashed p-6 text-center transition-colors ${
+            className={`group relative flex flex-col items-center justify-center  border-2 border-dashed p-6 text-center transition-colors ${
               isDragging
                 ? "border-gold bg-accent/20"
                 : "border-border bg-card hover:border-foreground/40 hover:bg-muted/30"
@@ -339,7 +339,7 @@ export function UpdateAvatarDialog({
               className="sr-only"
             />
 
-            <div className="flex size-11 items-center justify-center rounded-none border border-border bg-secondary text-foreground">
+            <div className="flex size-11 items-center justify-center  border border-border bg-secondary text-foreground">
               {isDragging ? (
                 <UploadCloud className="size-5 text-gold animate-bounce" />
               ) : (
@@ -375,7 +375,7 @@ export function UpdateAvatarDialog({
                 size="sm"
                 disabled={isPending}
                 onClick={handleRemove}
-                className="rounded-none text-xs text-destructive hover:bg-destructive/10 hover:text-destructive"
+                className=" text-xs text-destructive hover:bg-destructive/10 hover:text-destructive"
               >
                 {removeAvatarMutation.isPending ? (
                   <Spinner className="size-3.5" />
@@ -392,7 +392,7 @@ export function UpdateAvatarDialog({
               type="button"
               variant="outline"
               size="sm"
-              className="rounded-none"
+              className=""
               disabled={isPending}
               onClick={() => handleOpenChange(false)}
             >
@@ -401,7 +401,7 @@ export function UpdateAvatarDialog({
             <Button
               type="button"
               size="sm"
-              className="rounded-none"
+              className=""
               disabled={!selectedFile || isPending}
               onClick={handleSave}
             >

@@ -35,7 +35,7 @@ export function RoomCard({ room, className }: RoomCardProps) {
   return (
     <Card
       className={cn(
-        "group flex w-full flex-col overflow-hidden rounded-2xl border border-border bg-card py-0 font-sans shadow-[0_4px_20px_rgb(0,0,0,0.03)]",
+        "group flex w-full flex-col overflow-hidden rounded-xl border border-border bg-card py-0 font-sans shadow-[0_4px_20px_rgb(0,0,0,0.03)]",
         className
       )}
     >
@@ -98,7 +98,7 @@ export function RoomCard({ room, className }: RoomCardProps) {
           <Button
             nativeButton={false}
             render={<Link to={`/rooms/${room.slug}`} />}
-            className="group/button h-11 w-full rounded-full text-sm font-medium shadow-sm transition-all"
+            className="group/button h-11 w-full rounded-lg text-sm font-medium shadow-sm transition-all"
             variant="outline"
           >
             View Details
@@ -107,7 +107,7 @@ export function RoomCard({ room, className }: RoomCardProps) {
           <Button
             nativeButton={false}
             render={<Link to={`/rooms/${room.slug}/book`} />}
-            className="group/button h-11 w-full rounded-full text-sm font-medium shadow-sm transition-all"
+            className="group/button h-11 w-full rounded-lg text-sm font-medium shadow-sm transition-all"
           >
             Book Now
             <Calendar className="ml-2 h-4 w-4 transition-transform group-hover/button:translate-x-1" />
@@ -128,7 +128,7 @@ export function RoomsSkeleton() {
           className="overflow-hidden rounded-xl border border-border bg-card"
         >
           <Skeleton
-            className="aspect-16/10 w-full rounded-none"
+            className="aspect-16/10 w-full"
             style={{ aspectRatio: "16 / 10" }}
           />
           <div className="space-y-4 p-5 sm:p-6">

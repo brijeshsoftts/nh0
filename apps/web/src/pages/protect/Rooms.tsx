@@ -12,10 +12,15 @@ export default function RoomsPage() {
     case "MANAGER":
       return <ManagementRooms />;
     case "STAFF":
+      if (user.category === "RECEPTIONIST") {
+        return <ManagementRooms />;
+      }
       if (user.category === "HOUSEKEEPER") {
         return <HouseKeeperRooms />;
       }
       return <Navigate to="/dashboard" replace />;
+    case "CUSTOMER":
+      return <Navigate to="/rooms" replace />;
     default:
       return <Navigate to="/dashboard" replace />;
   }

@@ -73,7 +73,7 @@ function PasswordField({
           autoComplete={autoComplete}
           aria-invalid={!!error}
           aria-describedby={error ? `${id}-error` : undefined}
-          className="h-10 rounded-none pr-10"
+          className="h-10 pr-10"
           disabled={disabled}
           {...registration}
         />
@@ -81,7 +81,7 @@ function PasswordField({
           type="button"
           variant="ghost"
           size="icon"
-          className="absolute top-1 right-1 rounded-none"
+          className="absolute top-1 right-1"
           aria-label={
             visible
               ? `Hide ${label.toLowerCase()}`
@@ -158,14 +158,14 @@ export default function ProfilePage() {
           title="Your profile"
           description="Manage your personal details and account security."
         />
-        <div className="flex flex-col items-start gap-3 rounded-none border border-border bg-card p-5">
+        <div className="flex flex-col items-start gap-3 rounded-xl border border-border bg-card p-5">
           <p className="text-sm text-muted-foreground">
             Your profile could not be loaded.
           </p>
           <Button
             variant="outline"
             size="sm"
-            className="rounded-none"
+            className=""
             onClick={() => void profileQuery.refetch()}
           >
             Try again
@@ -203,7 +203,7 @@ export default function ProfilePage() {
     <>
       <section
         aria-label="Profile summary"
-        className="flex flex-col gap-4 rounded-none border border-border bg-card p-5 sm:flex-row sm:items-center sm:justify-between"
+        className="flex flex-col gap-4 rounded-xl border border-border bg-card p-5 sm:flex-row sm:items-center sm:justify-between"
       >
         <div className="flex min-w-0 items-start gap-4 sm:items-center">
           <div className="group/avatar relative shrink-0">
@@ -259,7 +259,7 @@ export default function ProfilePage() {
                 type="button"
                 variant="outline"
                 size="sm"
-                className="rounded-none gap-1.5 text-xs"
+                className="gap-1.5 text-xs"
                 onClick={() => setAvatarDialogOpen(true)}
               >
                 <Camera className="size-3.5" aria-hidden="true" />
@@ -284,8 +284,8 @@ export default function ProfilePage() {
       />
 
       <div className="grid gap-5 lg:grid-cols-[minmax(0,1.2fr)_minmax(18rem,0.8fr)]">
-        <Card className="rounded-none">
-          <CardHeader className="rounded-none">
+        <Card className="rounded-xl">
+          <CardHeader className="">
             <div className="flex items-center gap-2">
               <UserRound
                 className="size-4 text-muted-foreground"
@@ -334,7 +334,7 @@ export default function ProfilePage() {
                 <Button
                   type="button"
                   variant="outline"
-                  className="rounded-none"
+                  className=""
                   disabled={!formState.isDirty || updateProfile.isPending}
                   onClick={() => reset(user)}
                 >
@@ -342,7 +342,7 @@ export default function ProfilePage() {
                 </Button>
                 <Button
                   type="submit"
-                  className="rounded-none"
+                  className=""
                   disabled={!formState.isDirty || updateProfile.isPending}
                 >
                   {updateProfile.isPending ? (
@@ -357,8 +357,8 @@ export default function ProfilePage() {
           </CardContent>
         </Card>
 
-        <Card className="rounded-none">
-          <CardHeader className="rounded-none">
+        <Card className="rounded-xl">
+          <CardHeader className="">
             <div className="flex items-center gap-2">
               <KeyRound
                 className="size-4 text-muted-foreground"
@@ -405,7 +405,7 @@ export default function ProfilePage() {
               <div className="flex justify-end border-t border-border pt-4">
                 <Button
                   type="submit"
-                  className="rounded-none"
+                  className=""
                   disabled={password.isPending}
                 >
                   {password.isPending ? (
@@ -421,8 +421,8 @@ export default function ProfilePage() {
         </Card>
       </div>
 
-      <Card className="rounded-none">
-        <CardHeader className="rounded-none">
+      <Card className="rounded-xl">
+        <CardHeader className="">
           <div className="flex items-center gap-2">
             <BriefcaseBusiness
               className="size-4 text-muted-foreground"
@@ -471,7 +471,7 @@ export default function ProfilePage() {
                       href={image?.url}
                       target="_blank"
                       rel="noreferrer"
-                      className="inline-flex min-h-9 items-center gap-2 rounded-none border border-border px-3 text-sm text-foreground transition-colors hover:bg-muted focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none"
+                      className="inline-flex min-h-9 items-center gap-2 rounded-lg border border-border px-3 text-sm text-foreground transition-colors hover:bg-muted focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none"
                     >
                       <FileText
                         className="size-4 text-muted-foreground"

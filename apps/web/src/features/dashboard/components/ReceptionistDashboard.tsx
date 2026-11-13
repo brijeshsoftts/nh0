@@ -1,150 +1,192 @@
 import { formatDate } from "date-fns";
 import { useState } from "react";
 
-import { type ColumnDef,DataTable } from "@/components/common/DataTable";
-import { BookingBadge } from "@/components/common/EnumBadges";
+import { type ColumnDef, DataTable } from "@/components/common/DataTable";
+import {
+  BookingBadge,
+  PaymentStatusBadge,
+} from "@/components/common/EnumBadges";
 import { StatGrid } from "@/components/common/Stat";
 import { BookingDetailsSheet } from "@/features/bookings/components/BookingDetailsSheet";
 
-import {
-  BOOKING_STATUS,
-  ROOM_STATUS,
-  STAFF_STAT,
-  TODAYS_ARRIVALS,
-  TODAYS_DEPARTURES,
-} from "../dashboard.mock";
-import type { TodaysArrival, TodaysDeparture } from "../dashboard.types";
+import type { ArrivalItem, DepartureItem } from "../dashboard.types";
+import { useDashbaordStats } from "../hooks/useDashbaordStats";
+import { useDashbaordStays } from "../hooks/useDashbaordStays";
+import { useDashbaordBookingStatus } from "../hooks/useDashboardBookingStatus";
+import { useDashboardRoomStatus } from "../hooks/useDashboardRoomStatus";
 
 import { DonutChart } from "./DonutChart";
 import { StatusBarChart } from "./StatusBarChart";
 
-function TodaysArrivals() {
-  const columns: ColumnDef<TodaysArrival>[] = [
+function TodaysArrivals({
+  items,
+  isLoading,
+  isError,
+  onRetry,
+}: {
+  items: ArrivalItem[];
+  isLoading: boolean;
+  isError: boolean;
+  onRetry: () => void;
+}) {
+  const [selectedBookingId, setSelectedBookingId] = useState<string | null>(
+    null
+  );
+  const columns: ColumnDef<ArrivalItem>[] = [
+    { key: "bookingReference", header: "Booking" },
+    { key: "customerName", header: "Customer" },
     {
-      key: "booking",
-      header: "Booking",
-      cell: (row) => <>{row.booking.bookingReference}</>,
-    },
-    {
-      key: "customer",
-      header: "Customer",
-      cell: (row) => <>{row.customer.fullName}</>,
-    },
-    {
-      key: "room",
+      key: "roomNumber",
       header: "Room",
-      cell: (row) => row.roomNumber,
+      cell: (row) => row.roomNumber ?? "Unassigned",
     },
     {
-      key: "checkin",
+      key: "checkIn",
       header: "Check In",
-      cell: (row) => formatDate(row.checkInDate, "dd MMM, yyyy"),
+      cell: (row) => formatDate(row.checkIn, "dd MMM, yyyy"),
     },
     {
-      key: "status",
+      key: "bookingStatus",
       header: "Status",
-      cell: (row) => <BookingBadge value={row.status} />,
+      cell: (row) => <BookingBadge value={row.bookingStatus} />,
     },
   ];
 
-  const [isVisible, setIsVisible] = useState(false);
-
   return (
-    <>
-      <DataTable
-        title="Today's Arrivals"
-        description="Guests scheduled to check in today"
-        data={TODAYS_ARRIVALS}
-        columns={columns}
-        showSearch={false}
-        showPagination={false}
-        onRowClick={() => setIsVisible(true)}
-        renderActions={(row) =>
-          isVisible && (
-            <BookingDetailsSheet
-              onOpenChange={() => setIsVisible(false)}
-              open={isVisible}
-              bookingId={row.booking.id}
-            />
-          )
-        }
-      />
-    </>
+    <DataTable
+      title="Today's Arrivals"
+      description="Guests scheduled to check in today"
+      data={items}
+      columns={columns}
+      showSearch={false}
+      showPagination={false}
+      isLoading={isLoading}
+      isError={isError}
+      errorMessage="Today's arrivals could not be loaded."
+      emptyMessage="No arrivals scheduled for today."
+      refetch={onRetry}
+      onRowClick={(row) => setSelectedBookingId(row.bookingId)}
+      renderActions={(row) =>
+        selectedBookingId === row.bookingId ? (
+          <BookingDetailsSheet
+            onOpenChange={() => setSelectedBookingId(null)}
+            open
+            bookingId={row.bookingId}
+          />
+        ) : null
+      }
+    />
   );
 }
 
-function TodaysDepartures() {
-  const columns: ColumnDef<TodaysDeparture>[] = [
+function TodaysDepartures({
+  items,
+  isLoading,
+  isError,
+  onRetry,
+}: {
+  items: DepartureItem[];
+  isLoading: boolean;
+  isError: boolean;
+  onRetry: () => void;
+}) {
+  const [selectedBookingId, setSelectedBookingId] = useState<string | null>(
+    null
+  );
+  const columns: ColumnDef<DepartureItem>[] = [
+    { key: "bookingReference", header: "Booking" },
+    { key: "customerName", header: "Customer" },
     {
-      key: "booking",
-      header: "Booking",
-      cell: (row) => <>{row.booking.bookingReference}</>,
-    },
-    {
-      key: "customer",
-      header: "Customer",
-      cell: (row) => <>{row.customer.fullName}</>,
-    },
-    {
-      key: "room",
+      key: "roomNumber",
       header: "Room",
-      cell: (row) => row.roomNumber,
+      cell: (row) => row.roomNumber ?? "Unassigned",
     },
     {
-      key: "checkout",
+      key: "checkOut",
       header: "Check Out",
-      cell: (row) => formatDate(row.checkOutDate, "dd MMM, yyyy"),
+      cell: (row) => formatDate(row.checkOut, "dd MMM, yyyy"),
     },
     {
-      key: "status",
-      header: "Status",
-      cell: (row) => <BookingBadge value={row.status} />,
+      key: "paymentStatus",
+      header: "Payment",
+      cell: (row) => <PaymentStatusBadge value={row.paymentStatus} />,
     },
   ];
-  const [isVisible, setIsVisible] = useState(false);
 
   return (
     <DataTable
       title="Today's Departures"
       description="Guests scheduled to check out today"
-      data={TODAYS_DEPARTURES}
+      data={items}
       columns={columns}
       showSearch={false}
       showPagination={false}
-      onRowClick={() => setIsVisible(true)}
+      isLoading={isLoading}
+      isError={isError}
+      errorMessage="Today's departures could not be loaded."
+      emptyMessage="No departures scheduled for today."
+      refetch={onRetry}
+      onRowClick={(row) => setSelectedBookingId(row.bookingId)}
       renderActions={(row) =>
-        isVisible && (
+        selectedBookingId === row.bookingId ? (
           <BookingDetailsSheet
-            onOpenChange={() => setIsVisible(false)}
-            open={isVisible}
-            bookingId={row.booking.id}
+            onOpenChange={() => setSelectedBookingId(null)}
+            open
+            bookingId={row.bookingId}
           />
-        )
+        ) : null
       }
     />
   );
 }
 
 export function ReceptionistDashboard() {
+  const stats = useDashbaordStats();
+  const stays = useDashbaordStays();
+  const roomStatus = useDashboardRoomStatus();
+  const bookingStatus = useDashbaordBookingStatus("all");
+
   return (
     <>
-      <StatGrid stats={STAFF_STAT} isLoading={false} isError={false} />
+      <StatGrid
+        stats={stats.data}
+        isLoading={stats.isLoading}
+        isError={stats.isError}
+      />
       <div className="grid gap-6 lg:grid-cols-2">
         <DonutChart
-          data={ROOM_STATUS}
+          data={roomStatus.data ?? []}
           title="Room Availability"
-          description="Current room availability"
-          centerLabel="Total"
+          description="Current active room occupancy"
+          centerLabel="Rooms"
+          showRange={false}
+          errorMessage="Room availability could not be loaded."
+          isLoading={roomStatus.isLoading}
+          isError={roomStatus.isError}
+          onRetry={() => void roomStatus.refetch()}
         />
         <StatusBarChart
-          data={BOOKING_STATUS}
-          title="Today's Booking"
-          description="Current booking distribution"
+          data={bookingStatus.data ?? []}
+          title="Booking Status"
+          description="Bookings across all statuses"
+          isLoading={bookingStatus.isLoading}
+          isError={bookingStatus.isError}
+          onRetry={() => void bookingStatus.refetch()}
         />
       </div>
       <div className="grid gap-6 lg:grid-cols-2">
-        <TodaysArrivals />
-        <TodaysDepartures />
+        <TodaysArrivals
+          items={stays.data?.arrivals.items ?? []}
+          isLoading={stays.isLoading}
+          isError={stays.isError}
+          onRetry={() => void stays.refetch()}
+        />
+        <TodaysDepartures
+          items={stays.data?.departures.items ?? []}
+          isLoading={stays.isLoading}
+          isError={stays.isError}
+          onRetry={() => void stays.refetch()}
+        />
       </div>
     </>
   );
